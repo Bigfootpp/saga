@@ -1,5 +1,5 @@
 import re
-from time import sleep
+import time
 
 import requests
 
@@ -13,23 +13,23 @@ class Cinemeta(MetadataProvider):
         self.logger.info("Getting metadata for " + type + " with id " + id)
         full_id = id.split(":")
         url = f"https://v3-cinemeta.strem.io/meta/{type}/{full_id[0]}.json"
-        
+
         max_retries = 3
         retry_count = 0
-        
+
         while retry_count < max_retries:
             try:
                 response = requests.get(url)
                 data = response.json()
-                
+
                 # Check if data or data["meta"] is empty
                 if not data or not data.get("meta"):
                     retry_count += 1
                     if retry_count == max_retries:
                         raise ValueError(f"Empty response after {max_retries} retries for {id}")
-                    sleep(1)  # Wait 1 second before retrying
+                    time.sleep(1)  # Wait 1 second before retrying
                     continue
-                
+
                 if type == "movie":
 
                     year = data["meta"].get("year")
@@ -52,12 +52,12 @@ class Cinemeta(MetadataProvider):
                         episode=f"E{int(full_id[2]):02d}",
                         languages=["en"]
                     )
-                
+
                 self.logger.info("Got metadata for " + type + " with id " + id)
                 return result
-                
+
             except Exception as e:
                 retry_count += 1
                 if retry_count == max_retries:
                     raise Exception(f"Failed to get metadata after {max_retries} retries: {e!s}")
-                sleep(1)  # Wait 1 second before retrying
+                time.sleep(1)  # Wait 1 second before retrying

@@ -26,8 +26,8 @@ class MetadataProvider:
             'ǜ': 'u', 'ǹ': 'n', 'ǻ': 'a', 'ǽ': 'ae', 'ǿ': 'o',
         }
 
-        for weird_char in corresp:
-            string = string.replace(weird_char, corresp[weird_char])
+        for weird_char, correct in corresp.items():
+            string = string.replace(weird_char, correct)
 
         return string
 
