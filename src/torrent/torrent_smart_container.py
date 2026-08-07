@@ -13,7 +13,7 @@ from utils.logger import setup_logger
 class TorrentSmartContainer:
     def __init__(self, torrent_items: list[TorrentItem], media):
         self.logger = setup_logger(__name__)
-        self.__itemsDict: dict[TorrentItem] = self.__build_items_dict_by_infohash(torrent_items)
+        self.__itemsDict: dict[str, TorrentItem] = self.__build_items_dict_by_infohash(torrent_items)
         self.__media = media
 
     def get_hashes(self):
@@ -37,12 +37,10 @@ class TorrentSmartContainer:
             self.logger.debug(f"Has torrent: {torrent_item.torrent_download is not None}")
             if torrent_item.torrent_download is not None:  # Torrent download
                 self.logger.debug(f"Has file index: {torrent_item.file_index is not None}")
-                if torrent_item.file_index is not None:
-                    # If the season/episode is present inside the torrent filestructure (movies always have a
-                    # file_index)
-                    best_matching.append(torrent_item)
-            else:  # Magnet
-                best_matching.append(torrent_item)  # If it's a movie with a magnet link
+                torrent_item.file_index = torrent_item.file_index or 0
+                best_matching.append(torrent_item)
+            else:
+                best_matching.append(torrent_item)
 
         return best_matching
 
@@ -162,7 +160,7 @@ class TorrentSmartContainer:
 
     def __build_items_dict_by_infohash(self, items: list[TorrentItem]):
         self.logger.debug(f"Building items dict by infohash ({len(items)} items)")
-        items_dict = dict()
+        items_dict = {}
         for item in items:
             if item.info_hash is not None:
                 self.logger.debug(f"Adding {item.info_hash} to items dict")

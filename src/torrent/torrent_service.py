@@ -52,9 +52,9 @@ class TorrentService:
     def __process_web_url(self, result: TorrentItem, media):
         try:
             # TODO: is the default timeout enough?
-            response = self.__session.get(result.link, allow_redirects=False, timeout=float(os.environ.get("JACKETT_RESOLVER_TIMEOUT", 15)))
+            response = self.__session.get(result.link, allow_redirects=False, timeout=float(os.environ.get("JACKETT_RESOLVER_TIMEOUT", "15")))
         except requests.exceptions.ReadTimeout:
-            self.logger.error(f"Timeout while processing url (took longer than {os.environ.get('JACKETT_RESOLVER_TIMEOUT', 15)} seconds)")
+            self.logger.error(f"Timeout while processing url (took longer than {os.environ.get('JACKETT_RESOLVER_TIMEOUT', "15")} seconds)")
             return result
         except requests.exceptions.RequestException:
             self.logger.error(f"Error while processing url: {result.link}")
@@ -90,7 +90,7 @@ class TorrentService:
 
             if isinstance(season, str):
                 season = int(season.replace("S", ""))
-            
+
             if isinstance(episode, str):
                 episode = int(episode.replace("E", ""))
 
@@ -134,9 +134,9 @@ class TorrentService:
 
     def __get_trackers_from_torrent(self, torrent_metadata):
         # Sometimes list, sometimes string
-        announce = torrent_metadata["announce"] if "announce" in torrent_metadata else []
+        announce = torrent_metadata.get("announce", [])
         # Sometimes 2D array, sometimes 1D array
-        announce_list = torrent_metadata["announce-list"] if "announce-list" in torrent_metadata else []
+        announce_list = torrent_metadata.get("announce-list", [])
 
         trackers = set()
         if isinstance(announce, str):
@@ -170,7 +170,6 @@ class TorrentService:
             return None
 
         file_index = 1
-        strict_episode_files = []
         episode_files = []
         for files in file_structure:
             for file in files["path"]:

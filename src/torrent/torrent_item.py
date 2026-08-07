@@ -10,22 +10,22 @@ class TorrentItem:
                  privacy, type=None, parsed_data=None):
         self.logger = setup_logger(__name__)
 
-        self.raw_title = raw_title  # Raw title of the torrent
+        self.raw_title: str = raw_title  # Raw title of the torrent
         self.size = size  # Size of the video file inside the torrent - it may be updated during __process_torrent()
-        self.magnet = magnet  # Magnet to torrent
-        self.info_hash = info_hash  # Hash of the torrent
-        self.link = link  # Link to download torrent file or magnet link
-        self.seeders = seeders  # The number of seeders
-        self.languages = languages  # Language of the torrent
-        self.indexer = indexer  # Indexer of the torrent
-        self.type = type  # "series" or "movie"
-        self.privacy = privacy  # "public" or "private"
+        self.magnet: str = magnet  # Magnet to torrent
+        self.info_hash: str = info_hash  # Hash of the torrent
+        self.link: str = link  # Link to download torrent file or magnet link
+        self.seeders: str = seeders  # The number of seeders
+        self.languages: list[str] = languages  # Language of the torrent
+        self.indexer: list[str] = indexer  # Indexer of the torrent
+        self.type: str | None = type  # "series" or "movie"
+        self.privacy: str = privacy  # "public" or "private"
 
         self.file_name = None  # it may be updated during __process_torrent()
         self.files = None  # The files inside of the torrent. If it's None, it means that there is only one file inside of the torrent
-        self.torrent_download = None  # The torrent jackett download url if its None, it means that there is only a magnet link provided by Jackett. It also means, that we cant do series file filtering before debrid.
+        self.torrent_download: str | None = None  # The torrent jackett download url if its None, it means that there is only a magnet link provided by Jackett. It also means, that we cant do series file filtering before debrid.
         self.trackers = []  # Trackers of the torrent
-        self.file_index = None  # Index of the file inside of the torrent - it may be updated durring __process_torrent() and update_availability(). If the index is None and torrent is not None, it means that the series episode is not inside of the torrent.
+        self.file_index: int | None = None  # Index of the file inside of the torrent - it may be updated durring __process_torrent() and update_availability(). If the index is None and torrent is not None, it means that the series episode is not inside of the torrent.
 
         self.availability = False  # If it's instantly available on the debrid service
 
