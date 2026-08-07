@@ -8,15 +8,16 @@ from debrid.torbox import TorBox
 
 def get_debrid_service(config):
     service_name = config['service']
-    if service_name == "realdebrid":
-        debrid_service = RealDebrid(config)
-    elif service_name == "alldebrid":
-        debrid_service = AllDebrid(config)
-    elif service_name == "premiumize":
-        debrid_service = Premiumize(config)
-    elif service_name == "torbox":
-        debrid_service = TorBox(config)
-    else:
-        raise HTTPException(status_code=500, detail="Invalid service configuration.")
+    match service_name:
+        case "realdebrid":
+            debrid_service = RealDebrid(config)
+        case "alldebrid":
+            debrid_service = AllDebrid(config)
+        case "premiumize":
+            debrid_service = Premiumize(config)
+        case "torbox":
+            debrid_service = TorBox(config)
+        case _:
+            raise HTTPException(status_code=500, detail="Invalid service configuration.")
 
     return debrid_service
