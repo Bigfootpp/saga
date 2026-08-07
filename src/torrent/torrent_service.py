@@ -117,6 +117,9 @@ class TorrentService:
         if result.info_hash is None:
             result.info_hash = get_info_hash_from_magnet(result.magnet)
 
+        if not result.info_hash:
+            self.logger.warning(f"Could not extract info_hash from magnet: {result.magnet[:100]}...")
+
         result.trackers = self._get_trackers_from_magnet(result.magnet)
 
         return result

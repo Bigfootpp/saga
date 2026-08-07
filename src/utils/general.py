@@ -60,11 +60,13 @@ def season_episode_in_filename(filename, season, episode, strict=False):
     )
 
 
-def get_info_hash_from_magnet(magnet: str):
+def get_info_hash_from_magnet(magnet: str) -> str:
+    if not magnet:
+        return ""
     exact_topic_index = magnet.find("xt=")
     if exact_topic_index == -1:
-        logger.debug(f"No exact topic in magnet {magnet}")
-        return None
+        logger.debug(f"No exact topic in magnet: {magnet[:100]}...")
+        return ""
 
     exact_topic_substring = magnet[exact_topic_index:]
     end_of_exact_topic = exact_topic_substring.find("&")
@@ -73,7 +75,7 @@ def get_info_hash_from_magnet(magnet: str):
 
     info_hash = exact_topic_substring[exact_topic_substring.rfind(":") + 1 :]
 
-    return info_hash.lower()
+    return info_hash.lower() if info_hash else ""
 
 
 def is_video_file(filename):

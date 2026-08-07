@@ -22,30 +22,35 @@ def sort_quality(item):
 
 
 def items_sort(items, config):
+    # Filter out items with empty info_hash (RTN requires both title and infohash)
+    valid_items = [item for item in items if item.info_hash]
+    if len(valid_items) != len(items):
+        logger.warning(f"Filtered out {len(items) - len(valid_items)} items with empty info_hash before sorting")
+
     settings = SettingsModel(
         require=[],
         exclude=config.exclusionKeywords + config.exclusion,
     )
 
     rtn = RTN(settings=settings, ranking_model=DefaultRanking())
-    torrents = [rtn.rank(item.raw_title, item.info_hash) for item in items]
+    torrents = [rtn.rank(item.raw_title, item.info_hash) for item in valid_items]
     sorted_torrents = sort_torrents(set(torrents))
     for key, value in sorted_torrents.items():
-        index = next((i for i, item in enumerate(items) if item.info_hash == key), None)
+        index = next((i for i, item in enumerate(valid_items) if item.info_hash == key), None)
         if index is not None:
-            items[index].parsed_data = value
+            valid_items[index].parsed_data = value
 
     if config.sort == "quality":
-        return sorted(items, key=sort_quality)
+        return sorted(valid_items, key=sort_quality)
     if config.sort == "sizeasc":
-        return sorted(items, key=lambda x: int(x.size))
+        return sorted(valid_items, key=lambda x: int(x.size))
     if config.sort == "seedsdesc":
-        return sorted(items, key=lambda x: int(x.seeders), reverse=True)
+        return sorted(valid_items, key=lambda x: int(x.seeders), reverse=True)
     if config.sort == "sizedesc":
-        return sorted(items, key=lambda x: int(x.size), reverse=True)
+        return sorted(valid_items, key=lambda x: int(x.size), reverse=True)
     if config.sort == "qualitythensize":
-        return sorted(items, key=lambda x: (sort_quality(x), -int(x.size)))
-    return items
+        return sorted(valid_items, key=lambda x: (sort_quality(x), -int(x.size)))
+    return valid_items
 
 
 def filter_out_non_matching(items, season, episode):
