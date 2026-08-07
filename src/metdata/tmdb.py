@@ -9,50 +9,57 @@ class TMDB(MetadataProvider):
     def __init__(self, config):
         super().__init__(config)
         self._indexers = None
-        
+
     @property
     def indexers(self):
         return self._indexers
+
     @indexers.setter
     def indexers(self, indexers_):
         self._indexers = indexers_
-    
-    def get_metadata(self, id, type):
-        self.logger.info("Getting metadata for " + type + " with id " + id)
 
-        full_id = id.split(":")
+def get_metadata(self, id, type):
+    self.logger.info("Getting metadata for " + type + " with id " + id)
 
-        result = None
-        if self.config.get('getAllLanguages', None) and self._indexers and len(self._indexers) > 0:
-          languages = list({indexer.language for indexer in self._indexers}) # Use set to remove duplicated languages
+    full_id = id.split(":")
+    result = None
+
+    if self.config.get('getAllLanguages', None) and self._indexers and len(self._indexers) > 0:
+        languages = list({indexer.language for indexer in self._indexers})
+    else:
+        languages = list(dict.fromkeys(self.config['languages']))
+
+    if not languages:
+        return None
+
+    first_lang = languages[0]
+    url = f"https://api.themoviedb.org/3/find/{full_id[0]}?api_key={self.config['tmdbApi']}&external_source=imdb_id&language={first_lang}"
+    data = requests.get(url).json()
+
+    if type == "movie":
+        result = Movie(
+            id=id,
+            titles=[self.replace_weird_characters(data["movie_results"][0]["title"])],
+            year=data["movie_results"][0]["release_date"][:4],
+            languages=languages
+        )
+    else:
+        result = Series(
+            id=id,
+            titles=[self.replace_weird_characters(data["tv_results"][0]["name"])],
+            season=f"S{int(full_id[1]):02d}",
+            episode=f"E{int(full_id[2]):02d}",
+            languages=languages
+        )
+
+    for lang in languages[1:]:
+        url = f"https://api.themoviedb.org/3/find/{full_id[0]}?api_key={self.config['tmdbApi']}&external_source=imdb_id&language={lang}"
+        data = requests.get(url).json()
+
+        if type == "movie":
+            result.titles.append(self.replace_weird_characters(data["movie_results"][0]["title"]))
         else:
-          languages = self.config['languages']
-        for lang in languages:
-            url = f"https://api.themoviedb.org/3/find/{full_id[0]}?api_key={self.config['tmdbApi']}&external_source=imdb_id&language={lang}"
-            response = requests.get(url)
-            data = response.json()
+            result.titles.append(self.replace_weird_characters(data["tv_results"][0]["name"]))
 
-            if lang == languages[0]:
-                if type == "movie":
-                    result = Movie(
-                        id=id,
-                        titles=[self.replace_weird_characters(data["movie_results"][0]["title"])],
-                        year=data["movie_results"][0]["release_date"][:4],
-                        languages=languages
-                    )
-                else:
-                    result = Series(
-                        id=id,
-                        titles=[self.replace_weird_characters(data["tv_results"][0]["name"])],
-                        season=f"S{int(full_id[1]):02d}",
-                        episode=f"E{int(full_id[2]):02d}",
-                        languages=languages
-                    )
-            else:
-                if type == "movie":
-                    result.titles.append(self.replace_weird_characters(data["movie_results"][0]["title"]))
-                else:
-                    result.titles.append(self.replace_weird_characters(data["tv_results"][0]["name"]))
-
-        self.logger.info("Got metadata for " + type + " with id " + id)
-        return result
+    self.logger.info("Got metadata for " + type + " with id " + id)
+    return result
