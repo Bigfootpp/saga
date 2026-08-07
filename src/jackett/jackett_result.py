@@ -1,6 +1,5 @@
 from RTN import parse
 
-from models.series import Series
 from torrent.torrent_item import TorrentItem
 from utils.logger import setup_logger
 
@@ -8,14 +7,14 @@ logger = setup_logger(__name__)
 
 class JackettResult:
     def __init__(self):
-        self.raw_title = None  # Raw title of the torrent
-        self.size = None  # Size of the torrent
-        self.link = None  # Download link for the torrent file or magnet url
-        self.indexer = None  # Indexer
-        self.seeders = None  # Seeders count
-        self.magnet = None  # Magnet url
-        self.info_hash = None  # infoHash by Jackett
-        self.privacy = None  # public or private
+        self.raw_title: str | None = None  # Raw title of the torrent
+        self.size: str | None = None  # Size of the torrent
+        self.link: str | None = None  # Download link for the torrent file or magnet url
+        self.indexer: str | None = None  # Indexer
+        self.seeders: str | None = None  # Seeders count
+        self.magnet: str | None = None  # Magnet url
+        self.info_hash: str | None = None  # infoHash by Jackett
+        self.privacy: str | None = None  # public or private
 
         # Extra processed details for further filtering
         self.languages = None  # Language of the torrent

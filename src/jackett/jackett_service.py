@@ -77,7 +77,7 @@ class JackettService:
 
         if has_imdb_search_capability:
             languages = ['en']
-            index_of_language = [index for index, lang in enumerate(movie.languages) if lang == 'en'][0]
+            index_of_language = next(index for index, lang in enumerate(movie.languages) if lang == 'en')
             titles = [movie.titles[index_of_language]]
         elif indexer.language == "en":
             languages = movie.languages
@@ -125,7 +125,7 @@ class JackettService:
                                       and 'imdbid' in indexer.tv_search_capatabilities)
         if has_imdb_search_capability:
             languages = ['en']
-            index_of_language = [index for index, lang in enumerate(series.languages) if lang == 'en'][0]
+            index_of_language = next(index for index, lang in enumerate(series.languages) if lang == 'en')
             titles = [series.titles[index_of_language]]
         elif indexer.language == "en":
             languages = series.languages
@@ -191,7 +191,7 @@ class JackettService:
 
     def get_indexers(self):
         if not self._indexers:
-            self.logger.info(f"Indexer cache miss. Requesting API...")
+            self.logger.info("Indexer cache miss. Requesting API...")
             url = f"{self.__base_url}/indexers/all/results/torznab/api?apikey={self.__api_key}&t=indexers&configured=true"
 
             try:
@@ -211,14 +211,15 @@ class JackettService:
         for item in xml_root.findall('.//indexer'):
             indexer = JackettIndexer()
 
-            indexer.title = item.find('title').text
-            indexer.id = item.attrib['id']
-            indexer.link = item.find('link').text
-            indexer.type = item.find('type').text
-            if item.find('language').text.split('-')[0] in ['pt']:
-                indexer.language = item.find('language').text # Add support for localizations (e.g., pt-BR)
-            else:
-                indexer.language = item.find('language').text.split('-')[0]
+            indexer.title = item.findtext('title')
+            indexer.id = item.attrib.get('id')
+            indexer.link = item.findtext('link')
+            indexer.type = item.findtext('type')
+            language_text = item.findtext('language')
+            if language_text and language_text.split('-')[0] in ['pt']:
+                indexer.language = language_text  # Add support for localizations (e.g., pt-BR)
+            elif language_text:
+                indexer.language = language_text.split('-')[0]
 
             self.logger.info(f"Indexer: {indexer.title} - {indexer.link} - {indexer.type}")
 
@@ -246,16 +247,20 @@ class JackettService:
         for item in xml_root.findall('.//item'):
             result = JackettResult()
 
-            result.seeders = item.find('.//torznab:attr[@name="seeders"]',
-                                       namespaces={'torznab': 'http://torznab.com/schemas/2015/feed'}).attrib['value']
+            seeders_attr = item.find('.//torznab:attr[@name="seeders"]',
+                                     namespaces={'torznab': 'http://torznab.com/schemas/2015/feed'})
+            if seeders_attr is None:
+                continue
+
+            result.seeders = seeders_attr.attrib.get('value', '0')
             if int(result.seeders) <= 0:
                 continue
 
-            result.raw_title = item.find('title').text
-            result.size = item.find('size').text
-            result.link = item.find('link').text
-            result.indexer = item.find('jackettindexer').text
-            result.privacy = item.find('type').text
+            result.raw_title = item.findtext('title')
+            result.size = item.findtext('size')
+            result.link = item.findtext('link')
+            result.indexer = item.findtext('jackettindexer')
+            result.privacy = item.findtext('type')
 
             # TODO: I haven't seen this in the Jackett XML response. Is this still relevant?
             # Or which indexers provide this?
