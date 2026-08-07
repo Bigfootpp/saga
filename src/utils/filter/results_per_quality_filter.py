@@ -17,10 +17,15 @@ class ResultsPerQualityFilter(BaseFilter):
                 resolution_count[item.parsed_data.resolution] = 1
                 filtered_items.append(item)
             else:
-                if resolution_count[item.parsed_data.resolution] < int(self.config['resultsPerQuality']):
+                if resolution_count[item.parsed_data.resolution] < int(
+                    self.config.resultsPerQuality
+                ):
                     resolution_count[item.parsed_data.resolution] += 1
                     filtered_items.append(item)
         return filtered_items
 
     def can_filter(self):
-        return self.config['resultsPerQuality'] is not None and int(self.config['resultsPerQuality']) > 0
+        return (
+            self.config.resultsPerQuality is not None
+            and int(self.config.resultsPerQuality) > 0
+        )

@@ -1,35 +1,41 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
-from models.media import Media
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 from models.series import Series
-from utils.logger import setup_logger
+
+if TYPE_CHECKING:
+    from models.media import Media
 
 
-class TorrentItem:
-    def __init__(self, raw_title, size, magnet, info_hash, link, seeders, languages, indexer,
-                 privacy, type=None, parsed_data=None):
-        self.logger = setup_logger(__name__)
+class TorrentItem(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
 
-        self.raw_title: str = raw_title  # Raw title of the torrent
-        self.size = size  # Size of the video file inside the torrent - it may be updated during __process_torrent()
-        self.magnet: str = magnet  # Magnet to torrent
-        self.info_hash: str = info_hash  # Hash of the torrent
-        self.link: str = link  # Link to download torrent file or magnet link
-        self.seeders: str = seeders  # The number of seeders
-        self.languages: list[str] = languages  # Language of the torrent
-        self.indexer: list[str] = indexer  # Indexer of the torrent
-        self.type: str | None = type  # "series" or "movie"
-        self.privacy: str = privacy  # "public" or "private"
+    raw_title: str = Field(..., alias="rawTitle")
+    size: int = Field(..., alias="size")
+    magnet: str = Field(..., alias="magnet")
+    info_hash: str = Field(..., alias="infoHash")
+    link: str = Field(..., alias="link")
+    seeders: str = Field(..., alias="seeders")
+    languages: list[str] = Field(default_factory=list, alias="languages")
+    indexer: str = Field(..., alias="indexer")
+    privacy: str = Field(..., alias="privacy")
+    type: str | None = Field(default=None, alias="type")
+    file_name: str | None = Field(default=None, alias="fileName")
+    files: list[dict] | None = Field(default=None, alias="files")
+    torrent_download: str | None = Field(default=None, alias="torrentDownload")
+    trackers: list[str] = Field(default_factory=list, alias="trackers")
+    file_index: int | None = Field(default=None, alias="fileIdx")
+    availability: bool = Field(default=False, alias="availability")
+    parsed_data: Any = Field(default=None, alias="parsedData")
 
-        self.file_name = None  # it may be updated during __process_torrent()
-        self.files = None  # The files inside of the torrent. If it's None, it means that there is only one file inside of the torrent
-        self.torrent_download: str | None = None  # The torrent jackett download url if its None, it means that there is only a magnet link provided by Jackett. It also means, that we cant do series file filtering before debrid.
-        self.trackers = []  # Trackers of the torrent
-        self.file_index: int | None = None  # Index of the file inside of the torrent - it may be updated durring __process_torrent() and update_availability(). If the index is None and torrent is not None, it means that the series episode is not inside of the torrent.
-
-        self.availability = False  # If it's instantly available on the debrid service
-
-        self.parsed_data: dict[str, str] | None = parsed_data  # Ranked result
+    @field_validator("info_hash", mode="before")
+    @classmethod
+    def _normalize_info_hash(cls, v: str) -> str:
+        return v.lower() if v else v
 
     def to_debrid_stream_query(self, media: Media) -> dict:
         return {
@@ -38,5 +44,10 @@ class TorrentItem:
             "file_index": self.file_index,
             "season": media.season if isinstance(media, Series) else None,
             "episode": media.episode if isinstance(media, Series) else None,
-            "torrent_download": quote(self.torrent_download) if self.torrent_download is not None else None
+            "torrent_download": quote(self.torrent_download)
+            if self.torrent_download is not None
+            else None,
         }
+
+    def model_dump_stremio(self) -> dict:
+        return self.model_dump(by_alias=True, exclude_none=True)

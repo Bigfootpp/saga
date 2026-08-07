@@ -11,9 +11,10 @@ from models.series import Series
 class MetadataNotFoundError(Exception):
     pass
 
+
 class Cinemeta(MetadataProvider):
-    def get_metadata(self, id, type):
-        self.logger.info("Getting metadata for " + type + " with id " + id)
+    def get_metadata(self, id: str, type: str):
+        self.logger.info(f"Getting metadata for {type} with id {id}")
         full_id = id.split(":")
         url = f"https://v3-cinemeta.strem.io/meta/{type}/{full_id[0]}.json"
 
@@ -25,16 +26,16 @@ class Cinemeta(MetadataProvider):
                 response = requests.get(url)
                 data: dict = response.json()
 
-                # Check if data or data["meta"] is empty
                 if not data or not data.get("meta"):
                     retry_count += 1
                     if retry_count == max_retries:
-                        raise ValueError(f"Empty response after {max_retries} retries for {id}")
-                    time.sleep(1)  # Wait 1 second before retrying
+                        raise ValueError(
+                            f"Empty response after {max_retries} retries for {id}"
+                        )
+                    time.sleep(1)
                     continue
 
                 if type == "movie":
-
                     year = data["meta"].get("year")
                     if not year:
                         release_info = data["meta"].get("releaseInfo")
@@ -46,7 +47,8 @@ class Cinemeta(MetadataProvider):
                         id=id,
                         titles=[self.replace_weird_characters(data["meta"]["name"])],
                         year=year,
-                        languages=["en"]
+                        languages=["en"],
+                        type="movie",
                     )
                 else:
                     result = Series(
@@ -54,14 +56,18 @@ class Cinemeta(MetadataProvider):
                         titles=[self.replace_weird_characters(data["meta"]["name"])],
                         season=f"S{int(full_id[1]):02d}",
                         episode=f"E{int(full_id[2]):02d}",
-                        languages=["en"]
+                        languages=["en"],
+                        type="series",
+                        seasonfile=False,
                     )
 
-                self.logger.info("Got metadata for " + type + " with id " + id)
+                self.logger.info(f"Got metadata for {type} with id {id}")
                 return result
 
-            except Exception as e:
+            except (requests.RequestException, ValueError, KeyError) as e:
                 retry_count += 1
                 if retry_count == max_retries:
-                    raise MetadataNotFoundError(f"Failed to get metadata after {max_retries} retries: {e!s}")
-                time.sleep(1)  # Wait 1 second before retrying
+                    raise MetadataNotFoundError(
+                        f"Failed to get metadata after {max_retries} retries: {e!s}"
+                    )
+                time.sleep(1)

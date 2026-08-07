@@ -9,9 +9,10 @@ class LanguageFilter(BaseFilter):
         super().__init__(config)
 
     def filter(self, data):
-
-        if self.config.get('getAllLanguages', False):
-            logger.info("Skipping language filtering because of 'getAllLanguages' setting.")
+        if self.config.getAllLanguages:
+            logger.info(
+                "Skipping language filtering because of 'getAllLanguages' setting."
+            )
             return data
 
         filtered_data = []
@@ -20,7 +21,7 @@ class LanguageFilter(BaseFilter):
                 continue
 
             for language in torrent.languages:
-                if language in self.config['languages']:
+                if language in self.config.languages:
                     filtered_data.append(torrent)
                     continue
 
@@ -29,4 +30,4 @@ class LanguageFilter(BaseFilter):
         return filtered_data
 
     def can_filter(self):
-        return self.config['languages'] is not None
+        return self.config.languages is not None

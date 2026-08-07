@@ -1,7 +1,3 @@
-from models.media import Media
+from models.media import Movie
 
-
-class Movie(Media):
-    def __init__(self, id: str, titles: list[str], year: str, languages: list[str]):
-        super().__init__(id, titles, languages, "movie")
-        self.year = year
+__all__ = ["Movie"]

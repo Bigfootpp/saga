@@ -14,12 +14,11 @@ logger = setup_logger(__name__)
 
 
 def search_cache(media: Media):
-    logger.info("Searching for cached " + media.type + " results")
-    url = CACHER_URL + "getResult/" + media.type + "/"
-    # Without that, the cache doesn't return results. Maybe make multiple requests? One for each language, just like jackett?
-    cache_search = media.__dict__
-    cache_search['title'] = cache_search['titles'][0]
-    cache_search['language'] = cache_search['languages'][0]
+    logger.info(f"Searching for cached {media.type} results")
+    url = f"{CACHER_URL}getResult/{media.type}/"
+    cache_search = media.model_dump()
+    cache_search["title"] = cache_search["titles"][0]
+    cache_search["language"] = cache_search["languages"][0]
     response = requests.get(url, json=cache_search)
     if response.status_code == 200:
         return response.json()
@@ -41,30 +40,34 @@ def cache_results(torrents: list[TorrentItem], media: Media):
         try:
             cache_item = {}
 
-            cache_item['title'] = torrent.raw_title
-            cache_item['trackers'] = "tracker:".join(torrent.trackers)
-            cache_item['magnet'] = torrent.magnet
-            cache_item['files'] = []  # I guess keep it empty?
-            cache_item['hash'] = torrent.info_hash
-            cache_item['indexer'] = torrent.indexer
-            cache_item['quality'] = torrent.parsed_data.resolution
-            cache_item['qualitySpec'] = torrent.parsed_data.quality
-            cache_item['seeders'] = torrent.seeders
-            cache_item['size'] = torrent.size
-            cache_item['language'] = ";".join(torrent.languages)
-            cache_item['type'] = media.type
-            cache_item['availability'] = torrent.availability
+            cache_item["title"] = torrent.raw_title
+            cache_item["trackers"] = "tracker:".join(torrent.trackers)
+            cache_item["magnet"] = torrent.magnet
+            cache_item["files"] = []
+            cache_item["hash"] = torrent.info_hash
+            cache_item["indexer"] = torrent.indexer
+            cache_item["quality"] = (
+                torrent.parsed_data.resolution if torrent.parsed_data else None
+            )
+            cache_item["qualitySpec"] = (
+                torrent.parsed_data.quality if torrent.parsed_data else None
+            )
+            cache_item["seeders"] = torrent.seeders
+            cache_item["size"] = torrent.size
+            cache_item["language"] = ";".join(torrent.languages)
+            cache_item["type"] = media.type
+            cache_item["availability"] = torrent.availability
 
             if isinstance(media, Movie):
-                cache_item['year'] = media.year
+                cache_item["year"] = media.year
             elif isinstance(media, Series):
-                cache_item['season'] = media.season
-                cache_item['episode'] = media.episode
-                cache_item['seasonfile'] = False  # I guess keep it false to not mess up results?
+                cache_item["season"] = media.season
+                cache_item["episode"] = media.episode
+                cache_item["seasonfile"] = False
 
             cache_items.append(cache_item)
         except Exception:
-            logger.exception("An exception occured durring cache parsing")
+            logger.exception("An exception occurred during cache parsing")
 
     try:
         url = f"{CACHER_URL}pushResult/{media.type}"
@@ -73,8 +76,8 @@ def cache_results(torrents: list[TorrentItem], media: Media):
         response.raise_for_status()
 
         if response.status_code == 200:
-            logger.info(f"Cached {len(cache_items)!s} {media.type} results")
+            logger.info(f"Cached {len(cache_items)} {media.type} results")
         else:
             logger.error(f"Failed to cache {media.type} results: {response!s}")
-    except Exception as e:
+    except (requests.RequestException, ValueError) as e:
         logger.error(f"Failed to cache results: {e}")

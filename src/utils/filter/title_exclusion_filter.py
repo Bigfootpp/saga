@@ -10,14 +10,19 @@ class TitleExclusionFilter(BaseFilter):
 
     def filter(self, data):
         filtered_items = []
-        excluded_keywords = [keyword.upper() for keyword in self.config['exclusionKeywords']]
+        excluded_keywords = [
+            keyword.upper() for keyword in self.config.exclusionKeywords
+        ]
         for stream in data:
             for keyword in excluded_keywords:
-                if keyword in stream.title.upper():
+                if keyword in stream.raw_title.upper():
                     break
             else:
                 filtered_items.append(stream)
         return filtered_items
 
     def can_filter(self):
-        return self.config['exclusionKeywords'] is not None and len(self.config['exclusionKeywords']) > 0
+        return (
+            self.config.exclusionKeywords is not None
+            and len(self.config.exclusionKeywords) > 0
+        )

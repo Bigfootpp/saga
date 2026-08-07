@@ -13,22 +13,18 @@ quality_order = {"4k": 0, "2160p": 0, "1080p": 1, "720p": 2, "480p": 3}
 
 
 def sort_quality(item):
-    if item.parsed_data.data.resolution == None:
-        return float('inf'), True
+    if item.parsed_data.data.resolution is None:
+        return float("inf"), True
 
-    # TODO: first resolution?
-    return quality_order.get(item.parsed_data.data.resolution,
-                             float('inf')), item.parsed_data.data.resolution is None
+    return quality_order.get(
+        item.parsed_data.data.resolution, float("inf")
+    ), item.parsed_data.data.resolution is None
 
 
 def items_sort(items, config):
     settings = SettingsModel(
         require=[],
-        exclude=config['exclusionKeywords'] + config['exclusion'],
-        # custom_ranks={
-        #     "uhd": CustomRank(enable=True, fetch=True, rank=200),
-        #     "hdr": CustomRank(enable=True, fetch=True, rank=100),
-        # }
+        exclude=config.exclusionKeywords + config.exclusion,
     )
 
     rtn = RTN(settings=settings, ranking_model=DefaultRanking())
@@ -39,35 +35,19 @@ def items_sort(items, config):
         if index is not None:
             items[index].parsed_data = value
 
-    if config['sort'] == "quality":
+    if config.sort == "quality":
         return sorted(items, key=sort_quality)
-    if config['sort'] == "sizeasc":
+    if config.sort == "sizeasc":
         return sorted(items, key=lambda x: int(x.size))
-    if config['sort'] == "seedsdesc":
+    if config.sort == "seedsdesc":
         return sorted(items, key=lambda x: int(x.seeders), reverse=True)
-    if config['sort'] == "sizedesc":
+    if config.sort == "sizedesc":
         return sorted(items, key=lambda x: int(x.size), reverse=True)
-    if config['sort'] == "qualitythensize":
+    if config.sort == "qualitythensize":
         return sorted(items, key=lambda x: (sort_quality(x), -int(x.size)))
     return items
 
 
-# def filter_season_episode(items, season, episode, config):
-#     filtered_items = []
-#     for item in items:
-#         if config['language'] == "ru":
-#             if "S" + str(int(season.replace("S", ""))) + "E" + str(
-#                     int(episode.replace("E", ""))) not in item['title']:
-#                 if re.search(rf'\bS{re.escape(str(int(season.replace("S", ""))))}\b', item['title']) is None:
-#                     continue
-#         if re.search(rf'\b{season}\s?{episode}\b', item['title']) is None:
-#             if re.search(rf'\b{season}\b', item['title']) is None:
-#                 continue
-
-#         filtered_items.append(item)
-#     return filtered_items
-
-# TODO: not needed anymore because of RTN
 def filter_out_non_matching(items, season, episode):
     filtered_items = []
     for item in items:
@@ -79,13 +59,22 @@ def filter_out_non_matching(items, season, episode):
         numeric_season = int(clean_season)
         numeric_episode = int(clean_episode)
         try:
-            if len(item.parsed_data.seasons) == 0 and len(item.parsed_data.episodes) == 0:
+            if (
+                len(item.parsed_data.seasons) == 0
+                and len(item.parsed_data.episodes) == 0
+            ):
                 continue
 
-            if len(item.parsed_data.episodes) == 0 and numeric_season in item.parsed_data.seasons:
+            if (
+                len(item.parsed_data.episodes) == 0
+                and numeric_season in item.parsed_data.seasons
+            ):
                 filtered_items.append(item)
                 continue
-            if numeric_season in item.parsed_data.seasons and numeric_episode in item.parsed_data.episodes:
+            if (
+                numeric_season in item.parsed_data.seasons
+                and numeric_episode in item.parsed_data.episodes
+            ):
                 filtered_items.append(item)
                 continue
         except Exception as e:
@@ -110,25 +99,25 @@ def remove_non_matching_title(items, titles):
 def filter_items(items, media, config):
     filters = {
         "languages": LanguageFilter(config),
-        "maxSize": MaxSizeFilter(config, media.type),  # Max size filtering only happens for movies, so it
+        "maxSize": MaxSizeFilter(config, media.type),
         "exclusionKeywords": TitleExclusionFilter(config),
         "exclusion": QualityExclusionFilter(config),
-        "resultsPerQuality": ResultsPerQualityFilter(config)
+        "resultsPerQuality": ResultsPerQualityFilter(config),
     }
 
-    # Filtering out 100% non-matching for series
     logger.info(f"Item count before filtering: {len(items)}")
     if media.type == "series":
         logger.info("Filtering out non matching series torrents")
         items = filter_out_non_matching(items, media.season, media.episode)
         logger.info(f"Item count changed to {len(items)}")
 
-    # TODO: is titles[0] always the correct title? Maybe loop through all titles and get the highest match?
     items = remove_non_matching_title(items, media.titles)
 
     for filter_name, filter_instance in filters.items():
         try:
-            logger.info(f"Filtering by {filter_name}: " + str(config[filter_name]))
+            logger.info(
+                f"Filtering by {filter_name}: {config.__dict__.get(filter_name)}"
+            )
             items = filter_instance(items)
             logger.info(f"Item count changed to {len(items)}")
         except Exception as e:
@@ -140,7 +129,7 @@ def filter_items(items, media, config):
 
 
 def sort_items(items, config):
-    if config['sort'] is not None:
+    if config.sort is not None:
         return items_sort(items, config)
     else:
         return items

@@ -1,24 +1,27 @@
 import logging
+from typing import ClassVar
 
 
 class CustomFormatter(logging.Formatter):
     """Logging Formatter to add colors and count warning / errors"""
 
-    grey = "\x1b[38;21m"
-    blue = "\x1b[34;21m"
-    green = "\x1b[32;21m"
-    yellow = "\x1b[33;21m"
-    red = "\x1b[31;21m"
-    bold_red = "\x1b[31;1m"
-    reset = "\x1b[0m"
-    format = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    grey: ClassVar[str] = "\x1b[38;21m"
+    blue: ClassVar[str] = "\x1b[34;21m"
+    green: ClassVar[str] = "\x1b[32;21m"
+    yellow: ClassVar[str] = "\x1b[33;21m"
+    red: ClassVar[str] = "\x1b[31;21m"
+    bold_red: ClassVar[str] = "\x1b[31;1m"
+    reset: ClassVar[str] = "\x1b[0m"
+    log_format: ClassVar[str] = (
+        "[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s"
+    )
 
-    FORMATS = {
-        logging.DEBUG: grey + format + reset,
-        logging.INFO: grey + format + reset,
-        logging.WARNING: yellow + format + reset,
-        logging.ERROR: red + format + reset,
-        logging.CRITICAL: bold_red + format + reset
+    FORMATS: ClassVar[dict[int, str]] = {
+        logging.DEBUG: grey + log_format + reset,
+        logging.INFO: grey + log_format + reset,
+        logging.WARNING: yellow + log_format + reset,
+        logging.ERROR: red + log_format + reset,
+        logging.CRITICAL: bold_red + log_format + reset,
     }
 
     def format(self, record):
@@ -41,6 +44,7 @@ def setup_logger(name):
     ch.setFormatter(CustomFormatter())
     logger.addHandler(ch)
     return logger
+
 
 # Example usage
 # logger = setup_logger(__name__)

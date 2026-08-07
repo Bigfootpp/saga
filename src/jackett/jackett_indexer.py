@@ -1,9 +1,17 @@
-class JackettIndexer:
-    def __init__(self):
-        self.title: str | None = None
-        self.id: str | None = None
-        self.link: str | None = None
-        self.type: str | None = None
-        self.language: str | None = None
-        self.tv_search_capatabilities: list[str] | None = None
-        self.movie_search_capatabilities: list[str] | None = None
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class JackettIndexer(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    title: str | None = Field(default=None, alias="title")
+    id: str | None = Field(default=None, alias="id")
+    link: str | None = Field(default=None, alias="link")
+    type: str | None = Field(default=None, alias="type")
+    language: str | None = Field(default=None, alias="language")
+    tv_search_capatabilities: list[str] | None = Field(
+        default=None, alias="tvSearchCapabilities"
+    )
+    movie_search_capatabilities: list[str] | None = Field(
+        default=None, alias="movieSearchCapabilities"
+    )
