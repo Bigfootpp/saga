@@ -6,9 +6,8 @@ logger = setup_logger(__name__)
 
 video_formats = {".mkv", ".mp4", ".avi", ".mov", ".flv", ".wmv", ".webm", ".mpg", ".mpeg", ".m4v", ".3gp", ".3g2",
                  ".ogv",
-                 ".ogg", ".drc", ".gif", ".gifv", ".mng", ".avi", ".mov", ".qt", ".wmv", ".yuv", ".rm", ".rmvb", ".asf",
-                 ".amv", ".m4p", ".m4v", ".mpg", ".mp2", ".mpeg", ".mpe", ".mpv", ".mpg", ".mpeg", ".m2v", ".m4v",
-                 ".svi", ".3gp", ".3g2", ".mxf", ".roq", ".nsv", ".flv", ".f4v", ".f4p", ".f4a", ".f4b"}
+                 ".ogg", ".drc", ".gif", ".gifv", ".mng", ".qt", ".yuv", ".rm", ".rmvb", ".asf",
+                 ".amv", ".m4p", ".mp2", ".mpe", ".mpv", ".m2v", ".svi", ".mxf", ".roq", ".nsv", ".f4v", ".f4p", ".f4a", ".f4b"}
 
 
 def season_episode_in_filename(filename, season, episode):

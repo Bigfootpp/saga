@@ -1,6 +1,5 @@
 import json
 import os
-from typing import List
 
 import requests
 
@@ -26,7 +25,7 @@ def search_cache(media):
         return []
 
 
-def cache_results(torrents: List[TorrentItem], media):
+def cache_results(torrents: list[TorrentItem], media):
     if os.getenv("NODE_ENV") == "development":
         return
 
@@ -64,7 +63,6 @@ def cache_results(torrents: List[TorrentItem], media):
             cache_items.append(cache_item)
         except:
             logger.exception("An exception occured durring cache parsing")
-            pass
 
     try:
         url = f"{CACHER_URL}pushResult/{media.type}"
@@ -73,9 +71,8 @@ def cache_results(torrents: List[TorrentItem], media):
         response.raise_for_status()
 
         if response.status_code == 200:
-            logger.info(f"Cached {str(len(cache_items))} {media.type} results")
+            logger.info(f"Cached {len(cache_items)!s} {media.type} results")
         else:
-            logger.error(f"Failed to cache {media.type} results: {str(response)}")
+            logger.error(f"Failed to cache {media.type} results: {response!s}")
     except Exception as e:
         logger.error(f"Failed to cache results: {e}")
-        pass

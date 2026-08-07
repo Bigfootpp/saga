@@ -42,7 +42,7 @@ class BaseDebrid:
                 self.logger.info("File is ready!")
                 return True
             time.sleep(interval)
-        self.logger.info(f"Waiting timed out.")
+        self.logger.info("Waiting timed out.")
         return False
 
     def donwload_torrent_file(self, download_url):

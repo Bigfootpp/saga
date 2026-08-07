@@ -1,10 +1,9 @@
 import requests
 
 from metdata.metadata_provider_base import MetadataProvider
-from models.media import Media
 from models.movie import Movie
 from models.series import Series
-from utils.logger import setup_logger
+
 
 class TMDB(MetadataProvider):
     def __init__(self, config):
@@ -45,8 +44,8 @@ class TMDB(MetadataProvider):
                     result = Series(
                         id=id,
                         titles=[self.replace_weird_characters(data["tv_results"][0]["name"])],
-                        season="S{:02d}".format(int(full_id[1])),
-                        episode="E{:02d}".format(int(full_id[2])),
+                        season=f"S{int(full_id[1]):02d}",
+                        episode=f"E{int(full_id[2]):02d}",
                         languages=languages
                     )
             else:

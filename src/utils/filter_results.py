@@ -1,5 +1,5 @@
-from RTN import title_match, RTN, DefaultRanking, SettingsModel, sort_torrents
-from RTN.models import CustomRank
+from RTN import RTN, DefaultRanking, SettingsModel, sort_torrents, title_match
+
 from utils.filter.language_filter import LanguageFilter
 from utils.filter.max_size_filter import MaxSizeFilter
 from utils.filter.quality_exclusion_filter import QualityExclusionFilter
@@ -89,7 +89,7 @@ def filter_out_non_matching(items, season, episode):
                 filtered_items.append(item)
                 continue
         except Exception as e:
-            logger.error(f"Error while filtering out non matching torrents", exc_info=e)
+            logger.error("Error while filtering out non matching torrents", exc_info=e)
     return filtered_items
 
 
@@ -119,7 +119,7 @@ def filter_items(items, media, config):
     # Filtering out 100% non-matching for series
     logger.info(f"Item count before filtering: {len(items)}")
     if media.type == "series":
-        logger.info(f"Filtering out non matching series torrents")
+        logger.info("Filtering out non matching series torrents")
         items = filter_out_non_matching(items, media.season, media.episode)
         logger.info(f"Item count changed to {len(items)}")
 

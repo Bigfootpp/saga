@@ -2,9 +2,7 @@ import hashlib
 import os
 import queue
 import threading
-import time
 import urllib.parse
-from typing import List
 
 import bencode
 import requests
@@ -13,15 +11,15 @@ from RTN import parse
 from jackett.jackett_result import JackettResult
 from torrent.torrent_item import TorrentItem
 from utils.general import get_info_hash_from_magnet
-from utils.general import season_episode_in_filename
 from utils.logger import setup_logger
+
 
 class TorrentService:
     def __init__(self):
         self.logger = setup_logger(__name__)
         self.__session = requests.Session()
 
-    def convert_and_process(self, results: List[JackettResult], media):
+    def convert_and_process(self, results: list[JackettResult], media):
         threads = []
         torrent_items_queue = queue.Queue()
 

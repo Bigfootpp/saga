@@ -1,7 +1,7 @@
 import json
-import requests
 import time
-from urllib.parse import unquote
+
+import requests
 
 from constants import NO_CACHE_VIDEO_URL
 from debrid.base_debrid import BaseDebrid
@@ -83,7 +83,7 @@ class TorBox(BaseDebrid):
     def __add_magnet_or_torrent(self, magnet, torrent_download=None):
         torrent_id = None
         if magnet:
-            logger.info(f"Adding magnet to TorBox")
+            logger.info("Adding magnet to TorBox")
             torrent_id = self.add_magnet(magnet)
             logger.info(f"TorBox add magnet response: {torrent_id}")
         else:

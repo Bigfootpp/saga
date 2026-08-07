@@ -1,9 +1,12 @@
 import re
-import requests
 from time import sleep
+
+import requests
+
 from metdata.metadata_provider_base import MetadataProvider
 from models.movie import Movie
 from models.series import Series
+
 
 class Cinemeta(MetadataProvider):
     def get_metadata(self, id, type):
@@ -45,8 +48,8 @@ class Cinemeta(MetadataProvider):
                     result = Series(
                         id=id,
                         titles=[self.replace_weird_characters(data["meta"]["name"])],
-                        season="S{:02d}".format(int(full_id[1])),
-                        episode="E{:02d}".format(int(full_id[2])),
+                        season=f"S{int(full_id[1]):02d}",
+                        episode=f"E{int(full_id[2]):02d}",
                         languages=["en"]
                     )
                 
@@ -56,5 +59,5 @@ class Cinemeta(MetadataProvider):
             except Exception as e:
                 retry_count += 1
                 if retry_count == max_retries:
-                    raise Exception(f"Failed to get metadata after {max_retries} retries: {str(e)}")
+                    raise Exception(f"Failed to get metadata after {max_retries} retries: {e!s}")
                 sleep(1)  # Wait 1 second before retrying

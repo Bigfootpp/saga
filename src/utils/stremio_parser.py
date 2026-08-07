@@ -1,7 +1,6 @@
 import json
 import queue
 import threading
-from typing import List
 
 from models.media import Media
 from torrent.torrent_item import TorrentItem
@@ -107,7 +106,7 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, configb64, host, torrentin
         })
 
 
-def parse_to_stremio_streams(torrent_items: List[TorrentItem], config, media):
+def parse_to_stremio_streams(torrent_items: list[TorrentItem], config, media):
     stream_list = []
     threads = []
     thread_results_queue = queue.Queue()

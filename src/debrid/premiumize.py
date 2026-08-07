@@ -86,7 +86,7 @@ class Premiumize(BaseDebrid):
             return "Error: Transfer completed but no item ID found."
 
         details = self.get_folder_or_file_details(item_id, is_folder)
-        logger.info(f"Got details")
+        logger.info("Got details")
 
         if stream_type == "movie":
             logger.info("Getting link for movie")

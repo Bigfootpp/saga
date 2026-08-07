@@ -11,7 +11,7 @@ class LanguageFilter(BaseFilter):
     def filter(self, data):
 
         if self.config.get('getAllLanguages', False):
-            logger.info(f"Skipping language filtering because of 'getAllLanguages' setting.")
+            logger.info("Skipping language filtering because of 'getAllLanguages' setting.")
             return data
 
         filtered_data = []

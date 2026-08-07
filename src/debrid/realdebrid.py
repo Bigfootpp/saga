@@ -6,9 +6,11 @@ import requests
 
 from constants import NO_CACHE_VIDEO_URL
 from debrid.base_debrid import BaseDebrid
-from utils.general import get_info_hash_from_magnet
-from utils.general import is_video_file
-from utils.general import season_episode_in_filename
+from utils.general import (
+    get_info_hash_from_magnet,
+    is_video_file,
+    season_episode_in_filename,
+)
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -193,7 +195,7 @@ class RealDebrid(BaseDebrid):
     def __add_magnet_or_torrent(self, magnet, torrent_download=None):
         torrent_id = ""
         if torrent_download is None:
-            logger.info(f"Adding magnet to RealDebrid")
+            logger.info("Adding magnet to RealDebrid")
             magnet_response = self.add_magnet(magnet)
             logger.info(f"RealDebrid add magnet response: {magnet_response}")
 
@@ -202,11 +204,11 @@ class RealDebrid(BaseDebrid):
 
             torrent_id = magnet_response['id']
         else:
-            logger.info(f"Downloading torrent file from Jackett")
+            logger.info("Downloading torrent file from Jackett")
             torrent_file = self.donwload_torrent_file(torrent_download)
-            logger.info(f"Torrent file downloaded from Jackett")
+            logger.info("Torrent file downloaded from Jackett")
 
-            logger.info(f"Adding torrent file to RealDebrid")
+            logger.info("Adding torrent file to RealDebrid")
             upload_response = self.add_torrent(torrent_file)
             logger.info(f"RealDebrid add torrent file response: {upload_response}")
 

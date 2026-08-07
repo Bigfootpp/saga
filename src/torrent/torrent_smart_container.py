@@ -1,7 +1,4 @@
 import threading
-from typing import List, Dict
-
-from RTN import parse
 
 from debrid.alldebrid import AllDebrid
 from debrid.premiumize import Premiumize
@@ -14,9 +11,9 @@ from utils.logger import setup_logger
 
 
 class TorrentSmartContainer:
-    def __init__(self, torrent_items: List[TorrentItem], media):
+    def __init__(self, torrent_items: list[TorrentItem], media):
         self.logger = setup_logger(__name__)
-        self.__itemsDict: Dict[TorrentItem] = self.__build_items_dict_by_infohash(torrent_items)
+        self.__itemsDict: dict[TorrentItem] = self.__build_items_dict_by_infohash(torrent_items)
         self.__media = media
 
     def get_hashes(self):
@@ -35,7 +32,7 @@ class TorrentSmartContainer:
         best_matching = []
         self.logger.debug(f"Amount of items: {len(self.__itemsDict)}")
         for torrent_item in self.__itemsDict.values():
-            self.logger.debug(f"-------------------")
+            self.logger.debug("-------------------")
             self.logger.debug(f"Checking {torrent_item.raw_title}")
             self.logger.debug(f"Has torrent: {torrent_item.torrent_download is not None}")
             if torrent_item.torrent_download is not None:  # Torrent download
@@ -66,7 +63,7 @@ class TorrentSmartContainer:
         elif debrid_type is TorBox:
             self.__update_availability_torbox(debrid_response, media)
         else:
-            raise NotImplemented
+            raise NotImplementedError
 
     def __update_availability_realdebrid(self, response, media):
         for info_hash, details in response.items():
@@ -163,7 +160,7 @@ class TorrentSmartContainer:
         torrent_item.file_name = file["title"]
         torrent_item.size = file["size"]
 
-    def __build_items_dict_by_infohash(self, items: List[TorrentItem]):
+    def __build_items_dict_by_infohash(self, items: list[TorrentItem]):
         self.logger.debug(f"Building items dict by infohash ({len(items)} items)")
         items_dict = dict()
         for item in items:
