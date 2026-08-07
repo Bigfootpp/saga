@@ -4,20 +4,22 @@ import os
 import requests
 
 from constants import CACHER_URL, EXCLUDED_TRACKERS
+from models.media import Media
+from models.movie import Movie
+from models.series import Series
 from torrent.torrent_item import TorrentItem
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
 
-def search_cache(media):
+def search_cache(media: Media):
     logger.info("Searching for cached " + media.type + " results")
     url = CACHER_URL + "getResult/" + media.type + "/"
     # Without that, the cache doesn't return results. Maybe make multiple requests? One for each language, just like jackett?
     cache_search = media.__dict__
     cache_search['title'] = cache_search['titles'][0]
     cache_search['language'] = cache_search['languages'][0]
-    # TODO: Wtf, why do we need to use __dict__ here? And also, why is it stuck when we use media directly?
     response = requests.get(url, json=cache_search)
     if response.status_code == 200:
         return response.json()
@@ -25,7 +27,7 @@ def search_cache(media):
         return []
 
 
-def cache_results(torrents: list[TorrentItem], media):
+def cache_results(torrents: list[TorrentItem], media: Media):
     if os.getenv("NODE_ENV") == "development":
         return
 
@@ -37,7 +39,7 @@ def cache_results(torrents: list[TorrentItem], media):
             continue
 
         try:
-            cache_item = dict()
+            cache_item = {}
 
             cache_item['title'] = torrent.raw_title
             cache_item['trackers'] = "tracker:".join(torrent.trackers)
@@ -53,15 +55,15 @@ def cache_results(torrents: list[TorrentItem], media):
             cache_item['type'] = media.type
             cache_item['availability'] = torrent.availability
 
-            if media.type == "movie":
+            if isinstance(media, Movie):
                 cache_item['year'] = media.year
-            elif media.type == "series":
+            elif isinstance(media, Series):
                 cache_item['season'] = media.season
                 cache_item['episode'] = media.episode
                 cache_item['seasonfile'] = False  # I guess keep it false to not mess up results?
 
             cache_items.append(cache_item)
-        except:
+        except Exception:
             logger.exception("An exception occured durring cache parsing")
 
     try:
