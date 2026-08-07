@@ -8,6 +8,9 @@ from models.movie import Movie
 from models.series import Series
 
 
+class MetadataNotFoundError(Exception):
+    pass
+
 class Cinemeta(MetadataProvider):
     def get_metadata(self, id, type):
         self.logger.info("Getting metadata for " + type + " with id " + id)
@@ -20,7 +23,7 @@ class Cinemeta(MetadataProvider):
         while retry_count < max_retries:
             try:
                 response = requests.get(url)
-                data = response.json()
+                data: dict = response.json()
 
                 # Check if data or data["meta"] is empty
                 if not data or not data.get("meta"):
@@ -35,8 +38,9 @@ class Cinemeta(MetadataProvider):
                     year = data["meta"].get("year")
                     if not year:
                         release_info = data["meta"].get("releaseInfo")
-                        if re.search(r"\d{4}", release_info):
-                            year = re.search(r"\d{4}", release_info).group()
+                        re_result = re.search(r"\d{4}", release_info)
+                        if re_result:
+                            year = re_result.group()
 
                     result = Movie(
                         id=id,
@@ -59,5 +63,5 @@ class Cinemeta(MetadataProvider):
             except Exception as e:
                 retry_count += 1
                 if retry_count == max_retries:
-                    raise Exception(f"Failed to get metadata after {max_retries} retries: {e!s}")
+                    raise MetadataNotFoundError(f"Failed to get metadata after {max_retries} retries: {e!s}")
                 time.sleep(1)  # Wait 1 second before retrying
