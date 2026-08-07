@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Stremio-Jackett {% if isCommunityVersion %}Community{% endif %}</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1c2c 0%, #4a192c 100%), url('https://i.ibb.co/WGTw4bV/stremio-bg.png') no-repeat center center fixed;
+            background-blend-mode: overlay;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 2rem 0;
+            color: #e2e8f0;
+        }
+
+        .glass-container {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .input-field {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+            outline: none;
+        }
+
+        .section-title {
+            position: relative;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: #6366f1;
+        }
+
+        /* Checkbox Styling */
+        .custom-checkbox input:checked + div {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+        }
+        
+        .custom-checkbox input:checked + div svg {
+            display: block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #4f46e5, #6366f1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+
+        .multipleSelection {
+            width: 100%;
+        }
+
+        .selectBox {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .overSelect {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+        }
+
+        #languageCheckBoxes {
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 0.5rem;
+            border-radius: 0.5rem;
+            background: rgba(15, 23, 42, 0.95);
+            position: absolute;
+            z-index: 10;
+            width: 100%;
+        }
+
+        #languageCheckBoxes label {
+            display: block;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #languageCheckBoxes label:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="glass-container w-11/12 md:w-3/4 lg:w-1/2 xl:w-1/3 rounded-2xl p-8 md:p-12 my-8">
+    <div class="flex flex-col items-center mb-8">
+        <img src="https://user-images.githubusercontent.com/27040483/28728094-99f3e3f6-73c7-11e7-8f8d-28912dc6ac0d.png"
+             alt="logo" class="w-24 h-24 mb-4 drop-shadow-lg animate-bounce-slow">
+        <h1 class="text-3xl font-bold text-white text-center mb-2">Stremio-Jackett</h1>
+        <p class="text-indigo-200 text-sm font-medium">
+            {% if isCommunityVersion %}Community Edition{% else %}Standard Edition{% endif %} v{{ version }}
+        </p>
+        {% if sponsorMessage %}
+        <div class="mt-4 p-3 bg-indigo-900/30 rounded-lg border border-indigo-500/30 text-center text-sm text-indigo-200">
+            {{ sponsorMessage | safe }}
+        </div>
+        {% endif %}
+    </div>
+
+    <form class="space-y-8" onsubmit="return false;">
+        
+        <!-- Streaming Section -->
+        <div>
+            <h2 class="text-xl font-semibold text-white section-title">Streaming Configuration</h2>
+            <div class="space-y-4">
+                <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
+                    <div class="flex h-6 items-center">
+                        <input id="debrid" name="debrid" value="debrid" type="checkbox"
+                               class="w-5 h-5 rounded border-gray-600 text-indigo-600 focus:ring-indigo-600 bg-gray-700" checked
+                               oninput="updateProviderFields(true)">
+                    </div>
+                    <div>
+                        <label for="debrid" class="font-medium text-white cursor-pointer">Enable Debrid Service</label>
+                        <p class="text-sm text-gray-400">Enable for high-speed secure streaming via Real-Debrid, AllDebrid, etc.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
+                    <div class="flex h-6 items-center">
+                        <input id="torrenting" name="torrenting" value="torrenting" type="checkbox"
+                               class="w-5 h-5 rounded border-gray-600 text-indigo-600 focus:ring-indigo-600 bg-gray-700"
+                               oninput="updateProviderFields(true)">
+                    </div>
+                    <div>
+                        <label for="torrenting" class="font-medium text-white cursor-pointer">Enable Direct Torrenting</label>
+                        <p class="text-sm text-gray-400">Stream directly via P2P <span class="text-red-400 text-xs font-bold uppercase ml-1">(Caution: IP Exposed)</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if not isCommunityVersion %}
+        <!-- Providers Section -->
+        <div>
+            <h2 class="text-xl font-semibold text-white section-title">Torrent Providers</h2>
+            <div class="space-y-4">
+                <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
+                    <div class="flex h-6 items-center">
+                        <input id="jackett" name="jackett" value="jackett" type="checkbox"
+                               class="w-5 h-5 rounded border-gray-600 text-indigo-600 focus:ring-indigo-600 bg-gray-700" checked
+                               oninput="updateProviderFields(true)">
+                    </div>
+                    <div>
+                        <label for="jackett" class="font-medium text-white cursor-pointer">Enable Jackett</label>
+                        <p class="text-sm text-gray-400">Use your own Jackett instance for more results</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
+                    <div class="flex h-6 items-center">
+                        <input id="cache" name="cache" value="cache" type="checkbox"
+                               class="w-5 h-5 rounded border-gray-600 text-indigo-600 focus:ring-indigo-600 bg-gray-700" checked
+                               oninput="updateProviderFields(true)">
+                    </div>
+                    <div>
+                        <label for="cache" class="font-medium text-white cursor-pointer">Enable Cache</label>
+                        <p class="text-sm text-gray-400">Use cached results for instant loading</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jackett Config -->
+        <div id="jackett-fields" class="space-y-4 animate-fade-in">
+            <h2 class="text-xl font-semibold text-white section-title">Jackett Configuration</h2>
+            <div class="grid grid-cols-1 gap-6">
+                <div>
+                    <label for="jackett-host" class="block text-sm font-medium text-gray-300 mb-2">Jackett URL</label>
+                    <input type="text" name="jackett-host" id="jackett-host"
+                           class="input-field w-full rounded-lg py-3 px-4 text-sm"
+                           placeholder="http://localhost:9117">
+                </div>
+                <div>
+                    <label for="jackett-api" class="block text-sm font-medium text-gray-300 mb-2">API Key</label>
+                    <input type="text" name="jackett-api" id="jackett-api"
+                           class="input-field w-full rounded-lg py-3 px-4 text-sm"
+                           placeholder="Your Jackett API Key">
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Debrid Config -->
+        <div id="debrid-fields" class="space-y-4">
+            <h2 class="text-xl font-semibold text-white section-title">Debrid Configuration</h2>
+            <div class="grid grid-cols-1 gap-6">
+                <div>
+                    <label for="service" class="block text-sm font-medium text-gray-300 mb-2">Service Provider</label>
+                    <div class="relative">
+                        <select id="service" name="service"
+                                class="input-field w-full rounded-lg py-3 px-4 text-sm appearance-none">
+                            <option value="realdebrid">Real-Debrid</option>
+                            <option value="alldebrid">All-Debrid</option>
+                            <option value="premiumize">Premiumize</option>
+                            <option value="torbox">TorBox</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label for="debrid-api" class="block text-sm font-medium text-gray-300 mb-2">Debrid API Key</label>
+                    <input type="text" name="debrid-api" id="debrid-api"
+                           class="input-field w-full rounded-lg py-3 px-4 text-sm"
+                           placeholder="Paste your API key here">
+                </div>
+            </div>
+        </div>
+
+        <!-- Metadata Config -->
+        <div>
+            <h2 class="text-xl font-semibold text-white section-title">Metadata Provider</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="relative">
+                    <input class="peer hidden" id="tmdb" name="metadataProvider" value="tmdb" type="radio" checked oninput="updateProviderFields(true)">
+                    <label for="tmdb" class="flex flex-col p-4 rounded-xl border border-gray-700 bg-slate-800/50 cursor-pointer hover:bg-slate-700/50 peer-checked:border-indigo-500 peer-checked:bg-indigo-500/10 transition-all">
+                        <span class="font-semibold text-white">TMDB</span>
+                        <span class="text-xs text-gray-400 mt-1">Rich metadata, multi-language support</span>
+                    </label>
+                </div>
+                <div class="relative">
+                    <input class="peer hidden" id="cinemeta" name="metadataProvider" value="cinemeta" type="radio" oninput="updateProviderFields(true)">
+                    <label for="cinemeta" class="flex flex-col p-4 rounded-xl border border-gray-700 bg-slate-800/50 cursor-pointer hover:bg-slate-700/50 peer-checked:border-indigo-500 peer-checked:bg-indigo-500/10 transition-all">
+                        <span class="font-semibold text-white">Cinemeta</span>
+                        <span class="text-xs text-gray-400 mt-1">Standard Stremio metadata (Fast)</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- TMDB Config -->
+        <div id="tmdb-fields" class="space-y-4">
+            <h2 class="text-xl font-semibold text-white section-title">TMDB Configuration</h2>
+            <div>
+                <label for="tmdb-api" class="block text-sm font-medium text-gray-300 mb-2">TMDB API Key</label>
+                <input type="text" name="tmdb-api" id="tmdb-api"
+                       class="input-field w-full rounded-lg py-3 px-4 text-sm"
+                       placeholder="Required for TMDB metadata">
+                <p class="mt-2 text-xs text-gray-500">Don't have one? <a href="https://www.themoviedb.org/signup" target="_blank" class="text-indigo-400 hover:text-indigo-300 underline">Get it here</a></p>
+            </div>
+        </div>
+
+        <!-- Filtering Section -->
+        <div>
+            <h2 class="text-xl font-semibold text-white section-title">Filters & Sorting</h2>
+            
+            <div class="space-y-6">
+                <!-- Sorting -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-300 mb-3 uppercase tracking-wider">Sorting Strategy</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer">
+                            <input id="quality" name="sorting" value="quality" type="radio" class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-600" checked>
+                            <span class="text-sm text-gray-200">Quality (Best first)</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer">
+                            <input id="seedsdesc" name="sorting" value="seedsdesc" type="radio" class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-600">
+                            <span class="text-sm text-gray-200">Seeders (Descending)</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer">
+                            <input id="sizedesc" name="sorting" value="sizedesc" type="radio" class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-600">
+                            <span class="text-sm text-gray-200">Size (Descending)</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer">
+                            <input id="sizeasc" name="sorting" value="sizeasc" type="radio" class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-600">
+                            <span class="text-sm text-gray-200">Size (Ascending)</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer">
+                            <input id="qualitythensize" name="sorting" value="qualitythensize" type="radio" class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-600">
+                            <span class="text-sm text-gray-200">Quality then Size</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Languages -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-300 mb-3 uppercase tracking-wider">Languages</h3>
+                    <div class="flex items-center gap-3 mb-3">
+                        <input id="get-all-languages" name="get-all-languages" type="checkbox"
+                               class="w-4 h-4 rounded border-gray-600 text-indigo-600 bg-gray-700 focus:ring-indigo-600"
+                               oninput="updateProviderFields(true)">
+                        <label for="get-all-languages" class="text-sm text-white">Select All Languages</label>
+                    </div>
+
+                    <div id="languages-fields" class="relative">
+                        <div class="input-field w-full rounded-lg py-3 px-4 text-sm flex justify-between items-center cursor-pointer" onclick="showCheckboxes()">
+                            <span>Select Languages...</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        <div id="languageCheckBoxes" class="hidden absolute w-full mt-1 rounded-md shadow-lg z-50">
+                            <div class="p-2 space-y-1">
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="en" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇬🇧 English
+                                </label>
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="fr" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇫🇷 French
+                                </label>
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="es" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇪🇸 Spanish
+                                </label>
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="de" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇩🇪 German
+                                </label>
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="it" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇮🇹 Italian
+                                </label>
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="pt" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇵🇹 Portuguese
+                                </label>
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="pt-BR" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇧🇷 Brazilian Portuguese
+                                </label>
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="ru" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇷🇺 Russian
+                                </label>
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="in" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇮🇳 Hindi
+                                </label>
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="nl" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇳🇱 Dutch
+                                </label>
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="hu" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇭🇺 Hungarian
+                                </label>
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="la" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇲🇽 Latin
+                                </label>
+                                <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                    <input type="checkbox" id="multi" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🌍 MULTi
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Limits & Exclusions -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="maxSize" class="block text-sm font-medium text-gray-300 mb-2">Max Size (GB)</label>
+                        <input type="number" name="maxSize" id="maxSize" class="input-field w-full rounded-lg py-3 px-4 text-sm" placeholder="e.g. 5">
+                    </div>
+                    <div>
+                        <label for="resultsPerQuality" class="block text-sm font-medium text-gray-300 mb-2">Results Per Quality</label>
+                        <input type="number" name="resultsPerQuality" id="resultsPerQuality" class="input-field w-full rounded-lg py-3 px-4 text-sm" placeholder="e.g. 5">
+                    </div>
+                    <div>
+                        <label for="maxResults" class="block text-sm font-medium text-gray-300 mb-2">Max Results Total</label>
+                        <input type="number" name="maxResults" id="maxResults" class="input-field w-full rounded-lg py-3 px-4 text-sm" placeholder="e.g. 10">
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-medium text-gray-300 mb-3 uppercase tracking-wider">Quality Exclusions</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
+                            <input type="checkbox" id="4k" name="4k" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>4K</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
+                            <input type="checkbox" id="1080p" name="1080p" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>1080p</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
+                            <input type="checkbox" id="720p" name="720p" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>720p</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
+                            <input type="checkbox" id="480p" name="480p" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>480p</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
+                            <input type="checkbox" id="rips" name="rips" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>RIPs</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
+                            <input type="checkbox" id="cam" name="cam" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>CAM</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
+                            <input type="checkbox" id="unknown" name="unknown" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>Unknown</span>
+                        </label>
+                    </div>
+                </div>
+                
+                 <div>
+                    <label for="exclusion-keywords" class="block text-sm font-medium text-gray-300 mb-2">Exclusion Keywords</label>
+                    <input type="text" name="exclusion-keywords" id="exclusion-keywords"
+                           class="input-field w-full rounded-lg py-3 px-4 text-sm"
+                           placeholder="dubbed, hardcoded, etc.">
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-4 pt-8">
+            <button id="install" onclick="getLink('link')"
+               class="btn-primary w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg hover:shadow-indigo-500/30 text-center cursor-pointer">
+                Install Addon
+            </button>
+            <button id="copy" onclick="getLink('copy')"
+               class="w-full py-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-lg shadow-lg hover:shadow-slate-500/30 text-center cursor-pointer transition-all">
+                Copy Link
+            </button>
+        </div>
+
+    </form>
+</div>
+
+</body>
+<script src="/static/config.js"></script>
+</html>
