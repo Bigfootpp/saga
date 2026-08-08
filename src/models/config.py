@@ -1,4 +1,3 @@
-from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -26,9 +25,3 @@ class Config(BaseModel):
     exclusion: list[str] = Field(default_factory=list, alias="exclusion")
     results_per_quality: int | None = Field(None, alias="resultsPerQuality")
     max_size: int = Field(0, alias="maxSize")
-
-    def __getitem__(self, key: str) -> Any:
-        return getattr(self, key)
-
-    def get(self, key: str, default: Any = None) -> Any:
-        return getattr(self, key, default)
