@@ -16,6 +16,7 @@ from debrid.get_debrid_service import get_debrid_service
 from jackett.jackett_service import JackettService
 from metdata.cinemeta import Cinemeta
 from metdata.tmdb import TMDB
+from models.manifest import ManifestResponse
 from torrent.torrent_service import TorrentService
 from torrent.torrent_smart_container import TorrentSmartContainer
 from utils.filter_results import filter_items, sort_items
@@ -95,22 +96,19 @@ async def function(file_path: str):
 @app.get("/manifest.json")
 @app.get("/{params}/manifest.json")
 async def get_manifest():
-    return {
-        "id": ADDON_ID,
-        "icon": "https://i.imgur.com/tVjqEJP.png",
-        "version": VERSION,
-        "catalogs": [],
-        "resources": ["stream"],
-        "types": ["movie", "series"],
-        "name": "Jackett"
+    return ManifestResponse(
+        id = ADDON_ID,
+        icon = "https://i.imgur.com/tVjqEJP.png",
+        name = "Jackett"
         + (" Community" if COMMUNITY_VERSION else "")
         + (" (Dev)" if isDev else ""),
-        "description": "Elevate your Stremio experience with seamless access to Jackett torrent links, effortlessly "
+        version = VERSION,
+        description = "Elevate your Stremio experience with seamless access to Jackett torrent links, effortlessly "
         "fetching torrents for your selected movies within the Stremio interface.",
-        "behaviorHints": {
-            "configurable": True,
-        },
-    }
+        resources = ["stream"],
+        types = ["movie", "series"],
+        catalogs=[],
+    )
 
 
 formatter = logging.Formatter(
