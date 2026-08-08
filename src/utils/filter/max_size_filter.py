@@ -1,19 +1,15 @@
-from utils.filter.base_filter import BaseFilter
-from utils.logger import setup_logger
+from typing import Any
 
-logger = setup_logger(__name__)
+from utils.filter.base_filter import BaseFilter
 
 
 class MaxSizeFilter(BaseFilter):
-    def __init__(self, config, additional_config=None):
-        super().__init__(config, additional_config)
-
-    def filter(self, data):
+    def filter(self, data: list[Any]) -> list[Any]:
         filtered_data = []
         for torrent in data:
-            if torrent.size <= self.config.maxSize:
+            if int(torrent.size or 0) <= self.config.max_size:
                 filtered_data.append(torrent)
         return filtered_data
 
-    def can_filter(self):
-        return int(self.config.maxSize) > 0 and self.item_type == "movie"
+    def can_filter(self) -> bool:
+        return self.config.max_size > 0 and self.item_type == "movie"

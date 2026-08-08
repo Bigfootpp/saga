@@ -1,6 +1,9 @@
 import json
 import queue
 import threading
+from typing import Any
+
+from RTN import ParsedData
 
 from models.config import Config
 from models.media import Media
@@ -15,7 +18,7 @@ DOWNLOAD_REQUIRED = "[⬇️]"
 DIRECT_TORRENT = "[🏴‍☠️]"
 
 
-def get_emoji(language):
+def get_emoji(language: str) -> str:
     emoji_dict = {
         "fr": "🇫🇷",
         "en": "🇬🇧",
@@ -33,18 +36,12 @@ def get_emoji(language):
     return emoji_dict.get(language, "🇬🇧")
 
 
-def filter_by_availability(item):
-    if item["name"].startswith(INSTANTLY_AVAILABLE):
-        return 0
-    else:
-        return 1
+def filter_by_availability(item: dict[str, Any]) -> int:
+    return 0 if item["name"].startswith(INSTANTLY_AVAILABLE) else 1
 
 
-def filter_by_direct_torrent(item):
-    if item["name"].startswith(DIRECT_TORRENT):
-        return 1
-    else:
-        return 0
+def filter_by_direct_torrent(item: dict[str, Any]) -> int:
+    return 1 if item["name"].startswith(DIRECT_TORRENT) else 0
 
 
 def parse_to_debrid_stream(
@@ -52,15 +49,17 @@ def parse_to_debrid_stream(
     configb64: str,
     host: str,
     torrenting: bool,
-    results: queue.Queue,
+    results: "queue.Queue[dict[str, Any]]",
     media: Media,
-):
+) -> None:
+    parsed_data: ParsedData | None = torrent_item.parsed_data
+    if parsed_data is None:
+        return
+
     if torrent_item.availability:
         name = f"{INSTANTLY_AVAILABLE}\n"
     else:
         name = f"{DOWNLOAD_REQUIRED}\n"
-
-    parsed_data = torrent_item.parsed_data.data
 
     name += f"{parsed_data.resolution or 'Unknown'}" + (
         f" ({parsed_data.quality})" if parsed_data.quality else ""
@@ -132,11 +131,13 @@ def parse_to_debrid_stream(
 
 
 def parse_to_stremio_streams(
-    torrent_items: list[TorrentItem], config: Config, media: Media
-):
-    stream_list = []
+    torrent_items: list[TorrentItem],
+    config: Config,
+    media: Media,
+) -> list[dict[str, Any]]:
+    stream_list: list[dict[str, Any]] = []
     threads = []
-    thread_results_queue = queue.Queue()
+    thread_results_queue: queue.Queue[dict[str, Any]] = queue.Queue()
 
     configb64 = encodeb64(
         json.dumps(config.model_dump(by_alias=True)).replace("=", "%3D")

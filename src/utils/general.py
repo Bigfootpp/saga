@@ -1,3 +1,5 @@
+from typing import Any
+
 from RTN import parse
 
 from utils.logger import setup_logger
@@ -45,22 +47,23 @@ video_formats = {
 }
 
 
-def season_episode_in_filename(filename, season, episode, strict=False):
+def _parse_season_episode(season: str | int, episode: str | int) -> tuple[int, int]:
+    season_int = int(str(season).replace("S", "").replace("s", ""))
+    episode_int = int(str(episode).replace("E", "").replace("e", ""))
+    return season_int, episode_int
+
+
+def season_episode_in_filename(
+    filename: str, season: str | int, episode: str | int
+) -> bool:
     if not is_video_file(filename):
         return False
     parsed_name = parse(filename)
-    if strict:
-        return (
-            int(season.replace("S", "")) in parsed_name.seasons
-            and int(episode.replace("E", "")) in parsed_name.episodes
-        )
-    return (
-        int(season.replace("S", "")) in parsed_name.seasons
-        and int(episode.replace("E", "")) in parsed_name.episodes
-    )
+    season_int, episode_int = _parse_season_episode(season, episode)
+    return season_int in parsed_name.seasons and episode_int in parsed_name.episodes
 
 
-def get_info_hash_from_magnet(magnet: str) -> str:
+def get_info_hash_from_magnet(magnet: str | None) -> str:
     if not magnet:
         return ""
     exact_topic_index = magnet.find("xt=")
@@ -78,7 +81,7 @@ def get_info_hash_from_magnet(magnet: str) -> str:
     return info_hash.lower() if info_hash else ""
 
 
-def is_video_file(filename):
+def is_video_file(filename: Any) -> bool:
     extension_idx = filename.rfind(".")
     if extension_idx == -1:
         return False

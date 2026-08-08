@@ -3,7 +3,6 @@ import queue
 import threading
 import time
 import xml.etree.ElementTree as ET
-from typing import Any
 
 import requests
 from RTN import parse as rtn_parse
@@ -18,6 +17,8 @@ from utils.logger import setup_logger
 
 
 class JackettService:
+    REQUEST_TIMEOUT = 15.0
+
     def __init__(self, config: Config):
         self.logger = setup_logger(__name__)
         self._indexers: list[JackettIndexer] | None = None
@@ -25,14 +26,12 @@ class JackettService:
         self._base_url = f"{config.jackett_host}/api/v2.0"
         self._session = requests.Session()
 
-    def search(self, media) -> list[JackettResult]:
+    def search(self, media: Movie | Series) -> list[JackettResult]:
         self.logger.info(f"Started Jackett search for {media.type} {media.titles[0]}")
 
         indexers = self.get_indexers()
-        threads = []
-        results_queue: queue.Queue[Any] = queue.Queue()
 
-        def thread_target(media, indexer: JackettIndexer):
+        def thread_target(indexer: JackettIndexer) -> None:
             self.logger.info(f"Searching on {indexer.title}")
             start_time = time.time()
 
@@ -40,28 +39,25 @@ class JackettService:
                 result = self._search_movie_indexer(media, indexer)
             elif isinstance(media, Series):
                 result = self._search_series_indexer(media, indexer)
-            else:
-                raise TypeError("Only Movie and Series is allowed as media!")
 
             self.logger.info(
-                f"Search on {indexer.title} took {time.time() - start_time} seconds and found {sum(len(sublist) for sublist in result)} results"
+                f"Search on {indexer.title} took {time.time() - start_time} seconds "
+                f"and found {sum(len(sublist) for sublist in result)} results"
             )
 
             results_queue.put(result)
 
+        results_queue: queue.Queue[list[list[JackettResult]]] = queue.Queue()
+        threads = []
         for indexer in indexers:
-            threads.append(
-                threading.Thread(target=thread_target, args=(media, indexer))
-            )
-
-        for thread in threads:
+            thread = threading.Thread(target=thread_target, args=(indexer,))
             thread.start()
+            threads.append(thread)
 
         for thread in threads:
             thread.join()
 
-        results = []
-
+        results: list[list[JackettResult]] = []
         while not results_queue.empty():
             results.extend(results_queue.get())
 
@@ -74,16 +70,21 @@ class JackettService:
     ) -> list[list[JackettResult]]:
         has_imdb_search_capability = (
             os.getenv("DISABLE_JACKETT_IMDB_SEARCH") != "true"
-            and indexer.movie_search_capatabilities is not None
-            and "imdbid" in indexer.movie_search_capatabilities
+            and indexer.movie_search_capabilities is not None
+            and "imdbid" in indexer.movie_search_capabilities
         )
 
         if has_imdb_search_capability:
-            languages = ["en"]
             index_of_language = next(
-                index for index, lang in enumerate(movie.languages) if lang == "en"
+                (index for index, lang in enumerate(movie.languages) if lang == "en"),
+                None,
             )
-            titles = [movie.titles[index_of_language]]
+            languages = ["en"]
+            titles = (
+                [movie.titles[index_of_language]]
+                if index_of_language is not None
+                else movie.titles
+            )
         elif indexer.language == "en":
             languages = movie.languages
             titles = movie.titles
@@ -96,7 +97,7 @@ class JackettService:
             languages = [movie.languages[index] for index in index_of_language]
             titles = [movie.titles[index] for index in index_of_language]
 
-        results = []
+        results: list[list[JackettResult]] = []
 
         for index, lang in enumerate(languages):
             params = {
@@ -114,10 +115,10 @@ class JackettService:
             url += "?" + "&".join([f"{k}={v}" for k, v in params.items()])
 
             try:
-                response = self._session.get(url)
+                response = self._session.get(url, timeout=self.REQUEST_TIMEOUT)
                 response.raise_for_status()
                 results.append(self._get_torrent_links_from_xml(response.text))
-            except Exception:
+            except (requests.RequestException, ET.ParseError):
                 self.logger.exception(
                     f"An exception occurred while searching for a movie on Jackett with indexer {indexer.title} and language {lang}."
                 )
@@ -132,15 +133,20 @@ class JackettService:
 
         has_imdb_search_capability = (
             os.getenv("DISABLE_JACKETT_IMDB_SEARCH") != "true"
-            and indexer.tv_search_capatabilities is not None
-            and "imdbid" in indexer.tv_search_capatabilities
+            and indexer.tv_search_capabilities is not None
+            and "imdbid" in indexer.tv_search_capabilities
         )
         if has_imdb_search_capability:
-            languages = ["en"]
             index_of_language = next(
-                index for index, lang in enumerate(series.languages) if lang == "en"
+                (index for index, lang in enumerate(series.languages) if lang == "en"),
+                None,
             )
-            titles = [series.titles[index_of_language]]
+            languages = ["en"] if index_of_language is not None else series.languages
+            titles = (
+                [series.titles[index_of_language]]
+                if index_of_language is not None
+                else series.titles
+            )
         elif indexer.language == "en":
             languages = series.languages
             titles = series.titles
@@ -153,7 +159,7 @@ class JackettService:
             languages = [series.languages[index] for index in index_of_language]
             titles = [series.titles[index] for index in index_of_language]
 
-        results = []
+        results: list[list[JackettResult]] = []
 
         for index, lang in enumerate(languages):
             params = {
@@ -178,10 +184,12 @@ class JackettService:
             url_ep += "?" + "&".join([f"{k}={v}" for k, v in params.items()])
 
             try:
-                response_ep = self._session.get(url_ep)
+                response_ep = self._session.get(url_ep, timeout=self.REQUEST_TIMEOUT)
                 response_ep.raise_for_status()
 
-                response_season = self._session.get(url_season)
+                response_season = self._session.get(
+                    url_season, timeout=self.REQUEST_TIMEOUT
+                )
                 response_season.raise_for_status()
 
                 data_ep = self._get_torrent_links_from_xml(response_ep.text)
@@ -193,12 +201,14 @@ class JackettService:
                     results.append(data_season)
 
                 if not data_ep and not data_season:
-                    response_title = self._session.get(url_title)
+                    response_title = self._session.get(
+                        url_title, timeout=self.REQUEST_TIMEOUT
+                    )
                     response_title.raise_for_status()
                     data_title = self._get_torrent_links_from_xml(response_title.text)
                     if data_title:
                         results.append(data_title)
-            except Exception:
+            except (requests.RequestException, ET.ParseError):
                 self.logger.exception(
                     f"An exception occurred while searching for a series on Jackett with indexer {indexer.title} and language {lang}."
                 )
@@ -211,13 +221,13 @@ class JackettService:
             url = f"{self._base_url}/indexers/all/results/torznab/api?apikey={self._api_key}&t=indexers&configured=true"
 
             try:
-                response = self._session.get(url)
+                response = self._session.get(url, timeout=self.REQUEST_TIMEOUT)
                 response.raise_for_status()
                 self._indexers = self._get_indexer_from_xml(response.text)
                 self.logger.info(
                     f"Successfully retrieved {len(self._indexers)} indexers from Jackett. Storing in cache..."
                 )
-            except Exception:
+            except (requests.RequestException, ET.ParseError):
                 self.logger.exception(
                     "An exception occurred while getting indexers from Jackett."
                 )
@@ -249,14 +259,14 @@ class JackettService:
             tv_search = item.find('.//searching/tv-search[@available="yes"]')
 
             if movie_search is not None:
-                indexer.movie_search_capatabilities = movie_search.attrib[
+                indexer.movie_search_capabilities = movie_search.attrib[
                     "supportedParams"
                 ].split(",")
             else:
                 self.logger.info(f"Movie search not available for {indexer.title}")
 
             if tv_search is not None:
-                indexer.tv_search_capatabilities = tv_search.attrib[
+                indexer.tv_search_capabilities = tv_search.attrib[
                     "supportedParams"
                 ].split(",")
             else:
@@ -317,7 +327,7 @@ class JackettService:
         return result_list
 
     def _post_process_results(
-        self, results: list[JackettResult], media
+        self, results: list[JackettResult], media: Movie | Series
     ) -> list[JackettResult]:
         for result in results:
             raw_title = result.raw_title or ""

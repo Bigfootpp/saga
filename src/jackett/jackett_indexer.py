@@ -9,9 +9,9 @@ class JackettIndexer(BaseModel):
     link: str | None = Field(default=None, alias="link")
     type: str | None = Field(default=None, alias="type")
     language: str | None = Field(default=None, alias="language")
-    tv_search_capatabilities: list[str] | None = Field(
+    tv_search_capabilities: list[str] | None = Field(
         default=None, alias="tvSearchCapabilities"
     )
-    movie_search_capatabilities: list[str] | None = Field(
+    movie_search_capabilities: list[str] | None = Field(
         default=None, alias="movieSearchCapabilities"
     )

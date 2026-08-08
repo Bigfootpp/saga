@@ -7,13 +7,15 @@ from metdata.metadata_provider_base import MetadataProvider
 from models.movie import Movie
 from models.series import Series
 
+CINEMETA_TIMEOUT = 15.0
+
 
 class MetadataNotFoundError(Exception):
     pass
 
 
 class Cinemeta(MetadataProvider):
-    def get_metadata(self, id: str, type: str):
+    def get_metadata(self, id: str, type: str) -> Movie | Series | None:
         self.logger.info(f"Getting metadata for {type} with id {id}")
         full_id = id.split(":")
         url = f"https://v3-cinemeta.strem.io/meta/{type}/{full_id[0]}.json"
@@ -23,7 +25,7 @@ class Cinemeta(MetadataProvider):
 
         while retry_count < max_retries:
             try:
-                response = requests.get(url)
+                response = requests.get(url, timeout=CINEMETA_TIMEOUT)
                 data: dict = response.json()
 
                 if not data or not data.get("meta"):
@@ -71,3 +73,5 @@ class Cinemeta(MetadataProvider):
                         f"Failed to get metadata after {max_retries} retries: {e!s}"
                     )
                 time.sleep(1)
+
+        return None

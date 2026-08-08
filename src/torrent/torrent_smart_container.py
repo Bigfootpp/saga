@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-import threading
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
+from debrid.alldebrid import AllDebrid
+from debrid.base_debrid import BaseDebrid
+from debrid.premiumize import Premiumize
+from debrid.realdebrid import RealDebrid
+from debrid.torbox import TorBox
 from torrent.torrent_item import TorrentItem
-from utils.cache import cache_results
 from utils.general import season_episode_in_filename
 from utils.logger import setup_logger
 
@@ -27,11 +30,11 @@ class TorrentSmartContainer:
         return list(self._items_dict.values())
 
     def get_direct_torrentable(self) -> list[TorrentItem]:
-        direct_torrentable_items = []
-        for torrent_item in self._items_dict.values():
-            if torrent_item.privacy == "public" and torrent_item.file_index is not None:
-                direct_torrentable_items.append(torrent_item)
-        return direct_torrentable_items
+        return [
+            torrent_item
+            for torrent_item in self._items_dict.values()
+            if torrent_item.privacy == "public" and torrent_item.file_index is not None
+        ]
 
     def get_best_matching(self) -> list[TorrentItem]:
         best_matching = []
@@ -47,35 +50,24 @@ class TorrentSmartContainer:
                     f"Has file index: {torrent_item.file_index is not None}"
                 )
                 torrent_item.file_index = torrent_item.file_index or 0
-                best_matching.append(torrent_item)
-            else:
-                best_matching.append(torrent_item)
+            best_matching.append(torrent_item)
         return best_matching
 
-    def cache_container_items(self) -> None:
-        threading.Thread(target=self._save_to_cache).start()
-
-    def _save_to_cache(self) -> None:
-        if self._media is None:
-            return
-        public_torrents = list(
-            filter(lambda x: x.privacy == "public", self.get_items())
-        )
-        cache_results(public_torrents, self._media)
-
     def update_availability(
-        self, debrid_response: dict, debrid_type: type, media: Media
+        self, debrid_response: dict, debrid_service: BaseDebrid, media: Media
     ) -> None:
-        if debrid_type.__name__ == "RealDebrid":
+        if isinstance(debrid_service, RealDebrid):
             self._update_availability_realdebrid(debrid_response, media)
-        elif debrid_type.__name__ == "AllDebrid":
+        elif isinstance(debrid_service, AllDebrid):
             self._update_availability_alldebrid(debrid_response, media)
-        elif debrid_type.__name__ == "Premiumize":
+        elif isinstance(debrid_service, Premiumize):
             self._update_availability_premiumize(debrid_response)
-        elif debrid_type.__name__ == "TorBox":
+        elif isinstance(debrid_service, TorBox):
             self._update_availability_torbox(debrid_response, media)
         else:
-            raise NotImplementedError(f"Debrid type {debrid_type} not supported")
+            raise NotImplementedError(
+                f"Debrid type {type(debrid_service)} not supported"
+            )
 
     def _get_season_episode(self, media: Media | None) -> tuple[str | None, str | None]:
         """Extract season and episode from media if it's a Series."""
@@ -92,7 +84,7 @@ class TorrentSmartContainer:
 
             torrent_item: TorrentItem = self._items_dict[info_hash]
 
-            files = []
+            files: list[dict[str, Any]] = []
             self.logger.info(torrent_item.type)
             if torrent_item.type == "series":
                 season, episode = self._get_season_episode(media)
@@ -145,12 +137,10 @@ class TorrentSmartContainer:
 
             torrent_item: TorrentItem = self._items_dict[data["hash"]]
 
-            files = []
+            files: list[dict[str, Any]] = []
+            type_ = torrent_item.type or "movie"
             season, episode = self._get_season_episode(media)
-            torrent_type = torrent_item.type or "movie"
-            self._explore_folders(
-                data["files"], files, 1, torrent_type, season, episode
-            )
+            self._explore_folders(data["files"], files, 1, type_, season, episode)
 
             self._update_file_details(torrent_item, files)
 
@@ -160,15 +150,14 @@ class TorrentSmartContainer:
                 self.logger.warning(f"Hash {torrent_hash} not found in itemsDict.")
                 continue
             torrent_item: TorrentItem = self._items_dict[torrent_hash]
-            files = []
-
+            files: list[dict[str, Any]] = []
             season, episode = self._get_season_episode(media)
-            torrent_type = torrent_item.type or "movie"
+            type_ = torrent_item.type or "movie"
             self._explore_folders(
                 folder=data.get("files", []),
                 files=files,
                 file_index=1,
-                type_=torrent_type,
+                type_=type_,
                 season=season,
                 episode=episode,
             )
@@ -185,7 +174,7 @@ class TorrentSmartContainer:
                 torrent_items[i].availability = response["transcoded"][i] is True
 
     def _update_file_details(
-        self, torrent_item: TorrentItem, files: list[dict]
+        self, torrent_item: TorrentItem, files: list[dict[str, Any]]
     ) -> None:
         if len(files) == 0:
             return
@@ -200,7 +189,7 @@ class TorrentSmartContainer:
         self, items: list[TorrentItem]
     ) -> dict[str, TorrentItem]:
         self.logger.debug(f"Building items dict by infohash ({len(items)} items)")
-        items_dict = {}
+        items_dict: dict[str, TorrentItem] = {}
         for item in items:
             if item.info_hash is not None:
                 self.logger.debug(f"Adding {item.info_hash} to items dict")
@@ -213,8 +202,8 @@ class TorrentSmartContainer:
 
     def _explore_folders(
         self,
-        folder: list[dict] | None,
-        files: list[dict],
+        folder: list[dict[str, Any]] | None,
+        files: list[dict[str, Any]],
         file_index: int,
         type_: str,
         season: str | None = None,
@@ -222,9 +211,9 @@ class TorrentSmartContainer:
     ) -> int:
         if folder is None:
             return file_index
+        if season is None or episode is None:
+            return file_index
         if type_ == "series":
-            if season is None or episode is None:
-                return file_index
             for file in folder:
                 if "e" in file or "files" in file:
                     sub_folder = file.get("e") or file.get("files")

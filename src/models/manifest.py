@@ -7,6 +7,7 @@ class BehaviorHints(BaseModel):
     configurable: bool = True
     configuration_required: bool = Field(default=False, alias="configurationRequired")
 
+
 class ManifestResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
@@ -18,4 +19,6 @@ class ManifestResponse(BaseModel):
     resources: list[str]
     types: list[str]
     catalogs: list[dict]
-    behavior_hints: BehaviorHints = Field(default_factory=lambda: BehaviorHints(), alias="behaviorHints")
+    behavior_hints: BehaviorHints = Field(
+        default_factory=lambda: BehaviorHints(), alias="behaviorHints"
+    )

@@ -1,9 +1,6 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from utils.filter.base_filter import BaseFilter
-from utils.logger import setup_logger
-
-logger = setup_logger(__name__)
 
 
 class QualityExclusionFilter(BaseFilter):
@@ -14,7 +11,6 @@ class QualityExclusionFilter(BaseFilter):
         "WEBRIP",
         "TVRIP",
         "VODRIP",
-        "HDRIP",
     ]
     CAMS: ClassVar[list[str]] = [
         "CAM",
@@ -30,28 +26,28 @@ class QualityExclusionFilter(BaseFilter):
         "HDCAM",
     ]
 
-    def __init__(self, config):
-        super().__init__(config)
-
-    def filter(self, data):
+    def filter(self, data: list[Any]) -> list[Any]:
         filtered_items = []
         excluded_qualities = [quality.upper() for quality in self.config.exclusion]
         rips = "RIPS" in excluded_qualities
         cams = "CAM" in excluded_qualities
 
         for stream in data:
-            if stream.parsed_data.quality:
-                if stream.parsed_data.quality.upper() in excluded_qualities:
-                    break
-                if rips and stream.parsed_data.quality.upper() in self.RIPS:
-                    break
-                if cams and stream.parsed_data.quality.upper() in self.CAMS:
-                    break
+            quality = stream.parsed_data.quality if stream.parsed_data else None
+            if quality:
+                quality_upper = quality.upper()
+                if quality_upper in excluded_qualities:
+                    continue
+                if rips and quality_upper in self.RIPS:
+                    continue
+                if cams and quality_upper in self.CAMS:
+                    continue
                 filtered_items.append(stream)
             else:
                 if "Unknown" not in excluded_qualities:
                     filtered_items.append(stream)
+
         return filtered_items
 
-    def can_filter(self):
-        return self.config.exclusion is not None and len(self.config.exclusion) > 0
+    def can_filter(self) -> bool:
+        return len(self.config.exclusion) > 0

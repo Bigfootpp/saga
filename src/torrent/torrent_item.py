@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+from RTN import ParsedData
 
 from models.series import Series
 
@@ -25,19 +26,19 @@ class TorrentItem(BaseModel):
     privacy: str = Field(..., alias="privacy")
     type: str | None = Field(default=None, alias="type")
     file_name: str | None = Field(default=None, alias="fileName")
-    files: list[dict] | None = Field(default=None, alias="files")
+    files: list[dict[str, Any]] | None = Field(default=None, alias="files")
     torrent_download: str | None = Field(default=None, alias="torrentDownload")
     trackers: list[str] = Field(default_factory=list, alias="trackers")
     file_index: int | None = Field(default=None, alias="fileIdx")
     availability: bool = Field(default=False, alias="availability")
-    parsed_data: Any = Field(default=None, alias="parsedData")
+    parsed_data: ParsedData | None = Field(default=None, alias="parsedData")
 
     @field_validator("info_hash", mode="before")
     @classmethod
     def _normalize_info_hash(cls, v: str) -> str:
         return v.lower() if v else v
 
-    def to_debrid_stream_query(self, media: Media) -> dict:
+    def to_debrid_stream_query(self, media: Media) -> dict[str, Any]:
         return {
             "magnet": self.magnet,
             "type": self.type,
@@ -48,6 +49,3 @@ class TorrentItem(BaseModel):
             if self.torrent_download is not None
             else None,
         }
-
-    def model_dump_stremio(self) -> dict:
-        return self.model_dump(by_alias=True, exclude_none=True)

@@ -2,8 +2,6 @@ import json
 import time
 from urllib.parse import unquote
 
-import requests
-
 from constants import NO_CACHE_VIDEO_URL
 from debrid.base_debrid import BaseDebrid
 from models.config import Config
@@ -57,7 +55,7 @@ class RealDebrid(BaseDebrid):
         logger.info(f"Selecting file(s): {file_id}")
         url = f"{self.base_url}/rest/1.0/torrents/selectFiles/{torrent_id}"
         data = {"files": str(file_id)}
-        requests.post(url, headers=self.headers, data=data)
+        self._session.post(url, headers=self.headers, data=data, timeout=10)
 
     def unrestrict_link(self, link: str) -> dict:
         url = f"{self.base_url}/rest/1.0/unrestrict/link"
@@ -319,13 +317,9 @@ class RealDebrid(BaseDebrid):
             strict_matching_files = []
             matching_files = []
             for file in files:
-                if season_episode_in_filename(
-                    file["path"], season, episode, strict=True
-                ):
+                if season_episode_in_filename(file["path"], season, episode):
                     strict_matching_files.append(file)
-                elif season_episode_in_filename(
-                    file["path"], season, episode, strict=False
-                ):
+                elif season_episode_in_filename(file["path"], season, episode):
                     matching_files.append(file)
 
             if len(strict_matching_files) > 0:
@@ -362,13 +356,9 @@ class RealDebrid(BaseDebrid):
             matching_indexes = []
             strict_matching_indexes = []
             for file in selected_files:
-                if season_episode_in_filename(
-                    file.get("path", ""), season, episode, strict=True
-                ):
+                if season_episode_in_filename(file.get("path", ""), season, episode):
                     strict_matching_indexes.append({"index": index, "file": file})
-                elif season_episode_in_filename(
-                    file.get("path", ""), season, episode, strict=False
-                ):
+                elif season_episode_in_filename(file.get("path", ""), season, episode):
                     matching_indexes.append({"index": index, "file": file})
                 index += 1
 

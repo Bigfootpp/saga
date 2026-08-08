@@ -2,11 +2,15 @@ import hashlib
 import os
 import urllib.parse
 from concurrent.futures import ThreadPoolExecutor
+from typing import Any
 
 import bencode
 import requests
+from RTN import parse as rtn_parse
 
 from jackett.jackett_result import JackettResult
+from models.movie import Movie
+from models.series import Series
 from torrent.torrent_item import TorrentItem
 from utils.general import get_info_hash_from_magnet
 from utils.logger import setup_logger
@@ -18,7 +22,7 @@ class TorrentService:
         self._session = requests.Session()
 
     def convert_and_process(
-        self, results: list[JackettResult], media
+        self, results: list[JackettResult], media: Movie | Series
     ) -> list[TorrentItem]:
         torrent_items_result = []
 
@@ -39,7 +43,9 @@ class TorrentService:
 
         return torrent_items_result
 
-    def _process_web_url(self, result: TorrentItem, media) -> TorrentItem:
+    def _process_web_url(
+        self, result: TorrentItem, media: Movie | Series
+    ) -> TorrentItem:
         timeout = float(os.environ.get("JACKETT_RESOLVER_TIMEOUT", "15"))
         try:
             response = self._session.get(
@@ -67,9 +73,9 @@ class TorrentService:
         return result
 
     def _process_torrent(
-        self, result: TorrentItem, torrent_file: bytes, media
+        self, result: TorrentItem, torrent_file: bytes, media: Movie | Series
     ) -> TorrentItem:
-        metadata = bencode.bdecode(torrent_file)
+        metadata: Any = bencode.bdecode(torrent_file)
 
         result.torrent_download = result.link
         result.trackers = self._get_trackers_from_torrent(metadata)
@@ -87,17 +93,11 @@ class TorrentService:
         if result.files is None:
             return result
 
-        if result.type == "series":
-            season = media.season
-            episode = media.episode
+        if result.type == "series" and isinstance(media, Series):
+            season = int(media.season.replace("S", ""))
+            episode = int(media.episode.replace("E", ""))
 
-            if isinstance(season, str):
-                season = int(season.replace("S", ""))
-
-            if isinstance(episode, str):
-                episode = int(episode.replace("E", ""))
-
-            file_details = self._find_episode_file(result.files, [season], [episode])
+            file_details = self._find_episode_file(result.files, season, episode)
 
             if file_details is not None:
                 self.logger.info("File details")
@@ -118,13 +118,15 @@ class TorrentService:
             result.info_hash = get_info_hash_from_magnet(result.magnet)
 
         if not result.info_hash:
-            self.logger.warning(f"Could not extract info_hash from magnet: {result.magnet[:100]}...")
+            self.logger.warning(
+                f"Could not extract info_hash from magnet: {result.magnet[:100]}..."
+            )
 
         result.trackers = self._get_trackers_from_magnet(result.magnet)
 
         return result
 
-    def _convert_torrent_to_hash(self, torrent_contents: dict) -> str:
+    def _convert_torrent_to_hash(self, torrent_contents: Any) -> str:
         hashcontents = bencode.bencode(torrent_contents)
         hex_hash = hashlib.sha1(hashcontents).hexdigest()
         return hex_hash.lower()
@@ -169,21 +171,15 @@ class TorrentService:
         return trackers
 
     def _find_episode_file(
-        self, file_structure: list[dict], season: list[int], episode: list[int]
-    ) -> dict | None:
-        if len(season) == 0 or len(episode) == 0:
-            return None
-
+        self, file_structure: list[dict[str, Any]], season: int, episode: int
+    ) -> dict[str, Any] | None:
         file_index = 1
-        episode_files = []
+        episode_files: list[dict[str, Any]] = []
         for files in file_structure:
             for file in files["path"]:
                 parsed_file = rtn_parse(file)
 
-                if (
-                    season[0] in parsed_file.seasons
-                    and episode[0] in parsed_file.episodes
-                ):
+                if season in parsed_file.seasons and episode in parsed_file.episodes:
                     episode_files.append(
                         {
                             "file_index": file_index,
@@ -196,7 +192,7 @@ class TorrentService:
 
         return max(episode_files, key=lambda f: f["size"]) if episode_files else None
 
-    def _find_movie_file(self, file_structure: list[dict]) -> int:
+    def _find_movie_file(self, file_structure: list[dict[str, Any]]) -> int:
         max_size = 0
         max_file_index = 1
         current_file_index = 1
@@ -207,7 +203,3 @@ class TorrentService:
             current_file_index += 1
 
         return max_file_index
-
-
-# Need to import rtn_parse at module level
-from RTN import parse as rtn_parse

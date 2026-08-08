@@ -6,6 +6,8 @@ import requests
 from models.config import Config
 from utils.logger import setup_logger
 
+HTTP_TIMEOUT = 15.0
+
 
 class BaseDebrid:
     def __init__(self, config: Config):
@@ -59,7 +61,7 @@ class BaseDebrid:
         return False
 
     def download_torrent_file(self, download_url: str) -> bytes:
-        response = requests.get(download_url)
+        response = self._session.get(download_url, timeout=HTTP_TIMEOUT)
         response.raise_for_status()
         return response.content
 

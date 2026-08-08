@@ -44,9 +44,7 @@ class Premiumize(BaseDebrid):
     def get_availability(self, hash: str | None = None) -> dict:
         if hash is None:
             return {}
-        url = (
-            f"{self.base_url}/cache/check?apikey={self.config.debrid_key}&items[]={hash}"
-        )
+        url = f"{self.base_url}/cache/check?apikey={self.config.debrid_key}&items[]={hash}"
         result = self.get_json_response(url)
         return result if result is not None else {}
 

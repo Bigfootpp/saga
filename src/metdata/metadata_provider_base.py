@@ -1,14 +1,15 @@
-from typing import Any
-
+from models.config import Config
+from models.movie import Movie
+from models.series import Series
 from utils.logger import setup_logger
 
 
 class MetadataProvider:
-    def __init__(self, config: Any):
+    def __init__(self, config: Config):
         self.config = config
         self.logger = setup_logger(__name__)
 
-    def replace_weird_characters(self, string):
+    def replace_weird_characters(self, string: str) -> str:
         corresp = {
             "ā": "a",
             "ă": "a",
@@ -106,5 +107,5 @@ class MetadataProvider:
 
         return string
 
-    def get_metadata(self, id, type):
+    def get_metadata(self, id: str, type: str) -> Movie | Series | None:
         raise NotImplementedError

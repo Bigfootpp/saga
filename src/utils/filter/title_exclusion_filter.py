@@ -1,28 +1,22 @@
-from utils.filter.base_filter import BaseFilter
-from utils.logger import setup_logger
+from typing import Any
 
-logger = setup_logger(__name__)
+from utils.filter.base_filter import BaseFilter
 
 
 class TitleExclusionFilter(BaseFilter):
-    def __init__(self, config):
-        super().__init__(config)
-
-    def filter(self, data):
+    def filter(self, data: list[Any]) -> list[Any]:
         filtered_items = []
         excluded_keywords = [
-            keyword.upper() for keyword in self.config.exclusionKeywords
+            keyword.upper() for keyword in self.config.exclusion_keywords
         ]
         for stream in data:
+            raw_title = (stream.raw_title or "").upper()
             for keyword in excluded_keywords:
-                if keyword in stream.raw_title.upper():
+                if keyword in raw_title:
                     break
             else:
                 filtered_items.append(stream)
         return filtered_items
 
-    def can_filter(self):
-        return (
-            self.config.exclusionKeywords is not None
-            and len(self.config.exclusionKeywords) > 0
-        )
+    def can_filter(self) -> bool:
+        return len(self.config.exclusion_keywords) > 0

@@ -2,34 +2,32 @@ import requests
 
 from jackett.jackett_indexer import JackettIndexer
 from metdata.metadata_provider_base import MetadataProvider
+from models.config import Config
 from models.movie import Movie
 from models.series import Series
 
+TMDB_TIMEOUT = 15.0
+
 
 class TMDB(MetadataProvider):
-    def __init__(self, config):
+    def __init__(self, config: Config):
         super().__init__(config)
         self._indexers: list[JackettIndexer] | None = None
 
     @property
-    def indexers(self):
+    def indexers(self) -> list[JackettIndexer] | None:
         return self._indexers
 
     @indexers.setter
-    def indexers(self, indexers_):
+    def indexers(self, indexers_: list[JackettIndexer] | None) -> None:
         self._indexers = indexers_
 
-    def get_metadata(self, id: str, type: str):
+    def get_metadata(self, id: str, type: str) -> Movie | Series | None:
         self.logger.info(f"Getting metadata for {type} with id {id}")
 
         full_id = id.split(":")
-        result = None
 
-        if (
-            self.config.get("getAllLanguages", None)
-            and self._indexers
-            and len(self._indexers) > 0
-        ):
+        if self.config.get_all_languages and self._indexers and len(self._indexers) > 0:
             languages = [
                 lang
                 for lang in {indexer.language for indexer in self._indexers}
@@ -37,17 +35,15 @@ class TMDB(MetadataProvider):
             ]
         else:
             languages = [
-                lang
-                for lang in dict.fromkeys(self.config.get("languages", ["en"]))
-                if lang
+                lang for lang in dict.fromkeys(self.config.languages or ["en"]) if lang
             ]
 
         if not languages:
             return None
 
         first_lang = languages[0]
-        url = f"https://api.themoviedb.org/3/find/{full_id[0]}?api_key={self.config.get('tmdbApi')}&external_source=imdb_id&language={first_lang}"
-        data = requests.get(url).json()
+        url = f"https://api.themoviedb.org/3/find/{full_id[0]}?api_key={self.config.tmdb_api}&external_source=imdb_id&language={first_lang}"
+        data = requests.get(url, timeout=TMDB_TIMEOUT).json()
 
         if type == "movie":
             result = Movie(
@@ -71,8 +67,8 @@ class TMDB(MetadataProvider):
             )
 
         for lang in languages[1:]:
-            url = f"https://api.themoviedb.org/3/find/{full_id[0]}?api_key={self.config.get('tmdbApi')}&external_source=imdb_id&language={lang}"
-            data = requests.get(url).json()
+            url = f"https://api.themoviedb.org/3/find/{full_id[0]}?api_key={self.config.tmdb_api}&external_source=imdb_id&language={lang}"
+            data = requests.get(url, timeout=TMDB_TIMEOUT).json()
 
             if type == "movie":
                 result.titles.append(

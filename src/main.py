@@ -69,13 +69,13 @@ logger = setup_logger(__name__)
 
 
 @app.get("/")
-async def root():
+async def root() -> RedirectResponse:
     return RedirectResponse(url="/configure")
 
 
 @app.get("/configure")
 @app.get("/{config}/configure")
-async def configure(request: Request):
+async def configure(request: Request, config: str = ""):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -97,16 +97,16 @@ async def function(file_path: str):
 @app.get("/{params}/manifest.json")
 async def get_manifest():
     return ManifestResponse(
-        id = ADDON_ID,
-        icon = "https://i.imgur.com/tVjqEJP.png",
-        name = "Jackett"
+        id=ADDON_ID,
+        icon="https://i.imgur.com/tVjqEJP.png",
+        name="Jackett"
         + (" Community" if COMMUNITY_VERSION else "")
         + (" (Dev)" if isDev else ""),
-        version = VERSION,
-        description = "Elevate your Stremio experience with seamless access to Jackett torrent links, effortlessly "
+        version=VERSION,
+        description="Elevate your Stremio experience with seamless access to Jackett torrent links, effortlessly "
         "fetching torrents for your selected movies within the Stremio interface.",
-        resources = ["stream"],
-        types = ["movie", "series"],
+        resources=["stream"],
+        types=["movie", "series"],
         catalogs=[],
     )
 
@@ -120,12 +120,12 @@ logger.info("Started Jackett Addon")
 
 
 @app.get("/{config}/stream/{stream_type}/{stream_id}")
-async def get_results(config_b64: str, stream_type: str, stream_id: str, request: Request):
+async def get_results(config: str, stream_type: str, stream_id: str, request: Request):
     jackett_service: JackettService | None = None
     start = time.time()
     stream_id = stream_id.replace(".json", "")
 
-    config_obj = parse_config(config_b64)
+    config_obj = parse_config(config)
     logger.info(f"{stream_type} request")
 
     if config_obj.metadata_provider == "tmdb" and config_obj.tmdb_api:
@@ -173,7 +173,7 @@ async def get_results(config_b64: str, stream_type: str, stream_id: str, request
         hashes = torrent_smart_container.get_hashes()
         ip = request.client.host if request.client else "127.0.0.1"
         result = debrid_service.get_availability_bulk(hashes, ip)
-        torrent_smart_container.update_availability(result, type(debrid_service), media)
+        torrent_smart_container.update_availability(result, debrid_service, media)
         logger.debug(f"Checked availability (results: {len(result.items())})")
 
     logger.debug("Getting best matching results")
