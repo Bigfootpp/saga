@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
-from typing import Any
+from collections.abc import Callable
 
 import requests
 
 from debrid.availability import AvailabilityResult
 from models.config import Config
+from models.movie import Movie
+from models.series import Series
 from utils.logger import setup_logger
 
 HTTP_TIMEOUT = 15.0
+MediaType = Movie | Series
 
 
 class BaseDebrid(ABC):
@@ -26,18 +29,15 @@ class BaseDebrid(ABC):
         data: dict | bytes | None = None,
         headers: dict | None = None,
         files: dict | None = None,
-        **kwargs: Any,
     ) -> dict | None:
         if method == "get":
-            response = self._session.get(url, headers=headers, **kwargs)
+            response = self._session.get(url, headers=headers)
         elif method == "post":
-            response = self._session.post(
-                url, data=data, headers=headers, files=files, **kwargs
-            )
+            response = self._session.post(url, data=data, headers=headers, files=files)
         elif method == "put":
-            response = self._session.put(url, data=data, headers=headers, **kwargs)
+            response = self._session.put(url, data=data, headers=headers)
         elif method == "delete":
-            response = self._session.delete(url, headers=headers, **kwargs)
+            response = self._session.delete(url, headers=headers)
         else:
             raise ValueError(f"Unsupported HTTP method: {method}")
 
@@ -52,7 +52,10 @@ class BaseDebrid(ABC):
             return None
 
     def wait_for_ready_status(
-        self, check_status_func, timeout: int = 30, interval: int = 5
+        self,
+        check_status_func: Callable[[], bool],
+        timeout: int = 30,
+        interval: int = 5,
     ) -> bool:
         self.logger.info(f"Waiting for {timeout} seconds to cache.")
         start_time = time.time()
@@ -82,7 +85,7 @@ class BaseDebrid(ABC):
 
     @abstractmethod
     def extract_availability(
-        self, response: dict, hashes: list[str], media
+        self, response: dict, hashes: list[str], media: MediaType
     ) -> AvailabilityResult:
         """Extract normalized availability data from the provider's raw response.
 

@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TypedDict, cast
+
+
+class FileEntryDict(TypedDict):
+    file_index: int
+    title: str
+    size: int | str
 
 
 @dataclass(frozen=True)
@@ -21,8 +27,11 @@ class AvailabilityResult:
     flags: dict[str, bool] = field(default_factory=dict)
 
 
+DebridFolderItem = dict[str, object]
+
+
 def explore_nested_files(
-    folder: list[dict[str, Any]] | None,
+    folder: list[DebridFolderItem] | None,
     type_: str,
     season: str | None = None,
     episode: str | None = None,
@@ -41,7 +50,7 @@ def explore_nested_files(
         return matches
 
     def traverse(
-        folder_: list[dict[str, Any]], file_index: int, type_local: str
+        folder_: list[DebridFolderItem], file_index: int, type_local: str
     ) -> int:
         if type_local == "movie":
             file_index = 1
@@ -52,8 +61,8 @@ def explore_nested_files(
                     file_index = traverse(sub_folder, file_index, type_local)
                 continue
 
-            file_name = file.get("n") or file.get("name")
-            file_size = file.get("s") or file.get("size", 0)
+            file_name = cast(str, file.get("n") or file.get("name") or "")
+            file_size = cast(int | str, file.get("s") or file.get("size", 0))
             if not file_name:
                 continue
 
@@ -79,5 +88,6 @@ def explore_nested_files(
             file_index += 1
         return file_index
 
+    matches: list[FileEntry] = []
     traverse(folder, 1, type_)
     return matches

@@ -2,7 +2,7 @@ import hashlib
 import os
 import urllib.parse
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any
+from typing import TypedDict, cast
 
 import bencode
 import requests
@@ -11,9 +11,16 @@ from RTN import parse as rtn_parse
 from jackett.jackett_result import JackettResult
 from models.movie import Movie
 from models.series import Series
+from shared_types import TorrentFile, TorrentInfoDict, TorrentMetadata
 from torrent.magnet import get_info_hash_from_magnet
 from torrent.torrent_item import TorrentItem
 from utils.logger import setup_logger
+
+
+class FileEntryDict(TypedDict):
+    file_index: int
+    title: str
+    size: int
 
 
 class TorrentService:
@@ -75,7 +82,7 @@ class TorrentService:
     def _process_torrent(
         self, result: TorrentItem, torrent_file: bytes, media: Movie | Series
     ) -> TorrentItem:
-        metadata: Any = bencode.bdecode(torrent_file)
+        metadata: TorrentMetadata = bencode.bdecode(torrent_file)
 
         result.torrent_download = result.link
         result.trackers = self._get_trackers_from_torrent(metadata)
@@ -88,7 +95,7 @@ class TorrentService:
             result.file_index = 1
             return result
 
-        result.files = metadata["info"]["files"]
+        result.files = list(metadata["info"]["files"])
 
         if result.files is None:
             return result
@@ -102,9 +109,9 @@ class TorrentService:
             if file_details is not None:
                 self.logger.info("File details")
                 self.logger.info(file_details)
-                result.file_index = file_details["file_index"]
-                result.file_name = file_details["title"]
-                result.size = file_details["size"]
+                result.file_index = cast(int | None, file_details["file_index"])
+                result.file_name = cast(str | None, file_details["title"])
+                result.size = cast(int, file_details["size"])
         else:
             result.file_index = self._find_movie_file(result.files)
 
@@ -126,7 +133,7 @@ class TorrentService:
 
         return result
 
-    def _convert_torrent_to_hash(self, torrent_contents: Any) -> str:
+    def _convert_torrent_to_hash(self, torrent_contents: TorrentInfoDict) -> str:
         hashcontents = bencode.bencode(torrent_contents)
         hex_hash = hashlib.sha1(hashcontents).hexdigest()
         return hex_hash.lower()
@@ -140,7 +147,9 @@ class TorrentService:
 
         return magnet
 
-    def _get_trackers_from_torrent(self, torrent_metadata: dict) -> list[str]:
+    def _get_trackers_from_torrent(
+        self, torrent_metadata: TorrentMetadata
+    ) -> list[str]:
         announce = torrent_metadata.get("announce", [])
         announce_list = torrent_metadata.get("announce-list", [])
 
@@ -171,12 +180,12 @@ class TorrentService:
         return trackers
 
     def _find_episode_file(
-        self, file_structure: list[dict[str, Any]], season: int, episode: int
-    ) -> dict[str, Any] | None:
+        self, file_structure: list[TorrentFile], season: int, episode: int
+    ) -> dict[str, object] | None:
         file_index = 1
-        episode_files: list[dict[str, Any]] = []
+        episode_files: list[dict] = []
         for files in file_structure:
-            for file in files["path"]:
+            for file in cast(list[str], files["path"]):
                 parsed_file = rtn_parse(file)
 
                 if season in parsed_file.seasons and episode in parsed_file.episodes:
@@ -184,7 +193,7 @@ class TorrentService:
                         {
                             "file_index": file_index,
                             "title": file,
-                            "size": files["length"],
+                            "size": cast(int, files["length"]),
                         }
                     )
 
@@ -192,14 +201,14 @@ class TorrentService:
 
         return max(episode_files, key=lambda f: f["size"]) if episode_files else None
 
-    def _find_movie_file(self, file_structure: list[dict[str, Any]]) -> int:
+    def _find_movie_file(self, file_structure: list[TorrentFile]) -> int:
         max_size = 0
         max_file_index = 1
         current_file_index = 1
         for files in file_structure:
-            if files["length"] > max_size:
+            if cast(int, files["length"]) > max_size:
                 max_file_index = current_file_index
-                max_size = files["length"]
+                max_size = cast(int, files["length"])
             current_file_index += 1
 
         return max_file_index

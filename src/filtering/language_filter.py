@@ -1,13 +1,12 @@
-from typing import Any
-
 from filtering.base_filter import BaseFilter
+from jackett.jackett_result import JackettResult
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
 
-class LanguageFilter(BaseFilter):
-    def filter(self, data: list[Any]) -> list[Any]:
+class LanguageFilter(BaseFilter[JackettResult]):
+    def filter(self, data: list[JackettResult]) -> list[JackettResult]:
         if self.config.get_all_languages:
             logger.info(
                 "Skipping language filtering because of 'getAllLanguages' setting."

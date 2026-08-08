@@ -1,5 +1,4 @@
 import xml.etree.ElementTree as ET
-from typing import Any
 
 from jackett.jackett_indexer import JackettIndexer
 from jackett.jackett_result import JackettResult
@@ -46,7 +45,7 @@ def parse_indexers(xml_content: str) -> list[JackettIndexer]:
     return indexer_list
 
 
-def parse_results(xml_content: str) -> list[Any]:
+def parse_results(xml_content: str) -> list[JackettResult]:
     """Parse torrent results from Torznab XML."""
     xml_root = ET.fromstring(xml_content)
 

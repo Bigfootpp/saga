@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 from urllib.parse import quote
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from RTN import ParsedData
 
 from models.series import Series
+from shared_types import TorrentFile
 
 if TYPE_CHECKING:
     from models.media import Media
@@ -26,7 +27,7 @@ class TorrentItem(BaseModel):
     privacy: str = Field(..., alias="privacy")
     type: str | None = Field(default=None, alias="type")
     file_name: str | None = Field(default=None, alias="fileName")
-    files: list[dict[str, Any]] | None = Field(default=None, alias="files")
+    files: list[TorrentFile] | None = Field(default=None, alias="files")
     torrent_download: str | None = Field(default=None, alias="torrentDownload")
     trackers: list[str] = Field(default_factory=list, alias="trackers")
     file_index: int | None = Field(default=None, alias="fileIdx")
@@ -38,7 +39,7 @@ class TorrentItem(BaseModel):
     def _normalize_info_hash(cls, v: str) -> str:
         return v.lower() if v else v
 
-    def to_debrid_stream_query(self, media: Media) -> dict[str, Any]:
+    def to_debrid_stream_query(self, media: Media) -> dict[str, object]:
         return {
             "magnet": self.magnet,
             "type": self.type,

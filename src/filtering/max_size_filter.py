@@ -1,10 +1,9 @@
-from typing import Any
-
 from filtering.base_filter import BaseFilter
+from jackett.jackett_result import JackettResult
 
 
-class MaxSizeFilter(BaseFilter):
-    def filter(self, data: list[Any]) -> list[Any]:
+class MaxSizeFilter(BaseFilter[JackettResult]):
+    def filter(self, data: list[JackettResult]) -> list[JackettResult]:
         filtered_data = []
         for torrent in data:
             if int(torrent.size or 0) <= self.config.max_size:

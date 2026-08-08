@@ -1,5 +1,3 @@
-from typing import Any, cast
-
 from RTN import RTN, DefaultRanking, SettingsModel, sort_torrents, title_match
 
 from filtering.language_filter import LanguageFilter
@@ -40,7 +38,7 @@ def items_sort(items: list[TorrentItem], config: Config) -> list[TorrentItem]:
 
     settings = SettingsModel(
         require=[],
-        exclude=cast(list[Any], config.exclusion_keywords + config.exclusion),
+        exclude=list(config.exclusion_keywords + config.exclusion),
     )
 
     rtn = RTN(settings=settings, ranking_model=DefaultRanking())

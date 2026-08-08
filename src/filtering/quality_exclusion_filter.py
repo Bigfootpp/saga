@@ -1,9 +1,10 @@
-from typing import Any, ClassVar
+from typing import ClassVar
 
 from filtering.base_filter import BaseFilter
+from jackett.jackett_result import JackettResult
 
 
-class QualityExclusionFilter(BaseFilter):
+class QualityExclusionFilter(BaseFilter[JackettResult]):
     RIPS: ClassVar[list[str]] = [
         "HDRIP",
         "BRRIP",
@@ -26,7 +27,7 @@ class QualityExclusionFilter(BaseFilter):
         "HDCAM",
     ]
 
-    def filter(self, data: list[Any]) -> list[Any]:
+    def filter(self, data: list[JackettResult]) -> list[JackettResult]:
         filtered_items = []
         excluded_qualities = [quality.upper() for quality in self.config.exclusion]
         rips = "RIPS" in excluded_qualities

@@ -1,5 +1,3 @@
-from typing import Any
-
 from RTN import parse
 
 video_formats = {
@@ -43,7 +41,7 @@ video_formats = {
 }
 
 
-def is_video_file(filename: Any) -> bool:
+def is_video_file(filename: str) -> bool:
     extension_idx = filename.rfind(".")
     if extension_idx == -1:
         return False

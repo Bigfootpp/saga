@@ -1,10 +1,10 @@
 import json
-from typing import Any
 
 from RTN import ParsedData
 
 from models.config import Config
 from models.media import Media
+from shared_types import StreamEntry
 from torrent.torrent_item import TorrentItem
 from utils.logger import setup_logger
 from utils.string_encoding import encodeb64
@@ -34,11 +34,11 @@ def get_emoji(language: str) -> str:
     return emoji_dict.get(language, "🏳️")
 
 
-def filter_by_availability(item: dict[str, Any]) -> int:
+def filter_by_availability(item: StreamEntry) -> int:
     return 0 if item["name"].startswith(INSTANTLY_AVAILABLE) else 1
 
 
-def filter_by_direct_torrent(item: dict[str, Any]) -> int:
+def filter_by_direct_torrent(item: StreamEntry) -> int:
     return 1 if item["name"].startswith(DIRECT_TORRENT) else 0
 
 
@@ -48,13 +48,13 @@ def _build_stream_entry(
     host: str,
     torrenting: bool,
     media: Media,
-) -> list[dict[str, Any]]:
+) -> list[StreamEntry]:
     """Build stream entries (debrid + optional direct torrent) for a single torrent item."""
     parsed_data: ParsedData | None = torrent_item.parsed_data
     if parsed_data is None:
         return []
 
-    entries = []
+    entries: list[StreamEntry] = []
 
     # Debrid stream entry
     if torrent_item.availability:
@@ -95,6 +95,8 @@ def _build_stream_entry(
             "name": name,
             "description": title,
             "url": f"{host}/playback/{configb64}/{queryb64}",
+            "infoHash": None,
+            "fileIdx": None,
             "behaviorHints": {
                 "bingeGroup": f"stremio-jackett-{torrent_item.info_hash}",
                 "filename": torrent_item.file_name
@@ -117,6 +119,7 @@ def _build_stream_entry(
             {
                 "name": name,
                 "description": title,
+                "url": None,
                 "infoHash": torrent_item.info_hash,
                 "fileIdx": int(torrent_item.file_index)
                 if torrent_item.file_index
@@ -137,9 +140,9 @@ def build_stream_response(
     torrent_items: list[TorrentItem],
     config: Config,
     media: Media,
-) -> list[dict[str, Any]]:
+) -> list[StreamEntry]:
     """Build the complete stream response for Stremio."""
-    stream_list: list[dict[str, Any]] = []
+    stream_list: list[StreamEntry] = []
 
     configb64 = encodeb64(
         json.dumps(config.model_dump(by_alias=True)).replace("=", "%3D")
