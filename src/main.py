@@ -1,7 +1,6 @@
 import logging
 import os
 import re
-from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
@@ -20,7 +19,6 @@ from utils.string_encoding import decodeb64
 
 load_dotenv()
 
-BASE_DIR = Path(__file__).resolve().parent
 root_path = os.environ.get("ROOT_PATH") or ""
 if root_path and not root_path.startswith("/"):
     root_path = f"/{root_path}"

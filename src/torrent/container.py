@@ -16,20 +16,9 @@ class TorrentSmartContainer:
         self._items_dict: dict[str, TorrentItem] = self._build_items_dict_by_infohash(
             torrent_items
         )
-        self._media = media
 
     def get_hashes(self) -> list[str]:
         return list(self._items_dict.keys())
-
-    def get_items(self) -> list[TorrentItem]:
-        return list(self._items_dict.values())
-
-    def get_direct_torrentable(self) -> list[TorrentItem]:
-        return [
-            torrent_item
-            for torrent_item in self._items_dict.values()
-            if torrent_item.privacy == "public" and torrent_item.file_index is not None
-        ]
 
     def get_best_matching(self) -> list[TorrentItem]:
         best_matching = []

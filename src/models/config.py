@@ -13,7 +13,6 @@ class Config(BaseModel):
     tmdb_api: str | None = Field(None, alias="tmdbApi")
     languages: list[str] = Field(default_factory=list, alias="languages")
     get_all_languages: bool | None = Field(None, alias="getAllLanguages")
-    cache: bool | None = Field(None, alias="cache")
     debrid: bool | None = Field(None, alias="debrid")
     service: str | None = Field(None, alias="service")
     debrid_key: str | None = Field(None, alias="debridKey")
@@ -33,14 +32,3 @@ class Config(BaseModel):
 
     def get(self, key: str, default: Any = None) -> Any:
         return getattr(self, key, default)
-
-
-class StreamQuery(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
-    magnet: str = Field(..., alias="magnet")
-    type: str | None = Field(None, alias="type")
-    file_index: int | None = Field(None, alias="fileIdx")
-    season: str | None = Field(None, alias="season")
-    episode: str | None = Field(None, alias="episode")
-    torrent_download: str | None = Field(None, alias="torrentDownload")

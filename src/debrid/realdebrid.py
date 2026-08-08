@@ -63,17 +63,6 @@ class RealDebrid(BaseDebrid):
         )
         return result if result is not None else {}
 
-    def is_already_added(self, magnet: str) -> str | bool:
-        hash_ = magnet.split("urn:btih:")[1].split("&")[0].lower()
-        url = f"{self.base_url}/rest/1.0/torrents"
-        torrents = self.get_json_response(url, headers=self.headers)
-        if torrents is None:
-            return False
-        for torrent in torrents:
-            if torrent["hash"].lower() == hash_:
-                return torrent["id"]
-        return False
-
     def wait_for_link(
         self, torrent_id: str, timeout: int = 30, interval: int = 5
     ) -> list:
