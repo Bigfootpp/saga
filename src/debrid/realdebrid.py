@@ -21,7 +21,7 @@ class RealDebrid(BaseDebrid):
     def __init__(self, config: Config):
         super().__init__(config)
         self.base_url = "https://api.real-debrid.com"
-        self.headers = {"Authorization": f"Bearer {self.config.debridKey}"}
+        self.headers = {"Authorization": f"Bearer {self.config.debrid_key}"}
 
     def add_magnet(self, magnet: str, ip: str | None = None) -> dict:
         url = f"{self.base_url}/rest/1.0/torrents/addMagnet"

@@ -15,29 +15,29 @@ class Premiumize(BaseDebrid):
         self.base_url = "https://www.premiumize.me/api"
 
     def add_magnet(self, magnet: str, ip: str | None = None) -> dict:
-        url = f"{self.base_url}/transfer/create?apikey={self.config.debridKey}"
+        url = f"{self.base_url}/transfer/create?apikey={self.config.debrid_key}"
         form = {"src": magnet}
         result = self.get_json_response(url, method="post", data=form)
         return result if result is not None else {}
 
     def add_torrent(self, torrent_file: bytes) -> dict:
-        url = f"{self.base_url}/transfer/create?apikey={self.config.debridKey}"
+        url = f"{self.base_url}/transfer/create?apikey={self.config.debrid_key}"
         form = {"file": torrent_file}
         result = self.get_json_response(url, method="post", data=form)
         return result if result is not None else {}
 
     def list_transfers(self) -> dict:
-        url = f"{self.base_url}/transfer/list?apikey={self.config.debridKey}"
+        url = f"{self.base_url}/transfer/list?apikey={self.config.debrid_key}"
         result = self.get_json_response(url)
         return result if result is not None else {}
 
     def get_folder_or_file_details(self, item_id: str, is_folder: bool = True) -> dict:
         if is_folder:
             logger.info(f"Getting folder details with id: {item_id}")
-            url = f"{self.base_url}/folder/list?id={item_id}&apikey={self.config.debridKey}"
+            url = f"{self.base_url}/folder/list?id={item_id}&apikey={self.config.debrid_key}"
         else:
             logger.info(f"Getting file details with id: {item_id}")
-            url = f"{self.base_url}/item/details?id={item_id}&apikey={self.config.debridKey}"
+            url = f"{self.base_url}/item/details?id={item_id}&apikey={self.config.debrid_key}"
         result = self.get_json_response(url)
         return result if result is not None else {}
 
@@ -45,7 +45,7 @@ class Premiumize(BaseDebrid):
         if hash is None:
             return {}
         url = (
-            f"{self.base_url}/cache/check?apikey={self.config.debridKey}&items[]={hash}"
+            f"{self.base_url}/cache/check?apikey={self.config.debrid_key}&items[]={hash}"
         )
         result = self.get_json_response(url)
         return result if result is not None else {}
@@ -54,7 +54,7 @@ class Premiumize(BaseDebrid):
         self, hashes_or_magnets: list[str], ip: str | None = None
     ) -> dict:
         url = (
-            f"{self.base_url}/cache/check?apikey={self.config.debridKey}&items[]="
+            f"{self.base_url}/cache/check?apikey={self.config.debrid_key}&items[]="
             + "&items[]=".join(hashes_or_magnets)
         )
         result = self.get_json_response(url)

@@ -21,8 +21,8 @@ class JackettService:
     def __init__(self, config: Config):
         self.logger = setup_logger(__name__)
         self._indexers: list[JackettIndexer] | None = None
-        self._api_key = config.jackettApiKey
-        self._base_url = f"{config.jackettHost}/api/v2.0"
+        self._api_key = config.jackett_api_key
+        self._base_url = f"{config.jackett_host}/api/v2.0"
         self._session = requests.Session()
 
     def search(self, media) -> list[JackettResult]:

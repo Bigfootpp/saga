@@ -122,15 +122,15 @@ logger.info("Started Jackett Addon")
 
 
 @app.get("/{config}/stream/{stream_type}/{stream_id}")
-async def get_results(config: str, stream_type: str, stream_id: str, request: Request):
+async def get_results(config_b64: str, stream_type: str, stream_id: str, request: Request):
     jackett_service: JackettService | None = None
     start = time.time()
     stream_id = stream_id.replace(".json", "")
 
-    config_obj = parse_config(config)
+    config_obj = parse_config(config_b64)
     logger.info(f"{stream_type} request")
 
-    if config_obj.metadataProvider == "tmdb" and config_obj.tmdbApi:
+    if config_obj.metadata_provider == "tmdb" and config_obj.tmdb_api:
         metadata_provider = TMDB(config_obj)
         if not COMMUNITY_VERSION and config_obj.jackett:
             logger.info("Getting indexers' languages from Jackett for setting up TMDB")
@@ -138,7 +138,7 @@ async def get_results(config: str, stream_type: str, stream_id: str, request: Re
             metadata_provider.indexers = jackett_service.get_indexers()
     else:
         metadata_provider = Cinemeta(config_obj)
-    logger.info(f"Getting media from {config_obj.metadataProvider}")
+    logger.info(f"Getting media from {config_obj.metadata_provider}")
     media = metadata_provider.get_metadata(stream_id, stream_type)
     if media is None:
         logger.error(f"Failed to get metadata for {stream_id} ({stream_type})")

@@ -17,12 +17,12 @@ class AllDebrid(BaseDebrid):
         self.base_url = "https://api.alldebrid.com/v4.1/"
 
     def add_magnet(self, magnet: str, ip: str | None = None) -> dict:
-        url = f"{self.base_url}magnet/upload?agent=jackett&apikey={self.config.debridKey}&magnet={magnet}&ip={ip}"
+        url = f"{self.base_url}magnet/upload?agent=jackett&apikey={self.config.debrid_key}&magnet={magnet}&ip={ip}"
         result = self.get_json_response(url)
         return result if result is not None else {}
 
     def add_torrent(self, torrent_file: bytes, ip: str | None = None) -> dict:
-        url = f"{self.base_url}magnet/upload/file?agent=jackett&apikey={self.config.debridKey}&ip={ip}"
+        url = f"{self.base_url}magnet/upload/file?agent=jackett&apikey={self.config.debrid_key}&ip={ip}"
         files = {
             "files[0]": (
                 str(uuid.uuid4()) + ".torrent",
@@ -34,12 +34,12 @@ class AllDebrid(BaseDebrid):
         return result if result is not None else {}
 
     def check_magnet_status(self, id: str, ip: str | None = None) -> dict:
-        url = f"{self.base_url}magnet/status?agent=jackett&apikey={self.config.debridKey}&id={id}&ip={ip}"
+        url = f"{self.base_url}magnet/status?agent=jackett&apikey={self.config.debrid_key}&id={id}&ip={ip}"
         result = self.get_json_response(url)
         return result if result is not None else {}
 
     def unrestrict_link(self, link: str, ip: str | None = None) -> dict:
-        url = f"{self.base_url}link/unlock?agent=jackett&apikey={self.config.debridKey}&link={link}&ip={ip}"
+        url = f"{self.base_url}link/unlock?agent=jackett&apikey={self.config.debrid_key}&link={link}&ip={ip}"
         result = self.get_json_response(url)
         return result if result is not None else {}
 
@@ -130,7 +130,7 @@ class AllDebrid(BaseDebrid):
     def get_availability_bulk(
         self, hashes_or_magnets: list[str], ip: str | None = None
     ) -> dict:
-        torrents = f"{self.base_url}magnet/status?agent=jackett&apikey={self.config.debridKey}&ip={ip}"
+        torrents = f"{self.base_url}magnet/status?agent=jackett&apikey={self.config.debrid_key}&ip={ip}"
         result = self.get_json_response(torrents)
         if result is None:
             return {}

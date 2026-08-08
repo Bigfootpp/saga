@@ -6,27 +6,27 @@ from pydantic import BaseModel, ConfigDict, Field
 class Config(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
-    jackettApiKey: str | None = Field(None, alias="jackettApiKey")
-    jackettHost: str | None = Field(None, alias="jackettHost")
+    jackett_api_key: str | None = Field(None, alias="jackettApiKey")
+    jackett_host: str | None = Field(None, alias="jackettHost")
     jackett: bool | None = Field(None, alias="jackett")
-    metadataProvider: str = Field("cinemeta", alias="metadataProvider")
-    tmdbApi: str | None = Field(None, alias="tmdbApi")
+    metadata_provider: str = Field("cinemeta", alias="metadataProvider")
+    tmdb_api: str | None = Field(None, alias="tmdbApi")
     languages: list[str] = Field(default_factory=list, alias="languages")
-    getAllLanguages: bool | None = Field(None, alias="getAllLanguages")
+    get_all_languages: bool | None = Field(None, alias="getAllLanguages")
     cache: bool | None = Field(None, alias="cache")
     debrid: bool | None = Field(None, alias="debrid")
     service: str | None = Field(None, alias="service")
-    debridKey: str | None = Field(None, alias="debridKey")
-    addonHost: str | None = Field(None, alias="addonHost")
+    debrid_key: str | None = Field(None, alias="debridKey")
+    addon_host: str | None = Field(None, alias="addonHost")
     torrenting: bool | None = Field(None, alias="torrenting")
-    maxResults: int = Field(20, alias="maxResults")
+    max_results: int = Field(20, alias="maxResults")
     sort: str | None = Field(None, alias="sort")
-    exclusionKeywords: list[str] = Field(
+    exclusion_keywords: list[str] = Field(
         default_factory=list, alias="exclusionKeywords"
     )
     exclusion: list[str] = Field(default_factory=list, alias="exclusion")
-    resultsPerQuality: int | None = Field(None, alias="resultsPerQuality")
-    maxSize: int = Field(0, alias="maxSize")
+    results_per_quality: int | None = Field(None, alias="resultsPerQuality")
+    max_size: int = Field(0, alias="maxSize")
 
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)

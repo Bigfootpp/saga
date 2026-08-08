@@ -17,7 +17,7 @@ class TorBox(BaseDebrid):
         super().__init__(config)
         self.base_url = "https://api.torbox.app/v1/api/"
         self.headers = {
-            "Authorization": f"Bearer {self.config.debridKey}",
+            "Authorization": f"Bearer {self.config.debrid_key}",
         }
 
     def wait_for_files(
@@ -79,7 +79,7 @@ class TorBox(BaseDebrid):
             return []
 
     def get_file_download_link(self, torrent_id: str, file_name: int) -> str:
-        url = f"{self.base_url}torrents/requestdl?token={self.config.debridKey}&torrent_id={torrent_id}&file_id={file_name}&zip_link=false&torrent_file=false"
+        url = f"{self.base_url}torrents/requestdl?token={self.config.debrid_key}&torrent_id={torrent_id}&file_id={file_name}&zip_link=false&torrent_file=false"
         response = self.get_json_response(url, method="get")
         if response and response.get("success", False):
             return response.get("data", "")
