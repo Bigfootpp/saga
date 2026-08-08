@@ -1,6 +1,6 @@
 from typing import Any
 
-from utils.filter.base_filter import BaseFilter
+from filtering.base_filter import BaseFilter
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)

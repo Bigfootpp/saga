@@ -2,16 +2,16 @@ from typing import Any, cast
 
 from RTN import RTN, DefaultRanking, SettingsModel, sort_torrents, title_match
 
+from filtering.language_filter import LanguageFilter
+from filtering.max_size_filter import MaxSizeFilter
+from filtering.quality_exclusion_filter import QualityExclusionFilter
+from filtering.results_per_quality_filter import ResultsPerQualityFilter
+from filtering.title_exclusion_filter import TitleExclusionFilter
 from jackett.jackett_result import JackettResult
 from models.config import Config
 from models.movie import Movie
 from models.series import Series
 from torrent.torrent_item import TorrentItem
-from utils.filter.language_filter import LanguageFilter
-from utils.filter.max_size_filter import MaxSizeFilter
-from utils.filter.quality_exclusion_filter import QualityExclusionFilter
-from utils.filter.results_per_quality_filter import ResultsPerQualityFilter
-from utils.filter.title_exclusion_filter import TitleExclusionFilter
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -64,6 +64,12 @@ def items_sort(items: list[TorrentItem], config: Config) -> list[TorrentItem]:
     if config.sort == "seedsdesc":
         return sorted(valid_items, key=lambda x: int(x.seeders), reverse=True)
     return valid_items
+
+
+def sort_items(items: list[TorrentItem], config: Config) -> list[TorrentItem]:
+    if config.sort is not None:
+        return items_sort(items, config)
+    return items
 
 
 def filter_out_non_matching(
@@ -142,10 +148,4 @@ def filter_items(
     logger.info(f"Item count after filtering: {len(items)}")
     logger.info("Finished filtering torrents")
 
-    return items
-
-
-def sort_items(items: list[TorrentItem], config: Config) -> list[TorrentItem]:
-    if config.sort is not None:
-        return items_sort(items, config)
     return items

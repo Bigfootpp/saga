@@ -1,6 +1,6 @@
 from typing import Any
 
-from utils.filter.base_filter import BaseFilter
+from filtering.base_filter import BaseFilter
 
 
 class TitleExclusionFilter(BaseFilter):

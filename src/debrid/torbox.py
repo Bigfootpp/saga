@@ -4,9 +4,10 @@ import time
 import requests
 
 from constants import NO_CACHE_VIDEO_URL
+from debrid.availability import AvailabilityResult, explore_nested_files
 from debrid.base_debrid import BaseDebrid
 from models.config import Config
-from utils.general import season_episode_in_filename
+from torrent.matching import season_episode_in_filename
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -173,9 +174,9 @@ class TorBox(BaseDebrid):
     ) -> dict:
         try:
             if method == "get":
-                response = requests.get(url, headers=headers, **kwargs)
+                response = self._session.get(url, headers=headers, **kwargs)
             elif method == "post":
-                response = requests.post(
+                response = self._session.post(
                     url, headers=headers, data=data, files=files, **kwargs
                 )
             else:
@@ -215,3 +216,27 @@ class TorBox(BaseDebrid):
                 continue
 
         return available_torrents
+
+    def extract_availability(
+        self, response: dict, hashes: list[str], media
+    ) -> AvailabilityResult:
+        result = AvailabilityResult()
+        from models.series import Series
+
+        type_ = media.type if media is not None else "movie"
+
+        for torrent_hash in hashes:
+            if torrent_hash not in response:
+                continue
+            torrent_data = response[torrent_hash]
+            if "files" not in torrent_data:
+                continue
+            files = explore_nested_files(
+                torrent_data["files"],
+                type_,
+                media.season if isinstance(media, Series) else None,
+                media.episode if isinstance(media, Series) else None,
+            )
+            if files:
+                result.files[torrent_hash] = files
+        return result

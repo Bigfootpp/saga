@@ -3,13 +3,11 @@ import time
 from urllib.parse import unquote
 
 from constants import NO_CACHE_VIDEO_URL
+from debrid.availability import AvailabilityResult
 from debrid.base_debrid import BaseDebrid
 from models.config import Config
-from utils.general import (
-    get_info_hash_from_magnet,
-    is_video_file,
-    season_episode_in_filename,
-)
+from torrent.magnet import get_info_hash_from_magnet
+from torrent.matching import is_video_file, season_episode_in_filename
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -377,3 +375,8 @@ class RealDebrid(BaseDebrid):
             return NO_CACHE_VIDEO_URL
 
         return links[index]
+
+    def extract_availability(
+        self, response: dict, hashes: list[str], media
+    ) -> "AvailabilityResult":
+        return AvailabilityResult()

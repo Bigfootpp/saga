@@ -3,9 +3,10 @@ import uuid
 from urllib.parse import unquote
 
 from constants import NO_CACHE_VIDEO_URL
+from debrid.availability import AvailabilityResult
 from debrid.base_debrid import BaseDebrid
 from models.config import Config
-from utils.general import season_episode_in_filename
+from torrent.matching import season_episode_in_filename
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -182,3 +183,8 @@ class AllDebrid(BaseDebrid):
 
         logger.info(f"New torrent ID: {torrent_id}")
         return torrent_id
+
+    def extract_availability(
+        self, response: dict, hashes: list[str], media
+    ) -> "AvailabilityResult":
+        return AvailabilityResult()

@@ -11,8 +11,8 @@ from RTN import parse as rtn_parse
 from jackett.jackett_result import JackettResult
 from models.movie import Movie
 from models.series import Series
+from torrent.magnet import get_info_hash_from_magnet
 from torrent.torrent_item import TorrentItem
-from utils.general import get_info_hash_from_magnet
 from utils.logger import setup_logger
 
 

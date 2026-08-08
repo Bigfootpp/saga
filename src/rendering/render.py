@@ -1,6 +1,4 @@
 import json
-import queue
-import threading
 from typing import Any
 
 from RTN import ParsedData
@@ -44,18 +42,21 @@ def filter_by_direct_torrent(item: dict[str, Any]) -> int:
     return 1 if item["name"].startswith(DIRECT_TORRENT) else 0
 
 
-def parse_to_debrid_stream(
+def _build_stream_entry(
     torrent_item: TorrentItem,
     configb64: str,
     host: str,
     torrenting: bool,
-    results: "queue.Queue[dict[str, Any]]",
     media: Media,
-) -> None:
+) -> list[dict[str, Any]]:
+    """Build stream entries (debrid + optional direct torrent) for a single torrent item."""
     parsed_data: ParsedData | None = torrent_item.parsed_data
     if parsed_data is None:
-        return
+        return []
 
+    entries = []
+
+    # Debrid stream entry
     if torrent_item.availability:
         name = f"{INSTANTLY_AVAILABLE}\n"
     else:
@@ -68,7 +69,6 @@ def parse_to_debrid_stream(
     size_in_gb = round(int(torrent_item.size) / 1024 / 1024 / 1024, 2)
 
     title = f"{torrent_item.raw_title}\n"
-
     if torrent_item.file_name is not None:
         title += f"{torrent_item.file_name}\n"
 
@@ -90,7 +90,7 @@ def parse_to_debrid_stream(
         json.dumps(torrent_item.to_debrid_stream_query(media))
     ).replace("=", "%3D")
 
-    results.put(
+    entries.append(
         {
             "name": name,
             "description": title,
@@ -104,6 +104,7 @@ def parse_to_debrid_stream(
         }
     )
 
+    # Direct torrent stream entry (if public and torrenting enabled)
     if torrenting and torrent_item.privacy == "public":
         name = f"{DIRECT_TORRENT}\n"
         if (
@@ -112,7 +113,7 @@ def parse_to_debrid_stream(
             and parsed_data.quality != ""
         ):
             name += f"({parsed_data.quality})"
-        results.put(
+        entries.append(
             {
                 "name": name,
                 "description": title,
@@ -129,45 +130,37 @@ def parse_to_debrid_stream(
             }
         )
 
+    return entries
 
-def parse_to_stremio_streams(
+
+def build_stream_response(
     torrent_items: list[TorrentItem],
     config: Config,
     media: Media,
 ) -> list[dict[str, Any]]:
+    """Build the complete stream response for Stremio."""
     stream_list: list[dict[str, Any]] = []
-    threads = []
-    thread_results_queue: queue.Queue[dict[str, Any]] = queue.Queue()
 
     configb64 = encodeb64(
         json.dumps(config.model_dump(by_alias=True)).replace("=", "%3D")
     )
+
     for torrent_item in torrent_items[: config.max_results]:
-        thread = threading.Thread(
-            target=parse_to_debrid_stream,
-            args=(
+        stream_list.extend(
+            _build_stream_entry(
                 torrent_item,
                 configb64,
-                config.addon_host,
-                config.torrenting,
-                thread_results_queue,
+                config.addon_host or "",
+                config.torrenting or False,
                 media,
-            ),
-            daemon=True,
+            )
         )
-        thread.start()
-        threads.append(thread)
 
-    for thread in threads:
-        thread.join()
-
-    while not thread_results_queue.empty():
-        stream_list.append(thread_results_queue.get())
-
-    if len(stream_list) == 0:
+    if not stream_list:
         return []
 
     if config.debrid:
         stream_list = sorted(stream_list, key=filter_by_availability)
         stream_list = sorted(stream_list, key=filter_by_direct_torrent)
+
     return stream_list

@@ -1,9 +1,11 @@
 import json
 
 from constants import NO_CACHE_VIDEO_URL
+from debrid.availability import AvailabilityResult
 from debrid.base_debrid import BaseDebrid
 from models.config import Config
-from utils.general import get_info_hash_from_magnet, season_episode_in_filename
+from torrent.magnet import get_info_hash_from_magnet
+from torrent.matching import season_episode_in_filename
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -146,3 +148,20 @@ class Premiumize(BaseDebrid):
 
         logger.info(f"Link generated: {link}")
         return link
+
+    def extract_availability(
+        self, response: dict, hashes: list[str], media
+    ) -> "AvailabilityResult":
+        from debrid.availability import AvailabilityResult
+
+        result = AvailabilityResult()
+        if "response" not in response or "transcoded" not in response:
+            return result
+
+        responses = response["response"]
+        transcoded = response["transcoded"]
+
+        for i, torrent_hash in enumerate(hashes):
+            if i < len(responses) and responses[i]:
+                result.flags[torrent_hash] = transcoded[i] is True
+        return result

@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 import time
+from abc import ABC, abstractmethod
 from typing import Any
 
 import requests
 
+from debrid.availability import AvailabilityResult
 from models.config import Config
 from utils.logger import setup_logger
 
 HTTP_TIMEOUT = 15.0
 
 
-class BaseDebrid:
+class BaseDebrid(ABC):
     def __init__(self, config: Config):
         self.config = config
         self.logger = setup_logger(__name__)
@@ -75,3 +79,18 @@ class BaseDebrid:
         self, hashes_or_magnets: list[str], ip: str | None = None
     ) -> dict:
         raise NotImplementedError
+
+    @abstractmethod
+    def extract_availability(
+        self, response: dict, hashes: list[str], media
+    ) -> AvailabilityResult:
+        """Extract normalized availability data from the provider's raw response.
+
+        Args:
+            response: Raw API response from get_availability_bulk.
+            hashes: List of info hashes in the same order as passed to get_availability_bulk.
+            media: Media object (Movie or Series) for season/episode context.
+
+        Returns:
+            AvailabilityResult with files and/or flags keyed by info_hash.
+        """

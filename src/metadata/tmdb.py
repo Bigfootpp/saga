@@ -1,7 +1,7 @@
 import requests
 
 from jackett.jackett_indexer import JackettIndexer
-from metdata.metadata_provider_base import MetadataProvider
+from metadata.base import MetadataProvider
 from models.config import Config
 from models.movie import Movie
 from models.series import Series
