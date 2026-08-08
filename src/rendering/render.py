@@ -31,7 +31,7 @@ def get_emoji(language: str) -> str:
         "la": "🇲🇽",
         "multi": "🌍",
     }
-    return emoji_dict.get(language, "🇬🇧")
+    return emoji_dict.get(language, "🏳️")
 
 
 def filter_by_availability(item: dict[str, Any]) -> int:
