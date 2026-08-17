@@ -1,5 +1,3 @@
-import json
-
 from RTN import ParsedData
 
 from models.config import Config
@@ -7,7 +5,6 @@ from models.media import Media
 from shared_types import StreamEntry
 from torrent.torrent_item import TorrentItem
 from utils.logger import setup_logger
-from utils.string_encoding import encodeb64
 
 logger = setup_logger(__name__)
 
@@ -44,10 +41,7 @@ def filter_by_direct_torrent(item: StreamEntry) -> int:
 
 def _build_stream_entry(
     torrent_item: TorrentItem,
-    configb64: str,
-    host: str,
     torrenting: bool,
-    media: Media,
 ) -> list[StreamEntry]:
     """Build stream entries (direct torrent only) for a single torrent item."""
     parsed_data: ParsedData | None = torrent_item.parsed_data
@@ -113,18 +107,11 @@ def build_stream_response(
     """Build the complete stream response for Stremio."""
     stream_list: list[StreamEntry] = []
 
-    configb64 = encodeb64(
-        json.dumps(config.model_dump(by_alias=True)).replace("=", "%3D")
-    )
-
     for torrent_item in torrent_items[: config.max_results]:
         stream_list.extend(
             _build_stream_entry(
                 torrent_item,
-                configb64,
-                config.addon_host or "",
                 config.torrenting or False,
-                media,
             )
         )
 
