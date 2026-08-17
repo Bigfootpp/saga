@@ -118,10 +118,10 @@ class TorrentService:
         return result
 
     def _process_magnet(self, result: TorrentItem) -> TorrentItem:
-        if result.magnet is None:
+        if not result.magnet:
             result.magnet = result.link
 
-        if result.info_hash is None:
+        if not result.info_hash:
             result.info_hash = get_info_hash_from_magnet(result.magnet)
 
         if not result.info_hash:
