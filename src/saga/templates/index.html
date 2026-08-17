@@ -212,36 +212,9 @@
 
         <!-- Filtering Section -->
         <div>
-            <h2 class="text-xl font-semibold text-white section-title">Filters & Sorting</h2>
+            <h2 class="text-xl font-semibold text-white section-title">Filters</h2>
 
             <div class="space-y-6">
-                <!-- Sorting -->
-                <div>
-                    <h3 class="text-sm font-medium text-gray-300 mb-3 uppercase tracking-wider">Sorting Strategy</h3>
-                    <div class="space-y-2">
-                        <label class="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer">
-                            <input id="quality" name="sorting" value="quality" type="radio" class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-600" checked>
-                            <span class="text-sm text-gray-200">Quality (Best first)</span>
-                        </label>
-                        <label class="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer">
-                            <input id="seedsdesc" name="sorting" value="seedsdesc" type="radio" class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-600">
-                            <span class="text-sm text-gray-200">Seeders (Descending)</span>
-                        </label>
-                        <label class="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer">
-                            <input id="sizedesc" name="sorting" value="sizedesc" type="radio" class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-600">
-                            <span class="text-sm text-gray-200">Size (Descending)</span>
-                        </label>
-                        <label class="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer">
-                            <input id="sizeasc" name="sorting" value="sizeasc" type="radio" class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-600">
-                            <span class="text-sm text-gray-200">Size (Ascending)</span>
-                        </label>
-                        <label class="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer">
-                            <input id="qualitythensize" name="sorting" value="qualitythensize" type="radio" class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 focus:ring-indigo-600">
-                            <span class="text-sm text-gray-200">Quality then Size</span>
-                        </label>
-                    </div>
-                </div>
-
                 <!-- Languages -->
                 <div>
                     <h3 class="text-sm font-medium text-gray-300 mb-3 uppercase tracking-wider">Languages</h3>
@@ -303,55 +276,7 @@
                     </div>
                 </div>
 
-                <!-- Limits & Exclusions -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="maxSize" class="block text-sm font-medium text-gray-300 mb-2">Max Size (GB)</label>
-                        <input type="number" name="maxSize" id="maxSize" class="input-field w-full rounded-lg py-3 px-4 text-sm" placeholder="e.g. 5">
-                    </div>
-                    <div>
-                        <label for="resultsPerQuality" class="block text-sm font-medium text-gray-300 mb-2">Results Per Quality</label>
-                        <input type="number" name="resultsPerQuality" id="resultsPerQuality" class="input-field w-full rounded-lg py-3 px-4 text-sm" placeholder="e.g. 5">
-                    </div>
-                    <div>
-                        <label for="maxResults" class="block text-sm font-medium text-gray-300 mb-2">Max Results Total</label>
-                        <input type="number" name="maxResults" id="maxResults" class="input-field w-full rounded-lg py-3 px-4 text-sm" placeholder="e.g. 10">
-                    </div>
-                </div>
-
-                <div>
-                    <h3 class="text-sm font-medium text-gray-300 mb-3 uppercase tracking-wider">Quality Exclusions</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
-                            <input type="checkbox" id="4k" name="4k" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>4K</span>
-                        </label>
-                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
-                            <input type="checkbox" id="1080p" name="1080p" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>1080p</span>
-                        </label>
-                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
-                            <input type="checkbox" id="720p" name="720p" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>720p</span>
-                        </label>
-                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
-                            <input type="checkbox" id="480p" name="480p" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>480p</span>
-                        </label>
-                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
-                            <input type="checkbox" id="rips" name="rips" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>RIPs</span>
-                        </label>
-                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
-                            <input type="checkbox" id="cam" name="cam" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>CAM</span>
-                        </label>
-                        <label class="flex items-center gap-2 p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer">
-                            <input type="checkbox" id="unknown" name="unknown" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> <span>Unknown</span>
-                        </label>
-                    </div>
-                </div>
-
-                 <div>
-                    <label for="exclusion-keywords" class="block text-sm font-medium text-gray-300 mb-2">Exclusion Keywords</label>
-                    <input type="text" name="exclusion-keywords" id="exclusion-keywords"
-                           class="input-field w-full rounded-lg py-3 px-4 text-sm"
-                           placeholder="dubbed, hardcoded, etc.">
-                </div>
+                
             </div>
         </div>
 

@@ -106,7 +106,7 @@ def build_stream_response(
     """Build the complete stream response for Stremio."""
     stream_list: list[StreamEntry] = []
 
-    for torrent_item in torrent_items[: config.max_results]:
+    for torrent_item in torrent_items[:20]:
         stream_list.extend(_build_stream_entry(torrent_item))
 
     if not stream_list:

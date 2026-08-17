@@ -11,11 +11,3 @@ class Config(BaseModel):
     languages: list[str] = Field(default_factory=list, alias="languages")
     get_all_languages: bool | None = Field(None, alias="getAllLanguages")
     addon_host: str | None = Field(None, alias="addonHost")
-    max_results: int = Field(20, alias="maxResults")
-    sort: str | None = Field(None, alias="sort")
-    exclusion_keywords: list[str] = Field(
-        default_factory=list, alias="exclusionKeywords"
-    )
-    exclusion: list[str] = Field(default_factory=list, alias="exclusion")
-    results_per_quality: int | None = Field(None, alias="resultsPerQuality")
-    max_size: int = Field(0, alias="maxSize")

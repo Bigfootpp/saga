@@ -1,11 +1,6 @@
 from RTN import RTN, DefaultRanking, SettingsModel, sort_torrents, title_match
 
-from saga.filtering.base_filter import BaseFilter
 from saga.filtering.language_filter import LanguageFilter
-from saga.filtering.max_size_filter import MaxSizeFilter
-from saga.filtering.quality_exclusion_filter import QualityExclusionFilter
-from saga.filtering.results_per_quality_filter import ResultsPerQualityFilter
-from saga.filtering.title_exclusion_filter import TitleExclusionFilter
 from saga.jackett.jackett_result import JackettResult
 from saga.models.config import Config
 from saga.models.movie import Movie
@@ -39,7 +34,7 @@ def items_sort(items: list[TorrentItem], config: Config) -> list[TorrentItem]:
 
     settings = SettingsModel(
         require=[],
-        exclude=list(config.exclusion_keywords + config.exclusion),
+        exclude=[],
     )
 
     rtn = RTN(settings=settings, ranking_model=DefaultRanking())
@@ -52,23 +47,12 @@ def items_sort(items: list[TorrentItem], config: Config) -> list[TorrentItem]:
         if index is not None:
             valid_items[index].parsed_data = rank.data
 
-    if config.sort == "quality":
-        return sorted(valid_items, key=sort_quality)
-    if config.sort == "qualitythensize":
-        return sorted(valid_items, key=lambda x: (sort_quality(x), -x.size))
-    if config.sort == "sizeasc":
-        return sorted(valid_items, key=lambda x: x.size)
-    if config.sort == "sizedesc":
-        return sorted(valid_items, key=lambda x: x.size, reverse=True)
-    if config.sort == "seedsdesc":
-        return sorted(valid_items, key=lambda x: int(x.seeders), reverse=True)
-    return valid_items
+    # Sort by quality (default), no other sort options
+    return sorted(valid_items, key=sort_quality)
 
 
 def sort_items(items: list[TorrentItem], config: Config) -> list[TorrentItem]:
-    if config.sort is not None:
-        return items_sort(items, config)
-    return items
+    return items_sort(items, config)
 
 
 def filter_out_non_matching(
@@ -118,31 +102,24 @@ def remove_non_matching_title(
 def filter_items(
     items: list[JackettResult], media: Movie | Series, config: Config
 ) -> list[JackettResult]:
-    filters: dict[str, BaseFilter[JackettResult]] = {
-        "languages": LanguageFilter(config),
-        "max_size": MaxSizeFilter(config, media.type),
-        "exclusion_keywords": TitleExclusionFilter(config),
-        "exclusion": QualityExclusionFilter(config),
-        "results_per_quality": ResultsPerQualityFilter(config),
-    }
-
     logger.info(f"Item count before filtering: {len(items)}")
+
     if isinstance(media, Series):
         logger.info("Filtering out non matching series torrents")
         items = filter_out_non_matching(items, media.season, media.episode)
         items = remove_non_matching_title(items, media.titles)
         logger.info(f"Item count changed to {len(items)}")
 
-    for filter_name, filter_instance in filters.items():
-        try:
-            cfg_attr = getattr(config, filter_name, None)
-            if cfg_attr:
-                logger.info(f"Filtering by {filter_name}: {cfg_attr}")
-            items = filter_instance(items)
-            if cfg_attr:
-                logger.info(f"Item count changed to {len(items)}")
-        except Exception:
-            logger.exception(f"Error while filtering by {filter_name}")
+    # Language filter only
+    language_filter = LanguageFilter(config)
+    try:
+        logger.info(f"Filtering by languages: {config.languages}")
+        items = language_filter(items)
+        logger.info(f"Item count changed to {len(items)}")
+    except Exception:
+        logger.exception("Error while filtering by languages")
+
     logger.info(f"Item count after filtering: {len(items)}")
+    logger.info("Finished filtering torrents")
 
     return items
