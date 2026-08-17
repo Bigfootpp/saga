@@ -104,8 +104,10 @@ def remove_non_matching_title(
 ) -> list[JackettResult]:
     filtered_items = []
     for item in items:
+        if item.parsed_data is None:
+            continue
         for title in titles:
-            if item.parsed_data is None or not title_match(
+            if not title_match(
                 title, item.parsed_data.parsed_title
             ):
                 continue
@@ -130,9 +132,8 @@ def filter_items(
     if isinstance(media, Series):
         logger.info("Filtering out non matching series torrents")
         items = filter_out_non_matching(items, media.season, media.episode)
+        items = remove_non_matching_title(items, media.titles)
         logger.info(f"Item count changed to {len(items)}")
-
-    items = remove_non_matching_title(items, media.titles)
 
     for filter_name, filter_instance in filters.items():
         try:
