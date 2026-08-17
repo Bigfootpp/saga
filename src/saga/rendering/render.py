@@ -41,7 +41,6 @@ def filter_by_direct_torrent(item: StreamEntry) -> int:
 
 def _build_stream_entry(
     torrent_item: TorrentItem,
-    torrenting: bool,
 ) -> list[StreamEntry]:
     """Build stream entries (direct torrent only) for a single torrent item."""
     parsed_data: ParsedData | None = torrent_item.parsed_data
@@ -50,8 +49,8 @@ def _build_stream_entry(
 
     entries: list[StreamEntry] = []
 
-    # Direct torrent stream entry (if public and torrenting enabled)
-    if torrenting and torrent_item.privacy == "public":
+    # Direct torrent stream entry (if public)
+    if torrent_item.privacy == "public":
         name = f"{DIRECT_TORRENT}\n"
         if (
             parsed_data.quality
@@ -108,12 +107,7 @@ def build_stream_response(
     stream_list: list[StreamEntry] = []
 
     for torrent_item in torrent_items[: config.max_results]:
-        stream_list.extend(
-            _build_stream_entry(
-                torrent_item,
-                config.torrenting or False,
-            )
-        )
+        stream_list.extend(_build_stream_entry(torrent_item))
 
     if not stream_list:
         return []

@@ -155,43 +155,7 @@
     </div>
 
     <form class="space-y-8" onsubmit="return false;">
-
-        <!-- Streaming Section -->
-        <div>
-            <h2 class="text-xl font-semibold text-white section-title">Streaming Configuration</h2>
-            <div class="space-y-4">
-                <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
-                    <div class="flex h-6 items-center">
-                        <input id="torrenting" name="torrenting" value="torrenting" type="checkbox"
-                               class="w-5 h-5 rounded border-gray-600 text-indigo-600 focus:ring-indigo-600 bg-gray-700"
-                               oninput="updateProviderFields(true)">
-                    </div>
-                    <div>
-                        <label for="torrenting" class="font-medium text-white cursor-pointer">Enable Direct Torrenting</label>
-                        <p class="text-sm text-gray-400">Stream directly via P2P <span class="text-red-400 text-xs font-bold uppercase ml-1">(Caution: IP Exposed)</span></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         {% if not isCommunityVersion %}
-        <!-- Providers Section -->
-        <div>
-            <h2 class="text-xl font-semibold text-white section-title">Torrent Providers</h2>
-            <div class="space-y-4">
-                <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
-                    <div class="flex h-6 items-center">
-                        <input id="jackett" name="jackett" value="jackett" type="checkbox"
-                               class="w-5 h-5 rounded border-gray-600 text-indigo-600 focus:ring-indigo-600 bg-gray-700" checked
-                               oninput="updateProviderFields(true)">
-                    </div>
-                    <div>
-                        <label for="jackett" class="font-medium text-white cursor-pointer">Enable Jackett</label>
-                        <p class="text-sm text-gray-400">Use your own Jackett instance for more results</p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Jackett Config -->
         <div id="jackett-fields" class="space-y-4 animate-fade-in">

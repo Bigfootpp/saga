@@ -107,9 +107,7 @@ def remove_non_matching_title(
         if item.parsed_data is None:
             continue
         for title in titles:
-            if not title_match(
-                title, item.parsed_data.parsed_title
-            ):
+            if not title_match(title, item.parsed_data.parsed_title):
                 continue
             filtered_items.append(item)
             break
@@ -139,9 +137,7 @@ def filter_items(
         try:
             cfg_attr = getattr(config, filter_name, None)
             if cfg_attr:
-                logger.info(
-                    f"Filtering by {filter_name}: {cfg_attr}"
-                )
+                logger.info(f"Filtering by {filter_name}: {cfg_attr}")
             items = filter_instance(items)
             if cfg_attr:
                 logger.info(f"Item count changed to {len(items)}")

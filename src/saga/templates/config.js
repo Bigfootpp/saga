@@ -15,12 +15,7 @@ function setElementDisplay(elementId, displayStatus) {
 }
 
 function updateProviderFields(isChangeEvent = false) {
-    const jackettEl = document.getElementById('jackett');
-    if (jackettEl?.checked) {
-        setElementDisplay('jackett-fields', 'block');
-    } else {
-        setElementDisplay('jackett-fields', 'none');
-    }
+    setElementDisplay('jackett-fields', 'block');
     const tmdbEl = document.getElementById('tmdb');
     if (tmdbEl?.checked) {
         setElementDisplay('tmdb-fields', 'block');
@@ -46,9 +41,6 @@ function loadData() {
             document.getElementById('jackett-api').value = data.jackettApiKey;
         }
         document.getElementById('tmdb-api').value = data.tmdbApi;
-        const jackettEl = document.getElementById('jackett');
-        if (jackettEl) jackettEl.checked = data.jackett;
-        document.getElementById('torrenting').checked = data.torrenting;
         document.getElementById('tmdb').checked = data.metadataProvider === 'tmdb';
         document.getElementById('cinemeta').checked = data.metadataProvider === 'cinemeta';
 
@@ -98,8 +90,6 @@ function getLink(method) {
     let maxSize = document.getElementById('maxSize')?.value || '';
     let resultsPerQuality = document.getElementById('resultsPerQuality')?.value || '';
     let maxResults = document.getElementById('maxResults')?.value || '';
-    const jackett = document.getElementById('jackett')?.checked || false;
-    const torrenting = document.getElementById('torrenting')?.checked || false;
     const metadataProvider = document.getElementById('tmdb')?.checked ? 'tmdb' : 'cinemeta';
     const selectedQualityExclusion = [];
 
@@ -139,12 +129,10 @@ function getLink(method) {
         maxResults,
         'exclusion': selectedQualityExclusion,
         tmdbApi,
-        jackett,
-        torrenting,
         metadataProvider
     };
 
-    if ((jackett && (jackettHost === '' || jackettApi === '')) || (metadataProvider === 'tmdb' && tmdbApi === '') || selectedLanguages.length === 0) {
+    if ((jackettHost === '' || jackettApi === '') || (metadataProvider === 'tmdb' && tmdbApi === '') || selectedLanguages.length === 0) {
         alert('Please fill all required fields');
         return false;
     }

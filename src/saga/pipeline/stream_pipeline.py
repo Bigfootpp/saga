@@ -45,7 +45,7 @@ class StreamPipeline:
         # Select metadata provider
         if self.config.metadata_provider == "tmdb" and self.config.tmdb_api:
             metadata_provider = TMDB(self.config)
-            if not self.community_version and self.config.jackett:
+            if not self.community_version:
                 jackett_client = JackettClient(self.config)
                 metadata_provider.indexers = jackett_client.get_indexers()
         else:
@@ -61,8 +61,8 @@ class StreamPipeline:
 
         search_results = []
 
-        # Search Jackett if enabled
-        if not self.community_version and self.config.jackett:
+        # Search Jackett
+        if not self.community_version:
             self.logger.info("Searching for results on Jackett")
             jackett_client = JackettClient(self.config)
             jackett_search_results = jackett_client.search(media)
