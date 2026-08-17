@@ -3,19 +3,15 @@ import os
 import re
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-from starlette import status
 from starlette.responses import FileResponse
 
-from debrid.get_debrid_service import get_debrid_service
 from models.manifest import ManifestResponse
 from pipeline.stream_pipeline import StreamPipeline
 from utils.logger import setup_logger
-from utils.parse_config import parse_config
-from utils.string_encoding import decodeb64
 
 load_dotenv()
 
@@ -109,7 +105,7 @@ async def get_manifest():
     return ManifestResponse(
         id=ADDON_ID,
         icon="https://i.imgur.com/tVjqEJP.png",
-        name="Jackett"
+        name="Saga"
         + (" Community" if COMMUNITY_VERSION else "")
         + (" (Dev)" if isDev else ""),
         version=VERSION,
@@ -121,38 +117,13 @@ async def get_manifest():
     )
 
 
-logger.info("Started Jackett Addon")
+logger.info("Started Saga Addon")
 
 
 @app.get("/{config}/stream/{stream_type}/{stream_id}")
 async def get_results(config: str, stream_type: str, stream_id: str, request: Request):
     pipeline = StreamPipeline.from_request(request, config, COMMUNITY_VERSION)
     return pipeline.build_streams(stream_type, stream_id)
-
-
-@app.get("/playback/{config}/{query}")
-@app.head("/playback/{config}/{query}")
-async def get_playback(config: str, query: str, request: Request):
-    try:
-        if not query:
-            raise HTTPException(status_code=400, detail="Query required.")
-        config_obj = parse_config(config)
-        logger.info("Decoding query")
-        query = decodeb64(query)
-        logger.info(query)
-        logger.info("Decoded query")
-        ip = request.client.host if request.client else "127.0.0.1"
-        debrid_service = get_debrid_service(config_obj)
-        link = debrid_service.get_stream_link(query, ip)
-
-        logger.info(f"Got link: {link}")
-        return RedirectResponse(url=link, status_code=status.HTTP_301_MOVED_PERMANENTLY)
-
-    except (ValueError, KeyError, RuntimeError) as e:
-        logger.error(f"An error occurred: {e}")
-        raise HTTPException(
-            status_code=500, detail="An error occurred while processing the request."
-        )
 
 
 if __name__ == "__main__":

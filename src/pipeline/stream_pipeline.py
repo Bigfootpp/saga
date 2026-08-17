@@ -3,14 +3,13 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING
 
-from debrid.get_debrid_service import get_debrid_service
 from filtering.pipeline import filter_items, sort_items
 from jackett.client import JackettClient
 from metadata.cinemeta import Cinemeta
 from metadata.tmdb import TMDB
 from models.config import Config
 from rendering.render import build_stream_response
-from torrent.container import TorrentSmartContainer
+from torrent.container import TorrentContainer
 from torrent.torrent_service import TorrentService
 from utils.logger import setup_logger
 from utils.parse_config import parse_config
@@ -60,9 +59,6 @@ class StreamPipeline:
             return {"streams": []}
         self.logger.info(f"Got media and properties: {media.titles}")
 
-        # Get debrid service
-        debrid_service = get_debrid_service(self.config)
-
         search_results = []
 
         # Search Jackett if enabled
@@ -89,16 +85,7 @@ class StreamPipeline:
         )
 
         # Build container
-        torrent_container = TorrentSmartContainer(torrent_results, media)
-
-        # Check debrid availability for supported services
-        if self.config.debrid and self.config.service in ["torbox", "premiumize"]:
-            self.logger.debug("Checking availability")
-            hashes = torrent_container.get_hashes()
-            result = debrid_service.get_availability_bulk(hashes, self.request_ip)
-            avail_result = debrid_service.extract_availability(result, hashes, media)
-            torrent_container.apply_availability(avail_result)
-            self.logger.debug(f"Checked availability (results: {len(result.items())})")
+        torrent_container = TorrentContainer(torrent_results, media)
 
         # Get best matching and sort
         self.logger.debug("Getting best matching results")

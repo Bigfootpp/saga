@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -12,9 +11,6 @@ class Config(BaseModel):
     tmdb_api: str | None = Field(None, alias="tmdbApi")
     languages: list[str] = Field(default_factory=list, alias="languages")
     get_all_languages: bool | None = Field(None, alias="getAllLanguages")
-    debrid: bool | None = Field(None, alias="debrid")
-    service: str | None = Field(None, alias="service")
-    debrid_key: str | None = Field(None, alias="debridKey")
     addon_host: str | None = Field(None, alias="addonHost")
     torrenting: bool | None = Field(None, alias="torrenting")
     max_results: int = Field(20, alias="maxResults")

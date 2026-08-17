@@ -39,7 +39,7 @@ class TorrentItem(BaseModel):
     def _normalize_info_hash(cls, v: str) -> str:
         return v.lower() if v else v
 
-    def to_debrid_stream_query(self, media: Media) -> dict[str, object]:
+    def to_stream_query(self, media: Media) -> dict[str, object]:
         return {
             "magnet": self.magnet,
             "type": self.type,

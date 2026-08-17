@@ -162,18 +162,6 @@
             <div class="space-y-4">
                 <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
                     <div class="flex h-6 items-center">
-                        <input id="debrid" name="debrid" value="debrid" type="checkbox"
-                               class="w-5 h-5 rounded border-gray-600 text-indigo-600 focus:ring-indigo-600 bg-gray-700" checked
-                               oninput="updateProviderFields(true)">
-                    </div>
-                    <div>
-                        <label for="debrid" class="font-medium text-white cursor-pointer">Enable Debrid Service</label>
-                        <p class="text-sm text-gray-400">Enable for high-speed secure streaming via Real-Debrid, AllDebrid, etc.</p>
-                    </div>
-                </div>
-
-                <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
-                    <div class="flex h-6 items-center">
                         <input id="torrenting" name="torrenting" value="torrenting" type="checkbox"
                                class="w-5 h-5 rounded border-gray-600 text-indigo-600 focus:ring-indigo-600 bg-gray-700"
                                oninput="updateProviderFields(true)">
@@ -236,34 +224,6 @@
             </div>
         </div>
         {% endif %}
-
-        <!-- Debrid Config -->
-        <div id="debrid-fields" class="space-y-4">
-            <h2 class="text-xl font-semibold text-white section-title">Debrid Configuration</h2>
-            <div class="grid grid-cols-1 gap-6">
-                <div>
-                    <label for="service" class="block text-sm font-medium text-gray-300 mb-2">Service Provider</label>
-                    <div class="relative">
-                        <select id="service" name="service"
-                                class="input-field w-full rounded-lg py-3 px-4 text-sm appearance-none">
-                            <option value="realdebrid">Real-Debrid</option>
-                            <option value="alldebrid">All-Debrid</option>
-                            <option value="premiumize">Premiumize</option>
-                            <option value="torbox">TorBox</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <label for="debrid-api" class="block text-sm font-medium text-gray-300 mb-2">Debrid API Key</label>
-                    <input type="text" name="debrid-api" id="debrid-api"
-                           class="input-field w-full rounded-lg py-3 px-4 text-sm"
-                           placeholder="Paste your API key here">
-                </div>
-            </div>
-        </div>
 
         <!-- Metadata Config -->
         <div>
