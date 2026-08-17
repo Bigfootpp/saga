@@ -1,57 +1,37 @@
-from RTN import parse
+from __future__ import annotations
+
+from pydantic import BaseModel, ConfigDict, Field
+from RTN import ParsedData
 
 from torrent.torrent_item import TorrentItem
-from utils.logger import setup_logger
 
-logger = setup_logger(__name__)
 
-class JackettResult:
-    def __init__(self):
-        self.raw_title: str | None = None  # Raw title of the torrent
-        self.size: str | None = None  # Size of the torrent
-        self.link: str | None = None  # Download link for the torrent file or magnet url
-        self.indexer: str | None = None  # Indexer
-        self.seeders: str | None = None  # Seeders count
-        self.magnet: str | None = None  # Magnet url
-        self.info_hash: str | None = None  # infoHash by Jackett
-        self.privacy: str | None = None  # public or private
+class JackettResult(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
 
-        # Extra processed details for further filtering
-        self.languages = None  # Language of the torrent
-        self.type = None  # series or movie
+    raw_title: str | None = Field(None, alias="rawTitle")
+    size: str | None = Field(None, alias="size")
+    link: str | None = Field(None, alias="link")
+    indexer: str | None = Field(None, alias="indexer")
+    seeders: str | None = Field(None, alias="seeders")
+    magnet: str | None = Field(None, alias="magnet")
+    info_hash: str | None = Field(None, alias="infoHash")
+    privacy: str | None = Field(None, alias="privacy")
+    languages: list[str] = Field(default_factory=list, alias="languages")
+    type: str | None = Field(default=None, alias="type")
+    parsed_data: ParsedData | None = Field(default=None, alias="parsedData")
 
-        self.parsed_data = None  # Ranked result
-
-    def convert_to_torrent_item(self):
+    def convert_to_torrent_item(self) -> TorrentItem:
         return TorrentItem(
-            self.raw_title,
-            self.size,
-            self.magnet,
-            self.info_hash.lower() if self.info_hash is not None else None,
-            self.link,
-            self.seeders,
-            self.languages,
-            self.indexer,
-            self.privacy,
-            self.type,
-            self.parsed_data
+            rawTitle=self.raw_title or "",
+            size=int(self.size) if self.size else 0,
+            magnet=self.magnet or "",
+            infoHash=self.info_hash or "",
+            link=self.link or "",
+            seeders=self.seeders or "0",
+            languages=self.languages,
+            indexer=self.indexer or "",
+            privacy=self.privacy or "public",
+            type=self.type,
+            parsedData=self.parsed_data,
         )
-
-    def from_cached_item(self, cached_item, media):
-        if type(cached_item) is not dict:
-            logger.error(cached_item)
-
-        parsed_result = parse(cached_item['title'])
-
-        self.raw_title = cached_item['title']
-        self.indexer = "Cache"  # Cache doesn't return an indexer sadly (It stores it tho)
-        self.magnet = cached_item['magnet']
-        self.link = cached_item['magnet']
-        self.info_hash = cached_item['hash']
-        self.languages = cached_item['language'].split(";") if cached_item['language'] is not None else []
-        self.seeders = cached_item['seeders']
-        self.size = cached_item['size']
-        self.type = media.type
-        self.parsed_data = parsed_result
-
-        return self

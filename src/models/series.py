@@ -1,9 +1,3 @@
-from models.media import Media
+from models.media import Series
 
-
-class Series(Media):
-    def __init__(self, id, titles, season, episode, languages):
-        super().__init__(id, titles, languages, "series")
-        self.season = season
-        self.episode = episode
-        self.seasonfile = None
+__all__ = ["Series"]

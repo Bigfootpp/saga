@@ -1,29 +1,46 @@
+from __future__ import annotations
+
 import time
+from abc import ABC, abstractmethod
+from collections.abc import Callable
 
 import requests
 
+from debrid.availability import AvailabilityResult
+from models.config import Config
+from models.movie import Movie
+from models.series import Series
 from utils.logger import setup_logger
 
+HTTP_TIMEOUT = 15.0
+MediaType = Movie | Series
 
-class BaseDebrid:
-    def __init__(self, config):
+
+class BaseDebrid(ABC):
+    def __init__(self, config: Config):
         self.config = config
         self.logger = setup_logger(__name__)
-        self.__session = requests.Session()
+        self._session = requests.Session()
 
-    def get_json_response(self, url, method='get', data=None, headers=None, files=None):
-        if method == 'get':
-            response = self.__session.get(url, headers=headers)
-        elif method == 'post':
-            response = self.__session.post(url, data=data, headers=headers, files=files)
-        elif method == 'put':
-            response = self.__session.put(url, data=data, headers=headers)
-        elif method == 'delete':
-            response = self.__session.delete(url, headers=headers)
+    def get_json_response(
+        self,
+        url: str,
+        method: str = "get",
+        data: dict | bytes | None = None,
+        headers: dict | None = None,
+        files: dict | None = None,
+    ) -> dict | None:
+        if method == "get":
+            response = self._session.get(url, headers=headers)
+        elif method == "post":
+            response = self._session.post(url, data=data, headers=headers, files=files)
+        elif method == "put":
+            response = self._session.put(url, data=data, headers=headers)
+        elif method == "delete":
+            response = self._session.delete(url, headers=headers)
         else:
             raise ValueError(f"Unsupported HTTP method: {method}")
 
-        # Check if the request was successful
         if response.ok:
             try:
                 return response.json()
@@ -34,7 +51,12 @@ class BaseDebrid:
             self.logger.error(f"Request failed with status code {response.status_code}")
             return None
 
-    def wait_for_ready_status(self, check_status_func, timeout=30, interval=5):
+    def wait_for_ready_status(
+        self,
+        check_status_func: Callable[[], bool],
+        timeout: int = 30,
+        interval: int = 5,
+    ) -> bool:
         self.logger.info(f"Waiting for {timeout} seconds to cache.")
         start_time = time.time()
         while time.time() - start_time < timeout:
@@ -42,20 +64,36 @@ class BaseDebrid:
                 self.logger.info("File is ready!")
                 return True
             time.sleep(interval)
-        self.logger.info(f"Waiting timed out.")
+        self.logger.info("Waiting timed out.")
         return False
 
-    def donwload_torrent_file(self, download_url):
-        response = requests.get(download_url)
+    def download_torrent_file(self, download_url: str) -> bytes:
+        response = self._session.get(download_url, timeout=HTTP_TIMEOUT)
         response.raise_for_status()
-
         return response.content
 
-    def get_stream_link(self, query, ip=None):
+    def get_stream_link(self, query_string: str, ip: str | None = None) -> str:
         raise NotImplementedError
 
-    def add_magnet(self, magnet, ip=None):
+    def add_magnet(self, magnet: str, ip: str | None = None) -> dict | None:
         raise NotImplementedError
 
-    def get_availability_bulk(self, hashes_or_magnets, ip=None):
+    def get_availability_bulk(
+        self, hashes_or_magnets: list[str], ip: str | None = None
+    ) -> dict:
         raise NotImplementedError
+
+    @abstractmethod
+    def extract_availability(
+        self, response: dict, hashes: list[str], media: MediaType
+    ) -> AvailabilityResult:
+        """Extract normalized availability data from the provider's raw response.
+
+        Args:
+            response: Raw API response from get_availability_bulk.
+            hashes: List of info hashes in the same order as passed to get_availability_bulk.
+            media: Media object (Movie or Series) for season/episode context.
+
+        Returns:
+            AvailabilityResult with files and/or flags keyed by info_hash.
+        """

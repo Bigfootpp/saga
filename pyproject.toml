@@ -6,10 +6,10 @@ readme = "README.md"
 authors = [{ name = "Bigfootpp" }]
 requires-python = ">=3.12"
 dependencies = [
-    "aiocron>=2.1",
     "bencode-py>=4.1.0",
     "fastapi>=0.141.1",
     "jinja2>=3.1.6",
+    "pydantic>=2.13.4",
     "python-dotenv>=1.2.2",
     "rank-torrent-name>=1.11.1",
     "requests>=2.34.2",
