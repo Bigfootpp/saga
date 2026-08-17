@@ -46,9 +46,6 @@ function loadData() {
         if (document.getElementById('jackett')) {
             document.getElementById('jackett').checked = data.jackett;
         }
-        if (document.getElementById('cache')) {
-            document.getElementById('cache').checked = data.cache;
-        }
         document.getElementById('torrenting').checked = data.torrenting;
         document.getElementById('tmdb').checked = data.metadataProvider === 'tmdb';
         document.getElementById('cinemeta').checked = data.metadataProvider === 'cinemeta';
@@ -101,7 +98,6 @@ function getLink(method) {
     let resultsPerQuality = document.getElementById('resultsPerQuality').value;
     let maxResults = document.getElementById('maxResults').value;
     const jackett = document.getElementById('jackett')?.checked;
-    const cache = document.getElementById('cache')?.checked;
     const torrenting = document.getElementById('torrenting').checked;
     const metadataProvider = document.getElementById('tmdb').checked ? 'tmdb' : 'cinemeta';
     const selectedQualityExclusion = [];
@@ -151,7 +147,6 @@ function getLink(method) {
         'exclusion': selectedQualityExclusion,
         tmdbApi,
         jackett,
-        cache,
         torrenting,
         metadataProvider
     };
