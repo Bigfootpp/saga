@@ -1,3 +1,3 @@
 NO_CACHE_VIDEO_URL = (
-    "https://github.com/aymene69/stremio-jackett/raw/main/source/videos/nocache.mp4"
+    "https://github.com/Bigfootpp/saga/raw/refs/heads/main/src/videos/nocache.mp4"
 )

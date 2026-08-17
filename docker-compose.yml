@@ -1,4 +1,4 @@
-name: stremio_jacketr
+name: saga_stack
 
 services:
   flaresolverr:
@@ -15,8 +15,8 @@ services:
     ports:
       - "9117:9117"
 
-  stremio-jackett-p2p:
+  saga:
     build: .
-    container_name: stremio-jackett-p2p
+    container_name: saga
     ports:
       - "3000:3000"

@@ -98,7 +98,7 @@ def _build_stream_entry(
             "infoHash": None,
             "fileIdx": None,
             "behaviorHints": {
-                "bingeGroup": f"stremio-jackett-{torrent_item.info_hash}",
+                "bingeGroup": f"saga-{torrent_item.info_hash}",
                 "filename": torrent_item.file_name
                 if torrent_item.file_name is not None
                 else torrent_item.raw_title,
@@ -125,7 +125,7 @@ def _build_stream_entry(
                 if torrent_item.file_index
                 else None,
                 "behaviorHints": {
-                    "bingeGroup": f"stremio-jackett-{torrent_item.info_hash}",
+                    "bingeGroup": f"saga-{torrent_item.info_hash}",
                     "filename": torrent_item.file_name
                     if torrent_item.file_name is not None
                     else torrent_item.raw_title,

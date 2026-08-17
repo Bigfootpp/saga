@@ -1,7 +1,7 @@
 [project]
-name = "stremio-jackett-p2p"
+name = "saga"
 version = "0.1.0"
-description = "Add your description here"
+description = "A clean, Jackett resolver for Stremio"
 readme = "README.md"
 authors = [{ name = "Bigfootpp" }]
 requires-python = ">=3.12"
