@@ -15,17 +15,20 @@ function setElementDisplay(elementId, displayStatus) {
 }
 
 function updateProviderFields(isChangeEvent = false) {
-    if (document.getElementById('jackett')?.checked) {
+    const jackettEl = document.getElementById('jackett');
+    if (jackettEl?.checked) {
         setElementDisplay('jackett-fields', 'block');
     } else {
         setElementDisplay('jackett-fields', 'none');
     }
-    if (document.getElementById('tmdb')?.checked) {
+    const tmdbEl = document.getElementById('tmdb');
+    if (tmdbEl?.checked) {
         setElementDisplay('tmdb-fields', 'block');
     } else {
         setElementDisplay('tmdb-fields', 'none');
     }
-    if (!document.getElementById('get-all-languages')?.checked) {
+    const getAllLangsEl = document.getElementById('get-all-languages');
+    if (!getAllLangsEl?.checked) {
         setElementDisplay('languages-fields', 'block');
     } else {
         setElementDisplay('languages-fields', 'none');
@@ -43,32 +46,29 @@ function loadData() {
             document.getElementById('jackett-api').value = data.jackettApiKey;
         }
         document.getElementById('tmdb-api').value = data.tmdbApi;
-        if (document.getElementById('jackett')) {
-            document.getElementById('jackett').checked = data.jackett;
-        }
+        const jackettEl = document.getElementById('jackett');
+        if (jackettEl) jackettEl.checked = data.jackett;
         document.getElementById('torrenting').checked = data.torrenting;
         document.getElementById('tmdb').checked = data.metadataProvider === 'tmdb';
         document.getElementById('cinemeta').checked = data.metadataProvider === 'cinemeta';
 
         sorts.forEach(sort => {
-            if (data.sort === sort) {
-                document.getElementById(sort).checked = true;
-            }
+            const el = document.getElementById(sort);
+            if (el && data.sort === sort) el.checked = true;
         });
 
         qualityExclusions.forEach(quality => {
-            if (data.exclusion.includes(quality)) {
-                document.getElementById(quality).checked = true;
-            }
-        })
-
-        languages.forEach(language => {
-            if (data.languages.includes(language)) {
-                document.getElementById(language).checked = true;
-            }
+            const el = document.getElementById(quality);
+            if (el && data.exclusion.includes(quality)) el.checked = true;
         });
 
-        document.getElementById('get-all-languages').checked = data.getAllLanguages;
+        languages.forEach(language => {
+            const el = document.getElementById(language);
+            if (el && data.languages.includes(language)) el.checked = true;
+        });
+
+        const getAllLangsEl = document.getElementById('get-all-languages');
+        if (getAllLangsEl) getAllLangsEl.checked = data.getAllLanguages;
     }
 }
 
@@ -76,6 +76,7 @@ let showLanguageCheckBoxes = true;
 
 function showCheckboxes() {
     let checkboxes = document.getElementById("languageCheckBoxes");
+    if (!checkboxes) return;
 
     if (showLanguageCheckBoxes) {
         checkboxes.style.display = "block";
@@ -89,50 +90,42 @@ function showCheckboxes() {
 loadData();
 
 function getLink(method) {
-    const addonHost = new URL(window.location.href).protocol.replace(':', '') + "://" + new URL(window.location.href).host
+    const addonHost = new URL(window.location.href).protocol.replace(':', '') + "://" + new URL(window.location.href).host;
     const jackettHost = document.getElementById('jackett-host')?.value;
     const jackettApi = document.getElementById('jackett-api')?.value;
     const tmdbApi = document.getElementById('tmdb-api').value;
-    const exclusionKeywords = document.getElementById('exclusion-keywords').value.split(',').map(keyword => keyword.trim()).filter(keyword => keyword !== '');
-    let maxSize = document.getElementById('maxSize').value;
-    let resultsPerQuality = document.getElementById('resultsPerQuality').value;
-    let maxResults = document.getElementById('maxResults').value;
-    const jackett = document.getElementById('jackett')?.checked;
-    const torrenting = document.getElementById('torrenting').checked;
-    const metadataProvider = document.getElementById('tmdb').checked ? 'tmdb' : 'cinemeta';
+    const exclusionKeywords = document.getElementById('exclusion-keywords')?.value.split(',').map(keyword => keyword.trim()).filter(keyword => keyword !== '') || [];
+    let maxSize = document.getElementById('maxSize')?.value || '';
+    let resultsPerQuality = document.getElementById('resultsPerQuality')?.value || '';
+    let maxResults = document.getElementById('maxResults')?.value || '';
+    const jackett = document.getElementById('jackett')?.checked || false;
+    const torrenting = document.getElementById('torrenting')?.checked || false;
+    const metadataProvider = document.getElementById('tmdb')?.checked ? 'tmdb' : 'cinemeta';
     const selectedQualityExclusion = [];
 
     qualityExclusions.forEach(quality => {
-        if (document.getElementById(quality).checked) {
-            selectedQualityExclusion.push(quality);
-        }
+        const el = document.getElementById(quality);
+        if (el?.checked) selectedQualityExclusion.push(quality);
     });
 
     const selectedLanguages = [];
     languages.forEach(language => {
-        if (document.getElementById(language).checked) {
-            selectedLanguages.push(language);
-        }
+        const el = document.getElementById(language);
+        if (el?.checked) selectedLanguages.push(language);
     });
 
-    const getAllLanguages = document.getElementById('get-all-languages').checked;
+    const getAllLanguages = document.getElementById('get-all-languages')?.checked || false;
 
     let filter;
     sorts.forEach(sort => {
-        if (document.getElementById(sort).checked) {
-            filter = sort;
-        }
+        const el = document.getElementById(sort);
+        if (el?.checked) filter = sort;
     });
 
-    if (maxSize === '' || isNaN(maxSize)) {
-        maxSize = 0;
-    }
-    if (maxResults === '' || isNaN(maxResults)) {
-        maxResults = 5;
-    }
-    if (resultsPerQuality === '' || isNaN(resultsPerQuality)) {
-        resultsPerQuality = 1;
-    }
+    if (maxSize === '' || isNaN(maxSize)) maxSize = 0;
+    if (maxResults === '' || isNaN(maxResults)) maxResults = 5;
+    if (resultsPerQuality === '' || isNaN(resultsPerQuality)) resultsPerQuality = 1;
+
     let data = {
         addonHost,
         jackettHost,
@@ -150,7 +143,8 @@ function getLink(method) {
         torrenting,
         metadataProvider
     };
-    if ((jackett && (jackettHost === '' || jackettApi === '')) || (metadataProvider === 'tmdb' && tmdbApi === '') || languages.length === 0) {
+
+    if ((jackett && (jackettHost === '' || jackettApi === '')) || (metadataProvider === 'tmdb' && tmdbApi === '') || selectedLanguages.length === 0) {
         alert('Please fill all required fields');
         return false;
     }
