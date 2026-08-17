@@ -1,5 +1,6 @@
 from RTN import RTN, DefaultRanking, SettingsModel, sort_torrents, title_match
 
+from filtering.base_filter import BaseFilter
 from filtering.language_filter import LanguageFilter
 from filtering.max_size_filter import MaxSizeFilter
 from filtering.quality_exclusion_filter import QualityExclusionFilter
@@ -80,7 +81,6 @@ def filter_out_non_matching(
         parsed_data = item.parsed_data
         if parsed_data is None:
             continue
-        logger.info(f"Season: {season}, Episode: {episode}, Parsed: {parsed_data}")
         try:
             if len(parsed_data.seasons) == 0 and len(parsed_data.episodes) == 0:
                 continue
@@ -118,7 +118,7 @@ def remove_non_matching_title(
 def filter_items(
     items: list[JackettResult], media: Movie | Series, config: Config
 ) -> list[JackettResult]:
-    filters = {
+    filters: dict[str, BaseFilter[JackettResult]] = {
         "languages": LanguageFilter(config),
         "max_size": MaxSizeFilter(config, media.type),
         "exclusion_keywords": TitleExclusionFilter(config),
@@ -136,14 +136,16 @@ def filter_items(
 
     for filter_name, filter_instance in filters.items():
         try:
-            logger.info(
-                f"Filtering by {filter_name}: {getattr(config, filter_name, None)}"
-            )
+            cfg_attr = getattr(config, filter_name, None)
+            if cfg_attr:
+                logger.info(
+                    f"Filtering by {filter_name}: {cfg_attr}"
+                )
             items = filter_instance(items)
-            logger.info(f"Item count changed to {len(items)}")
+            if cfg_attr:
+                logger.info(f"Item count changed to {len(items)}")
         except Exception:
             logger.exception(f"Error while filtering by {filter_name}")
     logger.info(f"Item count after filtering: {len(items)}")
-    logger.info("Finished filtering torrents")
 
     return items

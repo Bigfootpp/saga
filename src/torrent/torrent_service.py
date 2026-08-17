@@ -107,8 +107,6 @@ class TorrentService:
             file_details = self._find_episode_file(result.files, season, episode)
 
             if file_details is not None:
-                self.logger.info("File details")
-                self.logger.info(file_details)
                 result.file_index = cast(int | None, file_details["file_index"])
                 result.file_name = cast(str | None, file_details["title"])
                 result.size = cast(int, file_details["size"])
@@ -123,11 +121,6 @@ class TorrentService:
 
         if not result.info_hash:
             result.info_hash = get_info_hash_from_magnet(result.magnet)
-
-        if not result.info_hash:
-            self.logger.warning(
-                f"Could not extract info_hash from magnet: {result.magnet[:100]}..."
-            )
 
         result.trackers = self._get_trackers_from_magnet(result.magnet)
 

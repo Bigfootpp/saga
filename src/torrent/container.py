@@ -27,15 +27,7 @@ class TorrentContainer:
         best_matching = []
         self.logger.debug(f"Amount of items: {len(self._items_dict)}")
         for torrent_item in self._items_dict.values():
-            self.logger.debug("-------------------")
-            self.logger.debug(f"Checking {torrent_item.raw_title}")
-            self.logger.debug(
-                f"Has torrent: {torrent_item.torrent_download is not None}"
-            )
             if torrent_item.torrent_download is not None:
-                self.logger.debug(
-                    f"Has file index: {torrent_item.file_index is not None}"
-                )
                 torrent_item.file_index = torrent_item.file_index or 0
             best_matching.append(torrent_item)
         return best_matching
@@ -47,9 +39,6 @@ class TorrentContainer:
         items_dict: dict[str, TorrentItem] = {}
         for item in items:
             if item.info_hash is not None:
-                self.logger.debug(f"Adding {item.info_hash} to items dict")
-                if item.info_hash in items_dict:
-                    self.logger.debug(f"Duplicate info hash found: {item.info_hash}")
                 items_dict[item.info_hash] = item
             else:
                 self.logger.warning(f"Could not find info hash for {item.raw_title}")
