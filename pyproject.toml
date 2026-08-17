@@ -21,5 +21,11 @@ dependencies = [
 requires = ["uv_build>=0.11.29,<0.12.0"]
 build-backend = "uv_build"
 
-[tool.uv]
-package = false
+[tool.pyright]
+typeCheckingMode = "standard"
+reportMissingModuleSource = false
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.411",
+]
