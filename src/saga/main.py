@@ -50,7 +50,7 @@ app.add_middleware(
 if not isDev:
     app.add_middleware(LogFilterMiddleware)
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="src/saga/templates")
 
 logger = setup_logger(__name__)
 
@@ -95,7 +95,7 @@ async def configure(request: Request):
 
 @app.get("/static/{file_path:path}")
 async def static_files(file_path: str):
-    response = FileResponse(f"templates/{file_path}")
+    response = FileResponse(f"src/saga/templates/{file_path}")
     return response
 
 
