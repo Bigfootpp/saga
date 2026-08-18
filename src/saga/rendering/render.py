@@ -1,7 +1,5 @@
 from RTN import ParsedData
 
-from saga.models.config import Config
-from saga.models.media import Media
 from saga.shared_types import StreamEntry
 from saga.torrent.torrent_item import TorrentItem
 from saga.utils.logger import setup_logger
@@ -41,15 +39,12 @@ def filter_by_direct_torrent(item: StreamEntry) -> int:
 
 def _build_stream_entry(
     torrent_item: TorrentItem,
-) -> list[StreamEntry]:
+) -> StreamEntry | None:
     """Build stream entries (direct torrent only) for a single torrent item."""
     parsed_data: ParsedData | None = torrent_item.parsed_data
     if parsed_data is None:
-        return []
+        return None
 
-    entries: list[StreamEntry] = []
-
-    # Direct torrent stream entry (if public)
     if torrent_item.privacy == "public":
         name = f"{DIRECT_TORRENT}\n"
         if (
@@ -59,7 +54,7 @@ def _build_stream_entry(
         ):
             name += f"({parsed_data.quality})"
 
-        size_in_gb = round(int(torrent_item.size) / 1024 / 1024 / 1024, 2)
+        size_in_gb = round(int(torrent_item.size) / 1024**3, 2)
 
         title = f"{torrent_item.raw_title}\n"
         if torrent_item.file_name is not None:
@@ -77,37 +72,31 @@ def _build_stream_entry(
             title += f"{get_emoji(language)}/"
         title = title[:-1]
 
-        entries.append(
-            {
-                "name": name,
-                "description": title,
-                "url": None,
-                "infoHash": torrent_item.info_hash,
-                "fileIdx": int(torrent_item.file_index)
-                if torrent_item.file_index
-                else None,
-                "behaviorHints": {
-                    "bingeGroup": f"saga-{torrent_item.info_hash}",
-                    "filename": torrent_item.file_name
-                    if torrent_item.file_name is not None
-                    else torrent_item.raw_title,
-                },
-            }
-        )
-
-    return entries
+        return {
+            "name": name,
+            "description": title,
+            "url": None,
+            "infoHash": torrent_item.info_hash,
+            "fileIdx": int(torrent_item.file_index)
+            if torrent_item.file_index
+            else None,
+            "behaviorHints": {
+                "bingeGroup": f"saga-{torrent_item.info_hash}",
+                "filename": torrent_item.file_name
+                if torrent_item.file_name is not None
+                else torrent_item.raw_title,
+            },
+        }
 
 
-def build_stream_response(
-    torrent_items: list[TorrentItem],
-    config: Config,
-    media: Media,
-) -> list[StreamEntry]:
+def build_stream_response(torrent_items: list[TorrentItem]) -> list[StreamEntry]:
     """Build the complete stream response for Stremio."""
     stream_list: list[StreamEntry] = []
 
     for torrent_item in torrent_items[:20]:
-        stream_list.extend(_build_stream_entry(torrent_item))
+        entry = _build_stream_entry(torrent_item)
+        if entry:
+            stream_list.append(entry)
 
     if not stream_list:
         return []

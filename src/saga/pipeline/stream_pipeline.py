@@ -81,7 +81,7 @@ class StreamPipeline:
 
         # Build stream response
         self.logger.info("Processing results")
-        stream_list = build_stream_response(best_matching_results, self.config, media)
+        stream_list = build_stream_response(best_matching_results)
         self.logger.info(f"Processed results (results: {len(stream_list)})")
 
         self.logger.info(f"Total time: {time.time() - start}s")
