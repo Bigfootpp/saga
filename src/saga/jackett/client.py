@@ -76,6 +76,14 @@ class JackettClient:
         season = str(int(series.season.replace("S", "")))
         episode = str(int(series.episode.replace("E", "")))
 
+        def _add_if_new(results: list[JackettResult]):
+            for r in results:
+                if r.info_hash:
+                    h = r.info_hash.lower().strip()
+                    if h not in seen_hashes:
+                        seen_hashes.add(h)
+                        all_results.append(r)
+
         for title in series.titles:
             base_params = {
                 "apikey": self._api_key,
@@ -85,25 +93,13 @@ class JackettClient:
             }
 
             # 1. Title + Season + Episode
-            results_ep = await self._search_once(base_params, season, episode)
-            for r in results_ep:
-                if r.info_hash and r.info_hash not in seen_hashes:
-                    seen_hashes.add(r.info_hash)
-                    all_results.append(r)
+            _add_if_new(await self._search_once(base_params, season, episode))
 
             # 2. Title + Season
-            results_season = await self._search_once(base_params, season, None)
-            for r in results_season:
-                if r.info_hash and r.info_hash not in seen_hashes:
-                    seen_hashes.add(r.info_hash)
-                    all_results.append(r)
+            _add_if_new(await self._search_once(base_params, season, None))
 
             # 3. Title only
-            results_title = await self._search_once(base_params, None, None)
-            for r in results_title:
-                if r.info_hash and r.info_hash not in seen_hashes:
-                    seen_hashes.add(r.info_hash)
-                    all_results.append(r)
+            _add_if_new(await self._search_once(base_params, None, None))
 
         return all_results
 
