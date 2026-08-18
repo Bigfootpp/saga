@@ -128,7 +128,7 @@ class TorrentService:
         if not result.info_hash:
             result.info_hash = get_info_hash_from_magnet(result.magnet)
 
-        result.trackers = await self._get_trackers_from_magnet(result.magnet)
+        result.trackers = self._get_trackers_from_magnet(result.magnet)
 
         return result
 
@@ -168,15 +168,10 @@ class TorrentService:
 
         return list(trackers)
 
-    async def _get_trackers_from_magnet(self, magnet: str) -> list[str]:
+    def _get_trackers_from_magnet(self, magnet: str) -> list[str]:
         url_parts = urllib.parse.urlparse(magnet)
         query_parts = urllib.parse.parse_qs(url_parts.query)
-
-        trackers = []
-        if "tr" in query_parts:
-            trackers = query_parts["tr"]
-
-        return trackers
+        return query_parts.get("tr", [])
 
     def _find_episode_file(
         self, file_structure: list[TorrentFile], season: int, episode: int
