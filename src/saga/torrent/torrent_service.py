@@ -109,12 +109,13 @@ class TorrentService:
             season = int(media.season.replace("S", ""))
             episode = int(media.episode.replace("E", ""))
 
-            file_details = self._find_episode_file(result.files, season, episode)
+            episode_file = self._find_episode_file(result.files, season, episode)
 
-            if file_details is not None:
-                result.file_index = cast(int | None, file_details["file_index"])
-                result.file_name = cast(str | None, file_details["title"])
-                result.size = cast(int, file_details["size"])
+            if episode_file is not None:
+                file_index, file_details = episode_file
+                result.file_index = cast(int | None, file_index)
+                result.file_name = cast(str | None, file_details["path"][-1])
+                result.size = cast(int, file_details["length"])
         else:
             result.file_index = self._find_movie_file(result.files)
 
@@ -179,25 +180,19 @@ class TorrentService:
 
     def _find_episode_file(
         self, file_structure: list[TorrentFile], season: int, episode: int
-    ) -> dict[str, object] | None:
-        file_index = 1
-        episode_files: list[dict] = []
-        for files in file_structure:
-            for file in cast(list[str], files["path"]):
-                parsed_file = rtn_parse(file)
+    ) -> tuple[int, TorrentFile] | None:
+        biggest_idx: int | None = None
+        largest_size: int = 0
+        for file_index, files in enumerate(file_structure):
+            parsed_file = rtn_parse(files["path"][-1])
 
-                if season in parsed_file.seasons and episode in parsed_file.episodes:
-                    episode_files.append(
-                        {
-                            "file_index": file_index,
-                            "title": file,
-                            "size": cast(int, files["length"]),
-                        }
-                    )
+            if season in parsed_file.seasons and episode in parsed_file.episodes and files["length"] > largest_size:
+                biggest_idx = file_index
+                largest_size = files["length"]
 
-            file_index += 1
-
-        return max(episode_files, key=lambda f: f["size"]) if episode_files else None
+        if biggest_idx is not None:
+            return biggest_idx, file_structure[biggest_idx]
+        return None
 
     def _find_movie_file(self, file_structure: list[TorrentFile]) -> int:
         max_size = 0
