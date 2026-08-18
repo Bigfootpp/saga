@@ -1,5 +1,5 @@
+import asyncio
 import re
-import time
 
 import requests
 
@@ -35,7 +35,7 @@ class Cinemeta(MetadataProvider):
                         raise ValueError(
                             f"Empty response after {max_retries} retries for {id}"
                         )
-                    time.sleep(1)
+                    await asyncio.sleep(1)
                     continue
 
                 if type == "movie":
@@ -71,6 +71,6 @@ class Cinemeta(MetadataProvider):
                     raise MetadataNotFoundError(
                         f"Failed to get metadata after {max_retries} retries: {e!s}"
                     )
-                time.sleep(1)
+                await asyncio.sleep(1)
 
         return None
