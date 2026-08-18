@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING
 
 from saga.filtering.pipeline import filter_items, sort_items
 from saga.jackett.client import JackettClient
@@ -12,31 +11,17 @@ from saga.rendering.render import build_stream_response
 from saga.torrent.container import TorrentContainer
 from saga.torrent.torrent_service import TorrentService
 from saga.utils.logger import setup_logger
-from saga.utils.parse_config import parse_config
-
-if TYPE_CHECKING:
-    from fastapi import Request
 
 
 class StreamPipeline:
     def __init__(
         self,
         config: Config,
-        request_ip: str,
         community_version: bool = False,
     ):
         self.config = config
-        self.request_ip = request_ip
         self.community_version = community_version
         self.logger = setup_logger(__name__)
-
-    @classmethod
-    def from_request(
-        cls, request: Request, config_b64: str, community_version: bool = False
-    ) -> StreamPipeline:
-        config_obj = parse_config(config_b64)
-        ip = request.client.host if request.client else "127.0.0.1"
-        return cls(config_obj, ip, community_version)
 
     def build_streams(self, stream_type: str, stream_id: str) -> dict:
         start = time.time()
@@ -45,9 +30,6 @@ class StreamPipeline:
         # Select metadata provider
         if self.config.metadata_provider == "tmdb" and self.config.tmdb_api:
             metadata_provider = TMDB(self.config)
-            if not self.community_version:
-                jackett_client = JackettClient(self.config)
-                metadata_provider.indexers = jackett_client.get_indexers()
         else:
             metadata_provider = Cinemeta(self.config)
 

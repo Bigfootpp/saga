@@ -1,8 +1,6 @@
 import requests
 
-from saga.jackett.jackett_indexer import JackettIndexer
 from saga.metadata.base import MetadataProvider
-from saga.models.config import Config
 from saga.models.movie import Movie
 from saga.models.series import Series
 
@@ -10,33 +8,14 @@ TMDB_TIMEOUT = 15.0
 
 
 class TMDB(MetadataProvider):
-    def __init__(self, config: Config):
-        super().__init__(config)
-        self._indexers: list[JackettIndexer] | None = None
-
-    @property
-    def indexers(self) -> list[JackettIndexer] | None:
-        return self._indexers
-
-    @indexers.setter
-    def indexers(self, indexers_: list[JackettIndexer] | None) -> None:
-        self._indexers = indexers_
-
     def get_metadata(self, id: str, type: str) -> Movie | Series | None:
         self.logger.info(f"Getting metadata for {type} with id {id}")
 
         full_id = id.split(":")
 
-        if self.config.get_all_languages and self._indexers and len(self._indexers) > 0:
-            languages = [
-                lang
-                for lang in {indexer.language for indexer in self._indexers}
-                if lang
-            ]
-        else:
-            languages = [
-                lang for lang in dict.fromkeys(self.config.languages or ["en"]) if lang
-            ]
+        languages = [
+            lang for lang in dict.fromkeys(self.config.languages or ["en"]) if lang
+        ]
 
         if not languages:
             return None
