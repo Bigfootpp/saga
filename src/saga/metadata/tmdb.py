@@ -27,7 +27,10 @@ class TMDB(MetadataProvider):
             translations = data["translations"]
             for el in translations:
                 lang = el["iso_639_1"]
-                title = el["data"]["name"]
+                if type == "tv":
+                    title = el["data"]["name"]
+                else:
+                    title = el["data"]["title"]
                 if not lang or not title:
                     continue
                 result[lang] = title
@@ -53,8 +56,6 @@ class TMDB(MetadataProvider):
         languages = list(set(self.config.languages + ["en"]))
         full_id = id.split(":")
         imdb_id = full_id[0]
-        season = int(full_id[1])
-        episode = int(full_id[2])
 
         if type == "movie":
             titles = await self.get_all_titles(imdb_id, "movie")
@@ -66,6 +67,8 @@ class TMDB(MetadataProvider):
                 type="movie",
             )
         else:
+            season = int(full_id[1])
+            episode = int(full_id[2])
             titles = await self.get_all_titles(imdb_id, "tv")
             selected_titles = list({title for lang, title in titles.items() if lang in languages})
             result = Series(
