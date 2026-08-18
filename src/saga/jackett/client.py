@@ -42,8 +42,6 @@ class JackettClient:
                 result = self._search_movie_indexer(media, indexer)
             elif isinstance(media, Series):
                 result = self._search_series_indexer(media, indexer)
-            else:
-                raise TypeError("Only Movie and Series is allowed as media!")
 
             self.logger.info(
                 f"Search on {indexer.title} took {time.time() - start_time} seconds "
@@ -52,7 +50,7 @@ class JackettClient:
 
             results_queue.put(result)
 
-        threads = []
+        threads: list[threading.Thread] = []
         for indexer in indexers:
             thread = threading.Thread(target=thread_target, args=(indexer,))
             thread.start()
