@@ -12,6 +12,7 @@ from starlette.responses import FileResponse
 from saga.models.manifest import ManifestResponse
 from saga.pipeline.stream_pipeline import StreamPipeline
 from saga.utils.logger import setup_logger
+from saga.utils.parse_config import parse_config
 
 load_dotenv()
 
@@ -121,8 +122,8 @@ logger.info("Started Saga Addon")
 
 
 @app.get("/{config}/stream/{stream_type}/{stream_id}")
-async def get_results(config: str, stream_type: str, stream_id: str, request: Request):
-    pipeline = StreamPipeline.from_request(request, config, COMMUNITY_VERSION)
+async def get_results(config: str, stream_type: str, stream_id: str):
+    pipeline = StreamPipeline(parse_config(config), COMMUNITY_VERSION)
     return pipeline.build_streams(stream_type, stream_id)
 
 
