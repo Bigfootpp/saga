@@ -74,7 +74,7 @@ class StreamPipeline:
         # Get best matching and sort
         self.logger.debug("Getting best matching results")
         best_matching_results = torrent_container.get_best_matching()
-        best_matching_results = sort_items(best_matching_results, self.config)
+        best_matching_results = sort_items(best_matching_results)
         self.logger.debug(
             f"Got best matching results (results: {len(best_matching_results)})"
         )
