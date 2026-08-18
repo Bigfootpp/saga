@@ -3,7 +3,7 @@ from RTN import RTN, DefaultRanking, SettingsModel, sort_torrents, title_match
 from saga.filtering.language_filter import LanguageFilter
 from saga.jackett.jackett_result import JackettResult
 from saga.models.config import Config
-from saga.models.movie import Movie
+from saga.models.media import Media
 from saga.models.series import Series
 from saga.torrent.torrent_item import TorrentItem
 from saga.utils.logger import setup_logger
@@ -100,7 +100,7 @@ def remove_non_matching_title(
 
 
 def filter_items(
-    items: list[JackettResult], media: Movie | Series, config: Config
+    items: list[JackettResult], media: Media, config: Config
 ) -> list[JackettResult]:
     logger.info(f"Item count before filtering: {len(items)}")
 

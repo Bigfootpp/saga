@@ -4,6 +4,7 @@ import time
 import requests
 
 from saga.metadata.base import MetadataProvider
+from saga.models.media import Media
 from saga.models.movie import Movie
 from saga.models.series import Series
 
@@ -15,7 +16,7 @@ class MetadataNotFoundError(Exception):
 
 
 class Cinemeta(MetadataProvider):
-    def get_metadata(self, id: str, type: str) -> Movie | Series | None:
+    def get_metadata(self, id: str, type: str) -> Media | None:
         self.logger.info(f"Getting metadata for {type} with id {id}")
         full_id = id.split(":")
         url = f"https://v3-cinemeta.strem.io/meta/{type}/{full_id[0]}.json"

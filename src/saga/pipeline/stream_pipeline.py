@@ -4,6 +4,7 @@ import time
 
 from saga.filtering.pipeline import filter_items, sort_items
 from saga.jackett.client import JackettClient
+from saga.metadata.base import MetadataProvider
 from saga.metadata.cinemeta import Cinemeta
 from saga.metadata.tmdb import TMDB
 from saga.models.config import Config
@@ -12,6 +13,12 @@ from saga.torrent.container import TorrentContainer
 from saga.torrent.torrent_service import TorrentService
 from saga.utils.logger import setup_logger
 
+
+def build_metadata_provider(config: Config) -> MetadataProvider:
+    if config.metadata_provider == "tmdb" and config.tmdb_api:
+        return TMDB(config)
+    else:
+        return Cinemeta(config)
 
 class StreamPipeline:
     def __init__(
@@ -27,13 +34,8 @@ class StreamPipeline:
         start = time.time()
         stream_id = stream_id.replace(".json", "")
 
-        # Select metadata provider
-        if self.config.metadata_provider == "tmdb" and self.config.tmdb_api:
-            metadata_provider = TMDB(self.config)
-        else:
-            metadata_provider = Cinemeta(self.config)
+        metadata_provider = build_metadata_provider(self.config)
 
-        # Get media metadata
         self.logger.info(f"Getting media from {self.config.metadata_provider}")
         media = metadata_provider.get_metadata(stream_id, stream_type)
         if media is None:

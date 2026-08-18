@@ -9,7 +9,7 @@ import requests
 from RTN import parse as rtn_parse
 
 from saga.jackett.jackett_result import JackettResult
-from saga.models.movie import Movie
+from saga.models.media import Media
 from saga.models.series import Series
 from saga.shared_types import TorrentFile, TorrentInfoDict, TorrentMetadata
 from saga.torrent.magnet import get_info_hash_from_magnet
@@ -29,7 +29,7 @@ class TorrentService:
         self._session = requests.Session()
 
     def convert_and_process(
-        self, results: list[JackettResult], media: Movie | Series
+        self, results: list[JackettResult], media: Media
     ) -> list[TorrentItem]:
         torrent_items_result = []
 
@@ -51,7 +51,7 @@ class TorrentService:
         return torrent_items_result
 
     def _process_web_url(
-        self, result: TorrentItem, media: Movie | Series
+        self, result: TorrentItem, media: Media
     ) -> TorrentItem:
         timeout = float(os.environ.get("JACKETT_RESOLVER_TIMEOUT", "15"))
         try:
@@ -80,7 +80,7 @@ class TorrentService:
         return result
 
     def _process_torrent(
-        self, result: TorrentItem, torrent_file: bytes, media: Movie | Series
+        self, result: TorrentItem, torrent_file: bytes, media: Media
     ) -> TorrentItem:
         metadata: TorrentMetadata = bencode.bdecode(torrent_file)
 

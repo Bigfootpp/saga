@@ -6,6 +6,7 @@ from RTN import parse as rtn_parse
 from saga.jackett.jackett_result import JackettResult
 from saga.jackett.parser import parse_results
 from saga.models.config import Config
+from saga.models.media import Media
 from saga.models.movie import Movie
 from saga.models.series import Series
 from saga.utils.detection import detect_languages
@@ -21,7 +22,7 @@ class JackettClient:
         self._base_url = f"{config.jackett_host}/api/v2.0"
         self._session = requests.Session()
 
-    def search(self, media: Movie | Series) -> list[JackettResult]:
+    def search(self, media: Media) -> list[JackettResult]:
         self.logger.info(f"Started Jackett search for {media.type} {media.titles[0]}")
 
         all_results: list[JackettResult] = []
@@ -29,8 +30,10 @@ class JackettClient:
 
         if isinstance(media, Movie):
             raw_results = self._search_movie(media)
-        else:
+        elif isinstance(media, Series):
             raw_results = self._search_series(media)
+        else:
+            return []
 
         for result in raw_results:
             if result.info_hash and result.info_hash not in seen_hashes:
@@ -131,7 +134,7 @@ class JackettClient:
             return []
 
     def _post_process_results(
-        self, results: list[JackettResult], media: Movie | Series
+        self, results: list[JackettResult], media: Media
     ) -> list[JackettResult]:
         for result in results:
             raw_title = result.raw_title or ""

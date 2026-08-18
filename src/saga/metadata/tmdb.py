@@ -1,6 +1,7 @@
 import requests
 
 from saga.metadata.base import MetadataProvider
+from saga.models.media import Media
 from saga.models.movie import Movie
 from saga.models.series import Series
 
@@ -8,7 +9,7 @@ TMDB_TIMEOUT = 15.0
 
 
 class TMDB(MetadataProvider):
-    def get_metadata(self, id: str, type: str) -> Movie | Series | None:
+    def get_metadata(self, id: str, type: str) -> Media | None:
         self.logger.info(f"Getting metadata for {type} with id {id}")
 
         full_id = id.split(":")

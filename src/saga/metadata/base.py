@@ -1,6 +1,5 @@
 from saga.models.config import Config
-from saga.models.movie import Movie
-from saga.models.series import Series
+from saga.models.media import Media
 from saga.utils.logger import setup_logger
 
 
@@ -107,5 +106,5 @@ class MetadataProvider:
 
         return string
 
-    def get_metadata(self, id: str, type: str) -> Movie | Series | None:
+    def get_metadata(self, id: str, type: str) -> Media | None:
         raise NotImplementedError
