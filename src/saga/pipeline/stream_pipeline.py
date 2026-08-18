@@ -4,6 +4,7 @@ import time
 
 from saga.filtering.pipeline import filter_items, sort_items
 from saga.jackett.client import JackettClient
+from saga.metadata.base import MetadataProvider
 from saga.metadata.cinemeta import Cinemeta
 from saga.metadata.tmdb import TMDB
 from saga.models.config import Config
@@ -12,6 +13,12 @@ from saga.torrent.container import TorrentContainer
 from saga.torrent.torrent_service import TorrentService
 from saga.utils.logger import setup_logger
 
+
+def build_metadata_provider(config: Config) -> MetadataProvider:
+    if config.metadata_provider == "tmdb" and config.tmdb_api:
+        return TMDB(config)
+    else:
+        return Cinemeta(config)
 
 class StreamPipeline:
     def __init__(
@@ -23,19 +30,14 @@ class StreamPipeline:
         self.community_version = community_version
         self.logger = setup_logger(__name__)
 
-    def build_streams(self, stream_type: str, stream_id: str) -> dict:
+    async def build_streams(self, stream_type: str, stream_id: str) -> dict:
         start = time.time()
         stream_id = stream_id.replace(".json", "")
 
-        # Select metadata provider
-        if self.config.metadata_provider == "tmdb" and self.config.tmdb_api:
-            metadata_provider = TMDB(self.config)
-        else:
-            metadata_provider = Cinemeta(self.config)
+        metadata_provider = build_metadata_provider(self.config)
 
-        # Get media metadata
         self.logger.info(f"Getting media from {self.config.metadata_provider}")
-        media = metadata_provider.get_metadata(stream_id, stream_type)
+        media = await metadata_provider.get_metadata(stream_id, stream_type)
         if media is None:
             self.logger.error(f"Failed to get metadata for {stream_id} ({stream_type})")
             return {"streams": []}
@@ -47,7 +49,7 @@ class StreamPipeline:
         if not self.community_version:
             self.logger.info("Searching for results on Jackett")
             jackett_client = JackettClient(self.config)
-            jackett_search_results = jackett_client.search(media)
+            jackett_search_results = await jackett_client.search(media)
             self.logger.info(f"Got {len(jackett_search_results)} results from Jackett")
 
             self.logger.info("Filtering Jackett results")
@@ -61,7 +63,7 @@ class StreamPipeline:
             f"Converting result to TorrentItems (results: {len(search_results)})"
         )
         torrent_service = TorrentService()
-        torrent_results = torrent_service.convert_and_process(search_results, media)
+        torrent_results = await torrent_service.convert_and_process(search_results, media)
         self.logger.debug(
             f"Converted result to TorrentItems (results: {len(torrent_results)})"
         )
@@ -72,14 +74,14 @@ class StreamPipeline:
         # Get best matching and sort
         self.logger.debug("Getting best matching results")
         best_matching_results = torrent_container.get_best_matching()
-        best_matching_results = sort_items(best_matching_results, self.config)
+        best_matching_results = sort_items(best_matching_results)
         self.logger.debug(
             f"Got best matching results (results: {len(best_matching_results)})"
         )
 
         # Build stream response
         self.logger.info("Processing results")
-        stream_list = build_stream_response(best_matching_results, self.config, media)
+        stream_list = build_stream_response(best_matching_results)
         self.logger.info(f"Processed results (results: {len(stream_list)})")
 
         self.logger.info(f"Total time: {time.time() - start}s")

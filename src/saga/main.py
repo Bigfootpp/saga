@@ -124,7 +124,7 @@ logger.info("Started Saga Addon")
 @app.get("/{config}/stream/{stream_type}/{stream_id}")
 async def get_results(config: str, stream_type: str, stream_id: str):
     pipeline = StreamPipeline(parse_config(config), COMMUNITY_VERSION)
-    return pipeline.build_streams(stream_type, stream_id)
+    return await pipeline.build_streams(stream_type, stream_id)
 
 
 if __name__ == "__main__":

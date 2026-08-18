@@ -3,7 +3,7 @@ from RTN import RTN, DefaultRanking, SettingsModel, sort_torrents, title_match
 from saga.filtering.language_filter import LanguageFilter
 from saga.jackett.jackett_result import JackettResult
 from saga.models.config import Config
-from saga.models.movie import Movie
+from saga.models.media import Media
 from saga.models.series import Series
 from saga.torrent.torrent_item import TorrentItem
 from saga.utils.logger import setup_logger
@@ -25,7 +25,7 @@ def sort_quality(item: TorrentItem) -> tuple[float, bool]:
     return quality_order.get(item.parsed_data.resolution, float("inf")), False
 
 
-def items_sort(items: list[TorrentItem], config: Config) -> list[TorrentItem]:
+def sort_items(items: list[TorrentItem]) -> list[TorrentItem]:
     valid_items = [item for item in items if item.info_hash]
     if len(valid_items) != len(items):
         logger.warning(
@@ -49,10 +49,6 @@ def items_sort(items: list[TorrentItem], config: Config) -> list[TorrentItem]:
 
     # Sort by quality (default), no other sort options
     return sorted(valid_items, key=sort_quality)
-
-
-def sort_items(items: list[TorrentItem], config: Config) -> list[TorrentItem]:
-    return items_sort(items, config)
 
 
 def filter_out_non_matching(
@@ -100,7 +96,7 @@ def remove_non_matching_title(
 
 
 def filter_items(
-    items: list[JackettResult], media: Movie | Series, config: Config
+    items: list[JackettResult], media: Media, config: Config
 ) -> list[JackettResult]:
     logger.info(f"Item count before filtering: {len(items)}")
 

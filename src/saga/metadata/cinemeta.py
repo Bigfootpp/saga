@@ -1,9 +1,10 @@
+import asyncio
 import re
-import time
 
 import requests
 
 from saga.metadata.base import MetadataProvider
+from saga.models.media import Media
 from saga.models.movie import Movie
 from saga.models.series import Series
 
@@ -15,7 +16,7 @@ class MetadataNotFoundError(Exception):
 
 
 class Cinemeta(MetadataProvider):
-    def get_metadata(self, id: str, type: str) -> Movie | Series | None:
+    async def get_metadata(self, id: str, type: str) -> Media | None:
         self.logger.info(f"Getting metadata for {type} with id {id}")
         full_id = id.split(":")
         url = f"https://v3-cinemeta.strem.io/meta/{type}/{full_id[0]}.json"
@@ -34,7 +35,7 @@ class Cinemeta(MetadataProvider):
                         raise ValueError(
                             f"Empty response after {max_retries} retries for {id}"
                         )
-                    time.sleep(1)
+                    await asyncio.sleep(1)
                     continue
 
                 if type == "movie":
@@ -47,18 +48,16 @@ class Cinemeta(MetadataProvider):
 
                     result = Movie(
                         id=id,
-                        titles=[self.replace_weird_characters(data["meta"]["name"])],
+                        titles=[data["meta"]["name"]],
                         year=year,
-                        languages=["en"],
                         type="movie",
                     )
                 else:
                     result = Series(
                         id=id,
-                        titles=[self.replace_weird_characters(data["meta"]["name"])],
+                        titles=[data["meta"]["name"]],
                         season=f"S{int(full_id[1]):02d}",
                         episode=f"E{int(full_id[2]):02d}",
-                        languages=["en"],
                         type="series",
                         seasonfile=False,
                     )
@@ -72,6 +71,6 @@ class Cinemeta(MetadataProvider):
                     raise MetadataNotFoundError(
                         f"Failed to get metadata after {max_retries} retries: {e!s}"
                     )
-                time.sleep(1)
+                await asyncio.sleep(1)
 
         return None

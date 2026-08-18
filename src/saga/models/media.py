@@ -6,7 +6,6 @@ class Media(BaseModel):
 
     id: str = Field(..., alias="id")
     titles: list[str] = Field(..., alias="titles")
-    languages: list[str] = Field(..., alias="languages")
     type: str = Field(..., alias="type")
 
 

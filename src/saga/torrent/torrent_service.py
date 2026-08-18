@@ -1,15 +1,16 @@
+import asyncio
 import hashlib
 import os
 import urllib.parse
-from concurrent.futures import ThreadPoolExecutor
-from typing import TypedDict, cast
+from typing import TypedDict
 
 import bencode
+import httpx
 import requests
 from RTN import parse as rtn_parse
 
 from saga.jackett.jackett_result import JackettResult
-from saga.models.movie import Movie
+from saga.models.media import Media
 from saga.models.series import Series
 from saga.shared_types import TorrentFile, TorrentInfoDict, TorrentMetadata
 from saga.torrent.magnet import get_info_hash_from_magnet
@@ -26,37 +27,41 @@ class FileEntryDict(TypedDict):
 class TorrentService:
     def __init__(self):
         self.logger = setup_logger(__name__)
-        self._session = requests.Session()
+        self._session = httpx.AsyncClient()
 
-    def convert_and_process(
-        self, results: list[JackettResult], media: Movie | Series
+    async def convert_and_process(
+        self, results: list[JackettResult], media: Media
     ) -> list[TorrentItem]:
+        semaphore = asyncio.Semaphore(10)
+
+        async def process_result(result: JackettResult) -> TorrentItem:
+            async with semaphore:
+                torrent_item = result.convert_to_torrent_item()
+                if torrent_item.link.startswith("magnet:"):
+                    return await self._process_magnet(torrent_item)
+                return await self._process_web_url(torrent_item, media)
+
+        tasks = [process_result(r) for r in results]
+        raw_results = await asyncio.gather(*tasks, return_exceptions=True)
+
         torrent_items_result = []
-
-        def process_result(result: JackettResult) -> TorrentItem:
-            torrent_item = result.convert_to_torrent_item()
-
-            if torrent_item.link.startswith("magnet:"):
-                return self._process_magnet(torrent_item)
-            return self._process_web_url(torrent_item, media)
-
-        with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [executor.submit(process_result, result) for result in results]
-            for future in futures:
-                try:
-                    torrent_items_result.append(future.result())
-                except (RuntimeError, ValueError) as e:
-                    self.logger.error(f"Error processing torrent: {e}")
+        for res in raw_results:
+            if isinstance(res, (RuntimeError, ValueError)):
+                self.logger.error(f"Error processing torrent: {res}")
+            elif isinstance(res, Exception):
+                self.logger.error(f"Unexpected error: {res}")
+            else:
+                torrent_items_result.append(res)
 
         return torrent_items_result
 
-    def _process_web_url(
-        self, result: TorrentItem, media: Movie | Series
+    async def _process_web_url(
+        self, result: TorrentItem, media: Media
     ) -> TorrentItem:
         timeout = float(os.environ.get("JACKETT_RESOLVER_TIMEOUT", "15"))
         try:
-            response = self._session.get(
-                result.link, allow_redirects=False, timeout=timeout
+            response = await self._session.get(
+                result.link, follow_redirects=False, timeout=timeout
             )
         except requests.exceptions.ReadTimeout:
             self.logger.error(
@@ -68,10 +73,10 @@ class TorrentService:
             return result
 
         if response.status_code == 200:
-            return self._process_torrent(result, response.content, media)
+            return await self._process_torrent(result, response.content, media)
         elif response.status_code == 302:
             result.magnet = response.headers["Location"]
-            return self._process_magnet(result)
+            return await self._process_magnet(result)
         else:
             self.logger.error(
                 f"Error code {response.status_code} while processing url: {result.link}"
@@ -79,15 +84,15 @@ class TorrentService:
 
         return result
 
-    def _process_torrent(
-        self, result: TorrentItem, torrent_file: bytes, media: Movie | Series
+    async def _process_torrent(
+        self, result: TorrentItem, torrent_file: bytes, media: Media
     ) -> TorrentItem:
         metadata: TorrentMetadata = bencode.bdecode(torrent_file)
 
         result.torrent_download = result.link
-        result.trackers = self._get_trackers_from_torrent(metadata)
-        result.info_hash = self._convert_torrent_to_hash(metadata["info"])
-        result.magnet = self._build_magnet(
+        result.trackers = await self._get_trackers_from_torrent(metadata)
+        result.info_hash = await self._convert_torrent_to_hash(metadata["info"])
+        result.magnet = await self._build_magnet(
             result.info_hash, metadata["info"]["name"], result.trackers
         )
 
@@ -104,18 +109,19 @@ class TorrentService:
             season = int(media.season.replace("S", ""))
             episode = int(media.episode.replace("E", ""))
 
-            file_details = self._find_episode_file(result.files, season, episode)
+            episode_file = self._find_episode_file(result.files, season, episode)
 
-            if file_details is not None:
-                result.file_index = cast(int | None, file_details["file_index"])
-                result.file_name = cast(str | None, file_details["title"])
-                result.size = cast(int, file_details["size"])
+            if episode_file is not None:
+                file_index, file_details = episode_file
+                result.file_index = file_index
+                result.file_name = file_details["path"][-1]
+                result.size = file_details["length"]
         else:
             result.file_index = self._find_movie_file(result.files)
 
         return result
 
-    def _process_magnet(self, result: TorrentItem) -> TorrentItem:
+    async def _process_magnet(self, result: TorrentItem) -> TorrentItem:
         if not result.magnet:
             result.magnet = result.link
 
@@ -126,12 +132,12 @@ class TorrentService:
 
         return result
 
-    def _convert_torrent_to_hash(self, torrent_contents: TorrentInfoDict) -> str:
+    async def _convert_torrent_to_hash(self, torrent_contents: TorrentInfoDict) -> str:
         hashcontents = bencode.bencode(torrent_contents)
         hex_hash = hashlib.sha1(hashcontents).hexdigest()
         return hex_hash.lower()
 
-    def _build_magnet(self, hash_: str, display_name: str, trackers: list[str]) -> str:
+    async def _build_magnet(self, hash_: str, display_name: str, trackers: list[str]) -> str:
         magnet_base = "magnet:?xt=urn:btih:"
         magnet = f"{magnet_base}{hash_}&dn={display_name}"
 
@@ -140,7 +146,7 @@ class TorrentService:
 
         return magnet
 
-    def _get_trackers_from_torrent(
+    async def _get_trackers_from_torrent(
         self, torrent_metadata: TorrentMetadata
     ) -> list[str]:
         announce = torrent_metadata.get("announce", [])
@@ -165,43 +171,30 @@ class TorrentService:
     def _get_trackers_from_magnet(self, magnet: str) -> list[str]:
         url_parts = urllib.parse.urlparse(magnet)
         query_parts = urllib.parse.parse_qs(url_parts.query)
-
-        trackers = []
-        if "tr" in query_parts:
-            trackers = query_parts["tr"]
-
-        return trackers
+        return query_parts.get("tr", [])
 
     def _find_episode_file(
         self, file_structure: list[TorrentFile], season: int, episode: int
-    ) -> dict[str, object] | None:
-        file_index = 1
-        episode_files: list[dict] = []
-        for files in file_structure:
-            for file in cast(list[str], files["path"]):
-                parsed_file = rtn_parse(file)
+    ) -> tuple[int, TorrentFile] | None:
+        biggest_idx: int | None = None
+        largest_size: int = 0
+        for file_index, files in enumerate(file_structure):
+            parsed_file = rtn_parse(files["path"][-1])
 
-                if season in parsed_file.seasons and episode in parsed_file.episodes:
-                    episode_files.append(
-                        {
-                            "file_index": file_index,
-                            "title": file,
-                            "size": cast(int, files["length"]),
-                        }
-                    )
+            if season in parsed_file.seasons and episode in parsed_file.episodes and files["length"] > largest_size:
+                biggest_idx = file_index
+                largest_size = files["length"]
 
-            file_index += 1
-
-        return max(episode_files, key=lambda f: f["size"]) if episode_files else None
+        if biggest_idx is not None:
+            return biggest_idx, file_structure[biggest_idx]
+        return None
 
     def _find_movie_file(self, file_structure: list[TorrentFile]) -> int:
         max_size = 0
         max_file_index = 1
-        current_file_index = 1
-        for files in file_structure:
-            if cast(int, files["length"]) > max_size:
-                max_file_index = current_file_index
-                max_size = cast(int, files["length"])
-            current_file_index += 1
+        for idx, files in enumerate(file_structure):
+            if files["length"] > max_size:
+                max_file_index = idx
+                max_size = files["length"]
 
         return max_file_index
