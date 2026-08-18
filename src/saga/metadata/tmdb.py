@@ -50,6 +50,7 @@ class TMDB(MetadataProvider):
 
         self.logger.info(f"Getting metadata for {type} with id {id}")
 
+        languages = list(set(self.config.languages + ["en"]))
         full_id = id.split(":")
         imdb_id = full_id[0]
         season = int(full_id[1])
@@ -57,17 +58,19 @@ class TMDB(MetadataProvider):
 
         if type == "movie":
             titles = await self.get_all_titles(imdb_id, "movie")
+            selected_titles = list({title for lang, title in titles.items() if lang in languages})
             result = Movie(
                 id=id,
-                titles=list(titles.values()),
+                titles=selected_titles,
                 year=await self.get_release_year(imdb_id),
                 type="movie",
             )
         else:
             titles = await self.get_all_titles(imdb_id, "tv")
+            selected_titles = list({title for lang, title in titles.items() if lang in languages})
             result = Series(
                 id=id,
-                titles=list(titles.values()),
+                titles=selected_titles,
                 season=f"S{season:02d}",
                 episode=f"E{episode:02d}",
                 type="series",
