@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 
+import httpx
 import requests
 from RTN import parse as rtn_parse
 
@@ -10,28 +11,25 @@ from saga.models.media import Media
 from saga.models.movie import Movie
 from saga.models.series import Series
 from saga.utils.detection import detect_languages
-from saga.utils.logger import setup_logger
 
 
 class JackettClient:
     REQUEST_TIMEOUT = 15.0
 
     def __init__(self, config: Config):
-        self.logger = setup_logger(__name__)
         self._api_key = config.jackett_api_key
         self._base_url = f"{config.jackett_host}/api/v2.0"
-        self._session = requests.Session()
+        self._client = httpx.AsyncClient()
 
-    def search(self, media: Media) -> list[JackettResult]:
-        self.logger.info(f"Started Jackett search for {media.type} {media.titles[0]}")
+    async def search(self, media: Media) -> list[JackettResult]:
 
         all_results: list[JackettResult] = []
         seen_hashes: set[str] = set()
 
         if isinstance(media, Movie):
-            raw_results = self._search_movie(media)
+            raw_results = await self._search_movie(media)
         elif isinstance(media, Series):
-            raw_results = self._search_series(media)
+            raw_results = await self._search_series(media)
         else:
             return []
 
@@ -42,7 +40,7 @@ class JackettClient:
 
         return self._post_process_results(all_results, media)
 
-    def _search_movie(self, movie: Movie) -> list[JackettResult]:
+    async def _search_movie(self, movie: Movie) -> list[JackettResult]:
         all_results: list[JackettResult] = []
         seen_hashes: set[str] = set()
 
@@ -59,7 +57,7 @@ class JackettClient:
             url += "?" + "&".join([f"{k}={v}" for k, v in params.items()])
 
             try:
-                response = self._session.get(url, timeout=self.REQUEST_TIMEOUT)
+                response = await self._client.get(url, timeout=self.REQUEST_TIMEOUT)
                 response.raise_for_status()
                 results = parse_results(response.text)
                 for r in results:
@@ -67,13 +65,11 @@ class JackettClient:
                         seen_hashes.add(r.info_hash)
                         all_results.append(r)
             except (requests.RequestException, ET.ParseError):
-                self.logger.exception(
-                    f"Exception searching movie '{title}' on Jackett (all indexers)."
-                )
+                pass
 
         return all_results
 
-    def _search_series(self, series: Series) -> list[JackettResult]:
+    async def _search_series(self, series: Series) -> list[JackettResult]:
         all_results: list[JackettResult] = []
         seen_hashes: set[str] = set()
 
@@ -89,21 +85,21 @@ class JackettClient:
             }
 
             # 1. Title + Season + Episode
-            results_ep = self._search_once(base_params, season, episode)
+            results_ep = await self._search_once(base_params, season, episode)
             for r in results_ep:
                 if r.info_hash and r.info_hash not in seen_hashes:
                     seen_hashes.add(r.info_hash)
                     all_results.append(r)
 
             # 2. Title + Season
-            results_season = self._search_once(base_params, season, None)
+            results_season = await self._search_once(base_params, season, None)
             for r in results_season:
                 if r.info_hash and r.info_hash not in seen_hashes:
                     seen_hashes.add(r.info_hash)
                     all_results.append(r)
 
             # 3. Title only
-            results_title = self._search_once(base_params, None, None)
+            results_title = await self._search_once(base_params, None, None)
             for r in results_title:
                 if r.info_hash and r.info_hash not in seen_hashes:
                     seen_hashes.add(r.info_hash)
@@ -111,7 +107,7 @@ class JackettClient:
 
         return all_results
 
-    def _search_once(
+    async def _search_once(
         self, base_params: dict, season: str | None, episode: str | None
     ) -> list[JackettResult]:
         params = {**base_params}
@@ -124,13 +120,10 @@ class JackettClient:
         url += "?" + "&".join([f"{k}={v}" for k, v in params.items()])
 
         try:
-            response = self._session.get(url, timeout=self.REQUEST_TIMEOUT)
+            response = await self._client.get(url, timeout=self.REQUEST_TIMEOUT)
             response.raise_for_status()
             return parse_results(response.text)
         except (requests.RequestException, ET.ParseError):
-            self.logger.exception(
-                f"Exception searching on Jackett (all indexers) with params: {params}"
-            )
             return []
 
     def _post_process_results(

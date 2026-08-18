@@ -49,7 +49,7 @@ class StreamPipeline:
         if not self.community_version:
             self.logger.info("Searching for results on Jackett")
             jackett_client = JackettClient(self.config)
-            jackett_search_results = jackett_client.search(media)
+            jackett_search_results = await jackett_client.search(media)
             self.logger.info(f"Got {len(jackett_search_results)} results from Jackett")
 
             self.logger.info("Filtering Jackett results")
