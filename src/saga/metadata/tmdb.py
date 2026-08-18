@@ -19,7 +19,7 @@ class TMDB(MetadataProvider):
         raise ValueError(f"Could not find TMDB ID for IMDb ID: {imdb_id}")
 
     async def get_all_titles(self, imdb_id: str, type: Literal["tv", "movie"]) -> dict[str, str]:
-        tmdb_id = self.imdbid_to_tmdbid(imdb_id)
+        tmdb_id = await self.imdbid_to_tmdbid(imdb_id)
         url = f"https://api.themoviedb.org/3/{type}/{tmdb_id}/translations?api_key={self.config.tmdb_api}"
         data: dict[str, list[dict]] = (await self.client.get(url, timeout=TMDB_TIMEOUT)).json()
         result = {}
@@ -28,6 +28,8 @@ class TMDB(MetadataProvider):
             for el in translations:
                 lang = el["iso_639_1"]
                 title = el["data"]["name"]
+                if not lang or not title:
+                    continue
                 result[lang] = title
         return result
 
