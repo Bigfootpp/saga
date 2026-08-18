@@ -45,9 +45,6 @@ class StreamPipeline:
         # Select metadata provider
         if self.config.metadata_provider == "tmdb" and self.config.tmdb_api:
             metadata_provider = TMDB(self.config)
-            if not self.community_version:
-                jackett_client = JackettClient(self.config)
-                metadata_provider.indexers = jackett_client.get_indexers()
         else:
             metadata_provider = Cinemeta(self.config)
 

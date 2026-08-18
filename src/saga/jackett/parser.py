@@ -1,48 +1,6 @@
 import xml.etree.ElementTree as ET
 
-from saga.jackett.jackett_indexer import JackettIndexer
 from saga.jackett.jackett_result import JackettResult
-
-
-def parse_indexers(xml_content: str) -> list[JackettIndexer]:
-    xml_root = ET.fromstring(xml_content)
-
-    indexer_list = []
-    for item in xml_root.findall(".//indexer"):
-        indexer = JackettIndexer()
-
-        indexer.title = item.findtext("title")
-        indexer.id = item.attrib.get("id")
-        indexer.link = item.findtext("link")
-        indexer.type = item.findtext("type")
-        language_text = item.findtext("language")
-        if language_text and language_text.split("-")[0] in ["pt"]:
-            indexer.language = language_text
-        elif language_text:
-            indexer.language = language_text.split("-")[0]
-
-        movie_search = item.find('.//searching/movie-search[@available="yes"]')
-        tv_search = item.find('.//searching/tv-search[@available="yes"]')
-
-        if movie_search is not None:
-            indexer.movie_search_capabilities = movie_search.attrib[
-                "supportedParams"
-            ].split(",")
-        else:
-            # logging handled by caller
-            pass
-
-        if tv_search is not None:
-            indexer.tv_search_capabilities = tv_search.attrib["supportedParams"].split(
-                ","
-            )
-        else:
-            # logging handled by caller
-            pass
-
-        indexer_list.append(indexer)
-
-    return indexer_list
 
 
 def parse_results(xml_content: str) -> list[JackettResult]:
