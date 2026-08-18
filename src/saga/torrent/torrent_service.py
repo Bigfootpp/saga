@@ -2,7 +2,7 @@ import asyncio
 import hashlib
 import os
 import urllib.parse
-from typing import TypedDict, cast
+from typing import TypedDict
 
 import bencode
 import httpx
@@ -113,9 +113,9 @@ class TorrentService:
 
             if episode_file is not None:
                 file_index, file_details = episode_file
-                result.file_index = cast(int | None, file_index)
-                result.file_name = cast(str | None, file_details["path"][-1])
-                result.size = cast(int, file_details["length"])
+                result.file_index = file_index
+                result.file_name = file_details["path"][-1]
+                result.size = file_details["length"]
         else:
             result.file_index = self._find_movie_file(result.files)
 
@@ -195,6 +195,6 @@ class TorrentService:
         for idx, files in enumerate(file_structure):
             if files["length"] > max_size:
                 max_file_index = idx
-                max_size = cast(int, files["length"])
+                max_size = files["length"]
 
         return max_file_index
