@@ -192,11 +192,9 @@ class TorrentService:
     def _find_movie_file(self, file_structure: list[TorrentFile]) -> int:
         max_size = 0
         max_file_index = 1
-        current_file_index = 1
-        for files in file_structure:
-            if cast(int, files["length"]) > max_size:
-                max_file_index = current_file_index
+        for idx, files in enumerate(file_structure):
+            if files["length"] > max_size:
+                max_file_index = idx
                 max_size = cast(int, files["length"])
-            current_file_index += 1
 
         return max_file_index
