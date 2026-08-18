@@ -30,14 +30,14 @@ class StreamPipeline:
         self.community_version = community_version
         self.logger = setup_logger(__name__)
 
-    def build_streams(self, stream_type: str, stream_id: str) -> dict:
+    async def build_streams(self, stream_type: str, stream_id: str) -> dict:
         start = time.time()
         stream_id = stream_id.replace(".json", "")
 
         metadata_provider = build_metadata_provider(self.config)
 
         self.logger.info(f"Getting media from {self.config.metadata_provider}")
-        media = metadata_provider.get_metadata(stream_id, stream_type)
+        media = await metadata_provider.get_metadata(stream_id, stream_type)
         if media is None:
             self.logger.error(f"Failed to get metadata for {stream_id} ({stream_type})")
             return {"streams": []}

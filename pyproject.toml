@@ -8,6 +8,7 @@ requires-python = ">=3.12"
 dependencies = [
     "bencode-py>=4.1.0",
     "fastapi>=0.141.1",
+    "httpx>=0.28.1",
     "jinja2>=3.1.6",
     "pydantic>=2.13.4",
     "python-dotenv>=1.2.2",
