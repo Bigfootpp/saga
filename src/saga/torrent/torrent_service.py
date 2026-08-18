@@ -1,10 +1,11 @@
+import asyncio
 import hashlib
 import os
 import urllib.parse
-from concurrent.futures import ThreadPoolExecutor
 from typing import TypedDict, cast
 
 import bencode
+import httpx
 import requests
 from RTN import parse as rtn_parse
 
@@ -26,37 +27,41 @@ class FileEntryDict(TypedDict):
 class TorrentService:
     def __init__(self):
         self.logger = setup_logger(__name__)
-        self._session = requests.Session()
+        self._session = httpx.AsyncClient()
 
-    def convert_and_process(
+    async def convert_and_process(
         self, results: list[JackettResult], media: Media
     ) -> list[TorrentItem]:
+        semaphore = asyncio.Semaphore(10)
+
+        async def process_result(result: JackettResult) -> TorrentItem:
+            async with semaphore:
+                torrent_item = result.convert_to_torrent_item()
+                if torrent_item.link.startswith("magnet:"):
+                    return await self._process_magnet(torrent_item)
+                return await self._process_web_url(torrent_item, media)
+
+        tasks = [process_result(r) for r in results]
+        raw_results = await asyncio.gather(*tasks, return_exceptions=True)
+
         torrent_items_result = []
-
-        def process_result(result: JackettResult) -> TorrentItem:
-            torrent_item = result.convert_to_torrent_item()
-
-            if torrent_item.link.startswith("magnet:"):
-                return self._process_magnet(torrent_item)
-            return self._process_web_url(torrent_item, media)
-
-        with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [executor.submit(process_result, result) for result in results]
-            for future in futures:
-                try:
-                    torrent_items_result.append(future.result())
-                except (RuntimeError, ValueError) as e:
-                    self.logger.error(f"Error processing torrent: {e}")
+        for res in raw_results:
+            if isinstance(res, (RuntimeError, ValueError)):
+                self.logger.error(f"Error processing torrent: {res}")
+            elif isinstance(res, Exception):
+                self.logger.error(f"Unexpected error: {res}")
+            else:
+                torrent_items_result.append(res)
 
         return torrent_items_result
 
-    def _process_web_url(
+    async def _process_web_url(
         self, result: TorrentItem, media: Media
     ) -> TorrentItem:
         timeout = float(os.environ.get("JACKETT_RESOLVER_TIMEOUT", "15"))
         try:
-            response = self._session.get(
-                result.link, allow_redirects=False, timeout=timeout
+            response = await self._session.get(
+                result.link, follow_redirects=False, timeout=timeout
             )
         except requests.exceptions.ReadTimeout:
             self.logger.error(
@@ -68,10 +73,10 @@ class TorrentService:
             return result
 
         if response.status_code == 200:
-            return self._process_torrent(result, response.content, media)
+            return await self._process_torrent(result, response.content, media)
         elif response.status_code == 302:
             result.magnet = response.headers["Location"]
-            return self._process_magnet(result)
+            return await self._process_magnet(result)
         else:
             self.logger.error(
                 f"Error code {response.status_code} while processing url: {result.link}"
@@ -79,15 +84,15 @@ class TorrentService:
 
         return result
 
-    def _process_torrent(
+    async def _process_torrent(
         self, result: TorrentItem, torrent_file: bytes, media: Media
     ) -> TorrentItem:
         metadata: TorrentMetadata = bencode.bdecode(torrent_file)
 
         result.torrent_download = result.link
-        result.trackers = self._get_trackers_from_torrent(metadata)
-        result.info_hash = self._convert_torrent_to_hash(metadata["info"])
-        result.magnet = self._build_magnet(
+        result.trackers = await self._get_trackers_from_torrent(metadata)
+        result.info_hash = await self._convert_torrent_to_hash(metadata["info"])
+        result.magnet = await self._build_magnet(
             result.info_hash, metadata["info"]["name"], result.trackers
         )
 
@@ -115,23 +120,23 @@ class TorrentService:
 
         return result
 
-    def _process_magnet(self, result: TorrentItem) -> TorrentItem:
+    async def _process_magnet(self, result: TorrentItem) -> TorrentItem:
         if not result.magnet:
             result.magnet = result.link
 
         if not result.info_hash:
             result.info_hash = get_info_hash_from_magnet(result.magnet)
 
-        result.trackers = self._get_trackers_from_magnet(result.magnet)
+        result.trackers = await self._get_trackers_from_magnet(result.magnet)
 
         return result
 
-    def _convert_torrent_to_hash(self, torrent_contents: TorrentInfoDict) -> str:
+    async def _convert_torrent_to_hash(self, torrent_contents: TorrentInfoDict) -> str:
         hashcontents = bencode.bencode(torrent_contents)
         hex_hash = hashlib.sha1(hashcontents).hexdigest()
         return hex_hash.lower()
 
-    def _build_magnet(self, hash_: str, display_name: str, trackers: list[str]) -> str:
+    async def _build_magnet(self, hash_: str, display_name: str, trackers: list[str]) -> str:
         magnet_base = "magnet:?xt=urn:btih:"
         magnet = f"{magnet_base}{hash_}&dn={display_name}"
 
@@ -140,7 +145,7 @@ class TorrentService:
 
         return magnet
 
-    def _get_trackers_from_torrent(
+    async def _get_trackers_from_torrent(
         self, torrent_metadata: TorrentMetadata
     ) -> list[str]:
         announce = torrent_metadata.get("announce", [])
@@ -162,7 +167,7 @@ class TorrentService:
 
         return list(trackers)
 
-    def _get_trackers_from_magnet(self, magnet: str) -> list[str]:
+    async def _get_trackers_from_magnet(self, magnet: str) -> list[str]:
         url_parts = urllib.parse.urlparse(magnet)
         query_parts = urllib.parse.parse_qs(url_parts.query)
 

@@ -63,7 +63,7 @@ class StreamPipeline:
             f"Converting result to TorrentItems (results: {len(search_results)})"
         )
         torrent_service = TorrentService()
-        torrent_results = torrent_service.convert_and_process(search_results, media)
+        torrent_results = await torrent_service.convert_and_process(search_results, media)
         self.logger.debug(
             f"Converted result to TorrentItems (results: {len(torrent_results)})"
         )
