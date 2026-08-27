@@ -1,0 +1,23 @@
+[project]
+name = "saga"
+version = "0.1.0"
+readme = "README.md"
+authors = [
+    { name = "Bigfootpp", email = "97189022+Bigfootpp@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.12.6,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.pyright]
+typeCheckingMode = "standard"
+reportMissingModuleSource = false
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.411",
+    "ruff>=0.16.4",
+]
