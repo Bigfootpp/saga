@@ -1,0 +1,11 @@
+__pycache__/
+.idea/
+.DS_Store
+.env
+
+.venv/
+.ruff_cache/
+
+jackett-config/
+
+*.iml
