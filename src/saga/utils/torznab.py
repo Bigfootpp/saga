@@ -32,7 +32,7 @@ def parse(content: str) -> list[RawTorrent]:
 
         results.append(RawTorrent(
             title = title,
-            info_hash=info_hash,
+            info_hash=info_hash.lower(),
             magnet=magnet,
             torrent_link=link if not link.startswith("magnet:") else None
         ))

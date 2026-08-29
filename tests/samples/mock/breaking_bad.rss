@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:torznab="http://torznab.com/schemas/2015/feed">
+  <channel>
+    <atom:link href="http://localhost:9117/" rel="self" type="application/rss+xml" />
+    <title>AggregateSearch</title>
+    <description>This feed includes all configured trackers</description>
+    <link>http://127.0.0.1/</link>
+    <language>en-US</language>
+    <category>search</category>
+    <item>
+      <title>Breaking Bad (2008) S01-5 S01-S05 (1080p BluRay x265 HEVC 1</title>
+      <guid>magnet:?xt=urn:btih:B43DF67A93863EA91F2F773F00361072DA771DD3&amp;dn=Breaking+Bad+(2008)+S01-5+S01-S05+(1080p+BluRay+x265+HEVC+1&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce</guid>
+      <jackettindexer id="thepiratebay">The Pirate Bay</jackettindexer>
+      <type>public</type>
+      <comments>https://thepiratebay.org/description.php?id=41852823</comments>
+      <pubDate>Wed, 24 Feb 2021 21:35:51 +0000</pubDate>
+      <size>150389060754</size>
+      <files>307</files>
+      <description>Uploader: Cybotage&lt;br&gt;Breaking Bad (2008) Season 1-5 S01-S05 (1080p BluRay x265 HEVC 1</description>
+      <link>magnet:?xt=urn:btih:B43DF67A93863EA91F2F773F00361072DA771DD3&amp;dn=Breaking+Bad+(2008)+S01-5+S01-S05+(1080p+BluRay+x265+HEVC+1&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce</link>
+      <category>5040</category>
+      <category>100208</category>
+      <enclosure url="magnet:?xt=urn:btih:B43DF67A93863EA91F2F773F00361072DA771DD3&amp;dn=Breaking+Bad+(2008)+S01-5+S01-S05+(1080p+BluRay+x265+HEVC+1&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce" length="150389060754" type="application/x-bittorrent" />
+      <torznab:attr name="category" value="5040" />
+      <torznab:attr name="category" value="100208" />
+      <torznab:attr name="seeders" value="498" />
+      <torznab:attr name="peers" value="2083" />
+      <torznab:attr name="infohash" value="B43DF67A93863EA91F2F773F00361072DA771DD3" />
+      <torznab:attr name="magneturl" value="magnet:?xt=urn:btih:B43DF67A93863EA91F2F773F00361072DA771DD3&amp;dn=Breaking+Bad+(2008)+S01-5+S01-S05+(1080p+BluRay+x265+HEVC+1&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce" />
+      <torznab:attr name="downloadvolumefactor" value="0" />
+      <torznab:attr name="uploadvolumefactor" value="1" />
+    </item>
+    <item>
+      <title>Breaking Bad. S03. 2008 2160P.Ai Upscaled.BluRay.60FPS.H265.SDR.DTS5.1_Marjenbo</title>
+      <guid>magnet:?xt=urn:btih:C46A3837FA2927899082965D054E299A57E54D82&amp;dn=Breaking+Bad.+S03.+2008+2160P.Ai+Upscaled.BluRay.60FPS.H265.SDR.DTS5.1_Marjenbo&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce</guid>
+      <jackettindexer id="thepiratebay">The Pirate Bay</jackettindexer>
+      <type>public</type>
+      <comments>https://thepiratebay.org/description.php?id=84188855</comments>
+      <pubDate>Fri, 21 Aug 2026 20:55:08 +0000</pubDate>
+      <size>201089611996</size>
+      <files>25</files>
+      <description>Uploader: EXTRG&lt;br&gt;Breaking Bad. S03. 2008 2160P.Ai Upscaled.BluRay.60FPS.H265.SDR.DTS5.1_Marjenbo</description>
+      <link>magnet:?xt=urn:btih:C46A3837FA2927899082965D054E299A57E54D82&amp;dn=Breaking+Bad.+S03.+2008+2160P.Ai+Upscaled.BluRay.60FPS.H265.SDR.DTS5.1_Marjenbo&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce</link>
+      <category>5045</category>
+      <category>100212</category>
+      <enclosure url="magnet:?xt=urn:btih:C46A3837FA2927899082965D054E299A57E54D82&amp;dn=Breaking+Bad.+S03.+2008+2160P.Ai+Upscaled.BluRay.60FPS.H265.SDR.DTS5.1_Marjenbo&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce" length="201089611996" type="application/x-bittorrent" />
+      <torznab:attr name="category" value="5045" />
+      <torznab:attr name="category" value="100212" />
+      <torznab:attr name="seeders" value="105" />
+      <torznab:attr name="peers" value="161" />
+      <torznab:attr name="infohash" value="C46A3837FA2927899082965D054E299A57E54D82" />
+      <torznab:attr name="magneturl" value="magnet:?xt=urn:btih:C46A3837FA2927899082965D054E299A57E54D82&amp;dn=Breaking+Bad.+S03.+2008+2160P.Ai+Upscaled.BluRay.60FPS.H265.SDR.DTS5.1_Marjenbo&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce" />
+      <torznab:attr name="downloadvolumefactor" value="0" />
+      <torznab:attr name="uploadvolumefactor" value="1" />
+    </item>
+  </channel>
+</rss>
