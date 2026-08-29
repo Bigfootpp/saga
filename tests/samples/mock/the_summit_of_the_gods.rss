@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:torznab="http://torznab.com/schemas/2015/feed">
+  <channel>
+    <atom:link href="http://localhost:9117/" rel="self" type="application/rss+xml" />
+    <title>AggregateSearch</title>
+    <description>This feed includes all configured trackers</description>
+    <link>http://127.0.0.1/</link>
+    <language>en-US</language>
+    <category>search</category>
+    <item>
+      <title>The.Summit.of.the.Gods.2021.1080p.WEBRip.1400MB.DD5.1.x264-Galax</title>
+      <guid>magnet:?xt=urn:btih:A9B5A8965470B5A29BFDA623330F9244FE3A2589&amp;dn=The.Summit.of.the.Gods.2021.1080p.WEBRip.1400MB.DD5.1.x264-Galax&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce</guid>
+      <jackettindexer id="thepiratebay">The Pirate Bay</jackettindexer>
+      <type>public</type>
+      <comments>https://thepiratebay.org/description.php?id=54530927</comments>
+      <pubDate>Thu, 02 Dec 2021 07:14:15 +0000</pubDate>
+      <size>1508399624</size>
+      <files>2</files>
+      <description>Uploader: Anonymous&lt;br&gt;The.Summit.of.the.Gods.2021.1080p.WEBRip.1400MB.DD5.1.x264-Galax</description>
+      <link>magnet:?xt=urn:btih:A9B5A8965470B5A29BFDA623330F9244FE3A2589&amp;dn=The.Summit.of.the.Gods.2021.1080p.WEBRip.1400MB.DD5.1.x264-Galax&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce</link>
+      <category>2040</category>
+      <category>100207</category>
+      <enclosure url="magnet:?xt=urn:btih:A9B5A8965470B5A29BFDA623330F9244FE3A2589&amp;dn=The.Summit.of.the.Gods.2021.1080p.WEBRip.1400MB.DD5.1.x264-Galax&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce" length="1508399624" type="application/x-bittorrent" />
+      <torznab:attr name="category" value="2040" />
+      <torznab:attr name="category" value="100207" />
+      <torznab:attr name="imdb" value="7014378" />
+      <torznab:attr name="imdbid" value="tt7014378" />
+      <torznab:attr name="seeders" value="61" />
+      <torznab:attr name="peers" value="72" />
+      <torznab:attr name="infohash" value="A9B5A8965470B5A29BFDA623330F9244FE3A2589" />
+      <torznab:attr name="magneturl" value="magnet:?xt=urn:btih:A9B5A8965470B5A29BFDA623330F9244FE3A2589&amp;dn=The.Summit.of.the.Gods.2021.1080p.WEBRip.1400MB.DD5.1.x264-Galax&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce" />
+      <torznab:attr name="downloadvolumefactor" value="0" />
+      <torznab:attr name="uploadvolumefactor" value="1" />
+    </item>
+    <item>
+      <title>Le sommet des dieux (2021) 1080p BRRip 5.1 x264 -YTS</title>
+      <guid>https://yts.gg/torrent/download/07DC98E008C28B23859AAA915E6A3886428DD44F</guid>
+      <jackettindexer id="yts">YTS</jackettindexer>
+      <type>public</type>
+      <comments>https://yts.gg/movies/le-sommet-des-dieux-2021</comments>
+      <pubDate>Sun, 20 Feb 2022 18:07:16 +0000</pubDate>
+      <size>1868310774</size>
+      <description />
+      <link>http://localhost:9117/dl/yts/?jackett_apikey=...&amp;path=Q2ZESjhMVjlYa2ZSbkNkT3YxWDNVdlEtRHZpTzNsY1Fwamh4R1lrNlF3ZjZnRE80UUNMemMzM093TWg3WEhqcGpMUWphV3J3dmxzcmJBemp1aDVkNGU5Z2tES0V1WFFJSU9HVEdNWlo0WFYzRnNoMkJnOExNeXEwbVBMbUxqZnZNLTNLWVZ5eEdFM0pDM0JPRE0xVG5YMXhEQzBQdDdaMVpabEhGd3VrRlFaekpYSW9aOUEyZHREOERMOUNJUmFPZFNnMjFtVi0zQnAyQTM1MkJOOXBXbmhYV1lv&amp;file=Le+sommet+des+dieux+(2021)+1080p+BRRip+5.1+x264+-YTS</link>
+      <category>2040</category>
+      <category>100044</category>
+      <enclosure url="http://localhost:9117/dl/yts/?jackett_apikey=...&amp;path=Q2ZESjhMVjlYa2ZSbkNkT3YxWDNVdlEtRHZpTzNsY1Fwamh4R1lrNlF3ZjZnRE80UUNMemMzM093TWg3WEhqcGpMUWphV3J3dmxzcmJBemp1aDVkNGU5Z2tES0V1WFFJSU9HVEdNWlo0WFYzRnNoMkJnOExNeXEwbVBMbUxqZnZNLTNLWVZ5eEdFM0pDM0JPRE0xVG5YMXhEQzBQdDdaMVpabEhGd3VrRlFaekpYSW9aOUEyZHREOERMOUNJUmFPZFNnMjFtVi0zQnAyQTM1MkJOOXBXbmhYV1lv&amp;file=Le+sommet+des+dieux+(2021)+1080p+BRRip+5.1+x264+-YTS" length="1868310774" type="application/x-bittorrent" />
+      <torznab:attr name="category" value="2040" />
+      <torznab:attr name="category" value="100044" />
+      <torznab:attr name="imdb" value="7014378" />
+      <torznab:attr name="imdbid" value="tt7014378" />
+      <torznab:attr name="year" value="2021" />
+      <torznab:attr name="seeders" value="33" />
+      <torznab:attr name="peers" value="35" />
+      <torznab:attr name="coverurl" value="http://localhost:9117/img/yts/?jackett_apikey=...&amp;path=Q2ZESjhMVjlYa2ZSbkNkT3YxWDNVdlEtRHZpMUlpOFJPQTlPR1c0d2xnOXMtNjlmYVRvR1pMVnVheGdoV3F5R1NCNjJiTjhNcFg2MWpKalBWVTM4N05IaDFvZlNreEQ3TlJyc2I0RDVqZGZHQ3pWUzhaNG82SWFPWnBuLVFOOWQ3Umk3YlZGeUpBNUQ2RVV4SldXWnMwZ0dGSmFQZUU0czQxWG0wU3dUOXdGMlpsYWs3Y3BDeXNWMHBFYl9JT1VkeE05T1oyY3p1TVhFSDAzdjRGaVpsUzhISGtv&amp;file=poster" />
+      <torznab:attr name="infohash" value="07DC98E008C28B23859AAA915E6A3886428DD44F" />
+      <torznab:attr name="magneturl" value="magnet:?xt=urn:btih:07DC98E008C28B23859AAA915E6A3886428DD44F&amp;dn=Le+sommet+des+dieux+(2021)+1080p+BRRip+5.1+x264+-YTS&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce" />
+      <torznab:attr name="downloadvolumefactor" value="0" />
+      <torznab:attr name="uploadvolumefactor" value="1" />
+    </item>
+  </channel>
+</rss>

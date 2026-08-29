@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:torznab="http://torznab.com/schemas/2015/feed">
+  <channel>
+    <atom:link href="http://localhost:9117/" rel="self" type="application/rss+xml" />
+    <title>AggregateSearch</title>
+    <description>This feed includes all configured trackers</description>
+    <link>http://127.0.0.1/</link>
+    <language>en-US</language>
+    <category>search</category>
+    <item>
+      <title>[Anime Time] Attack On Titan (Complete Collection) (S01-S04+OVA+Movies+Junior High) [BD] [Dual Audio][1080p][HEVC 10bit x265][AAC][Eng Sub] [Batch] (Shingeki no Kyojin)</title>
+      <guid>https://animetosho.xyz/download/480349/torrent</guid>
+      <jackettindexer id="animetosho-xyz">Anime Tosho</jackettindexer>
+      <type>semi-private</type>
+      <comments>https://animetosho.xyz/view/480349</comments>
+      <pubDate>Sat, 25 Jul 2026 06:18:09 +0000</pubDate>
+      <size>68392860949</size>
+      <description>[Anime Time] Attack On Titan (Complete Collection) (S01-S04+OVA+Movies+Junior High) [BD] [Dual Audio][1080p][HEVC 10bit x265][AAC][Eng Sub] [Batch] (Shingeki no Kyojin)</description>
+      <link>http://localhost:9117/dl/animetosho-xyz/?jackett_apikey=...&amp;path=Q2ZESjhMVjlYa2ZSbkNkT3YxWDNVdlEtRHZoWlJyaGdkX1FUc3l1UVhiYXhDOFduZ0stWi1EX21fQ3k0alh6Z2FUZUdtN1QycU51OU9BRDQtQkRxMmZ0UWt5d0Q5anVWbzgzWmVCZ21Vb3ZLYnU3QThHbGVyUThCYXlpeUFZcEpuUy02OXBjbHVsZ2tucml2bHBjWHliUWEzYzZIbnlKV2FFLVlEYlVMUVNyOWxucUo&amp;file=%5BAnime+Time%5D+Attack+On+Titan+(Complete+Collection)+(S01-S04%2BOVA%2BMovies%2BJunior+High)+%5BBD%5D+%5BDual+Audio%5D%5B1080p%5D%5BHEVC+10bit+x265%5D%5BAAC%5D%5BEng+Sub%5D+%5BBatch%5D+(Shingeki+no+Kyojin)</link>
+      <category>5070</category>
+      <category>146065</category>
+      <enclosure url="http://localhost:9117/dl/animetosho-xyz/?jackett_apikey=...&amp;path=Q2ZESjhMVjlYa2ZSbkNkT3YxWDNVdlEtRHZoWlJyaGdkX1FUc3l1UVhiYXhDOFduZ0stWi1EX21fQ3k0alh6Z2FUZUdtN1QycU51OU9BRDQtQkRxMmZ0UWt5d0Q5anVWbzgzWmVCZ21Vb3ZLYnU3QThHbGVyUThCYXlpeUFZcEpuUy02OXBjbHVsZ2tucml2bHBjWHliUWEzYzZIbnlKV2FFLVlEYlVMUVNyOWxucUo&amp;file=%5BAnime+Time%5D+Attack+On+Titan+(Complete+Collection)+(S01-S04%2BOVA%2BMovies%2BJunior+High)+%5BBD%5D+%5BDual+Audio%5D%5B1080p%5D%5BHEVC+10bit+x265%5D%5BAAC%5D%5BEng+Sub%5D+%5BBatch%5D+(Shingeki+no+Kyojin)" length="68392860949" type="application/x-bittorrent" />
+      <torznab:attr name="category" value="5070" />
+      <torznab:attr name="category" value="146065" />
+      <torznab:attr name="seeders" value="303" />
+      <torznab:attr name="peers" value="340" />
+      <torznab:attr name="infohash" value="BF173E6D9C99744084888579D8751BD301C03A5D" />
+      <torznab:attr name="magneturl" value="magnet:?xt=urn:btih:BF173E6D9C99744084888579D8751BD301C03A5D&amp;dn=%5BAnime+Time%5D+Attack+On+Titan+(Complete+Collection)+(S01-S04%2BOVA%2BMovies%2BJunior+High)+%5BBD%5D+%5BDual+Audio%5D%5B1080p%5D%5BHEVC+10bit+x265%5D%5BAAC%5D%5BEng+Sub%5D+%5BBatch%5D+(Shingeki+no+Kyojin)&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce" />
+      <torznab:attr name="downloadvolumefactor" value="0" />
+      <torznab:attr name="uploadvolumefactor" value="1" />
+    </item>
+    <item>
+      <title>[MTBB] Shingeki no Kyojin S4 (BD 1080p) | Attack on Titan Final Season | Final Chapters</title>
+      <guid>https://animetosho.xyz/download/489466/torrent</guid>
+      <jackettindexer id="animetosho-xyz">Anime Tosho</jackettindexer>
+      <type>semi-private</type>
+      <comments>https://animetosho.xyz/view/489466</comments>
+      <pubDate>Sat, 25 Jul 2026 06:18:12 +0000</pubDate>
+      <size>102191022983</size>
+      <description>[MTBB] Shingeki no Kyojin S4 (BD 1080p) | Attack on Titan Final Season | Final Chapters</description>
+      <link>http://localhost:9117/dl/animetosho-xyz/?jackett_apikey=...&amp;path=Q2ZESjhMVjlYa2ZSbkNkT3YxWDNVdlEtRHZob2R2Sy1GYWtpc0d4WGI5czdUSHZma0k5Y21yV2RoN3p3eHVzQW1PUW5SdkVFWU5hZXNfV0dYOXlUT3RnNHdSZUwyQlVZeVB0R1dRSk1XUWlHQUEzQzNLRUE4NHo5YlJLeF9jZS0xcFplVV9wRzV0X3BhZjFHalN0am9MdkFRa1hBeEJpdzhYU24tSGhYWEJZcG1QbFo&amp;file=%5BMTBB%5D+Shingeki+no+Kyojin+S4+(BD+1080p)+%7C+Attack+on+Titan+Final+Season+%7C+Final+Chapters</link>
+      <category>5070</category>
+      <category>146065</category>
+      <enclosure url="http://localhost:9117/dl/animetosho-xyz/?jackett_apikey=...&amp;path=Q2ZESjhMVjlYa2ZSbkNkT3YxWDNVdlEtRHZob2R2Sy1GYWtpc0d4WGI5czdUSHZma0k5Y21yV2RoN3p3eHVzQW1PUW5SdkVFWU5hZXNfV0dYOXlUT3RnNHdSZUwyQlVZeVB0R1dRSk1XUWlHQUEzQzNLRUE4NHo5YlJLeF9jZS0xcFplVV9wRzV0X3BhZjFHalN0am9MdkFRa1hBeEJpdzhYU24tSGhYWEJZcG1QbFo&amp;file=%5BMTBB%5D+Shingeki+no+Kyojin+S4+(BD+1080p)+%7C+Attack+on+Titan+Final+Season+%7C+Final+Chapters" length="102191022983" type="application/x-bittorrent" />
+      <torznab:attr name="category" value="5070" />
+      <torznab:attr name="category" value="146065" />
+      <torznab:attr name="seeders" value="161" />
+      <torznab:attr name="peers" value="176" />
+      <torznab:attr name="infohash" value="1CA712082415E5C5325584892CA98BCFD9347D7E" />
+      <torznab:attr name="magneturl" value="magnet:?xt=urn:btih:1CA712082415E5C5325584892CA98BCFD9347D7E&amp;dn=%5BMTBB%5D+Shingeki+no+Kyojin+S4+(BD+1080p)+%7C+Attack+on+Titan+Final+Season+%7C+Final+Chapters&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce" />
+      <torznab:attr name="downloadvolumefactor" value="0" />
+      <torznab:attr name="uploadvolumefactor" value="1" />
+    </item>
+  </channel>
+</rss>

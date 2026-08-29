@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:torznab="http://torznab.com/schemas/2015/feed">
+  <channel>
+    <atom:link href="http://localhost:9117/" rel="self" type="application/rss+xml" />
+    <title>AggregateSearch</title>
+    <description>This feed includes all configured trackers</description>
+    <link>http://127.0.0.1/</link>
+    <language>en-US</language>
+    <category>search</category>
+    <item>
+      <title>[Shroud] Call of the Night Season 2 (1080p BD REMUX AVC FLAC) | (Yofukashi no Uta Season 2)</title>
+      <guid>https://animetosho.xyz/download/594450/torrent</guid>
+      <jackettindexer id="animetosho-xyz">Anime Tosho</jackettindexer>
+      <type>semi-private</type>
+      <comments>https://animetosho.xyz/view/594450</comments>
+      <pubDate>Sat, 25 Jul 2026 06:18:57 +0000</pubDate>
+      <size>75198028921</size>
+      <description>[Shroud] Call of the Night Season 2 (1080p BD REMUX AVC FLAC) | (Yofukashi no Uta Season 2)</description>
+      <link>http://localhost:9117/dl/animetosho-xyz/?jackett_apikey=bjeld853tugbkspyf3jyfmjmqtutvlmw&amp;path=Q2ZESjhMVjlYa2ZSbkNkT3YxWDNVdlEtRHZpVUJQQTVwRGhYaVFUOGoxdzNNcGhQMkUxRnpEZFQzUDFrR29BdXU1Rm9seWdqMlV4dXEzT082bjBwaUNtcGl0TTc1WTNFXy1CMUlMb2c1eEZSb0hVQW1TZ3VnOTRrbXd4R3FNTXR4VjVEV0o1RGJTZF90NjNoSlhCak9nb1VVWlg5dmMtazRHRG1YZDVTMWl3NVJsWkk&amp;file=%5BShroud%5D+Call+of+the+Night+Season+2+(1080p+BD+REMUX+AVC+FLAC)+%7C+(Yofukashi+no+Uta+Season+2)</link>
+      <category>5070</category>
+      <category>146065</category>
+      <enclosure url="http://localhost:9117/dl/animetosho-xyz/?jackett_apikey=bjeld853tugbkspyf3jyfmjmqtutvlmw&amp;path=Q2ZESjhMVjlYa2ZSbkNkT3YxWDNVdlEtRHZpVUJQQTVwRGhYaVFUOGoxdzNNcGhQMkUxRnpEZFQzUDFrR29BdXU1Rm9seWdqMlV4dXEzT082bjBwaUNtcGl0TTc1WTNFXy1CMUlMb2c1eEZSb0hVQW1TZ3VnOTRrbXd4R3FNTXR4VjVEV0o1RGJTZF90NjNoSlhCak9nb1VVWlg5dmMtazRHRG1YZDVTMWl3NVJsWkk&amp;file=%5BShroud%5D+Call+of+the+Night+Season+2+(1080p+BD+REMUX+AVC+FLAC)+%7C+(Yofukashi+no+Uta+Season+2)" length="75198028921" type="application/x-bittorrent" />
+      <torznab:attr name="category" value="5070" />
+      <torznab:attr name="category" value="146065" />
+      <torznab:attr name="seeders" value="88" />
+      <torznab:attr name="peers" value="91" />
+      <torznab:attr name="infohash" value="F3584460E77F6F7D5EA3327E0CC1B4C4F51DB1D2" />
+      <torznab:attr name="magneturl" value="magnet:?xt=urn:btih:F3584460E77F6F7D5EA3327E0CC1B4C4F51DB1D2&amp;dn=%5BShroud%5D+Call+of+the+Night+Season+2+(1080p+BD+REMUX+AVC+FLAC)+%7C+(Yofukashi+no+Uta+Season+2)&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce" />
+      <torznab:attr name="downloadvolumefactor" value="0" />
+      <torznab:attr name="uploadvolumefactor" value="1" />
+    </item>
+    <item>
+      <title>Call.of.the.Night.S02.1080p.BluRay.Dual-Audio.Opus.2.0.x265-YURASUKA (Yofukashi no Uta 2nd Season)</title>
+      <guid>https://animetosho.xyz/download/601505/torrent</guid>
+      <jackettindexer id="animetosho-xyz">Anime Tosho</jackettindexer>
+      <type>semi-private</type>
+      <comments>https://animetosho.xyz/view/601505</comments>
+      <pubDate>Sat, 25 Jul 2026 06:18:57 +0000</pubDate>
+      <size>17847937372</size>
+      <description>Call.of.the.Night.S02.1080p.BluRay.Dual-Audio.Opus.2.0.x265-YURASUKA (Yofukashi no Uta 2nd Season)</description>
+      <link>http://localhost:9117/dl/animetosho-xyz/?jackett_apikey=bjeld853tugbkspyf3jyfmjmqtutvlmw&amp;path=Q2ZESjhMVjlYa2ZSbkNkT3YxWDNVdlEtRHZqX1g5elpCa3IxUlpKeEJuVFE5d1lWYXFqZDlwMHRSTDIzY3V5dEktTThfX3Uwa21aeFVWZm03cmpWWlZTSUdicjBTNUhYdEktYTRsanBQOWlyYTdjZlc2eFdhckliSjZEcTgxY1RWbUFnUnB4TnlBenUyQm5jZE9pdFJVd0d6UUJGVkRmZE5WZ1NCajN1eVAtUW9GeUM&amp;file=Call.of.the.Night.S02.1080p.BluRay.Dual-Audio.Opus.2.0.x265-YURASUKA+(Yofukashi+no+Uta+2nd+Season)</link>
+      <category>5070</category>
+      <category>146065</category>
+      <enclosure url="http://localhost:9117/dl/animetosho-xyz/?jackett_apikey=bjeld853tugbkspyf3jyfmjmqtutvlmw&amp;path=Q2ZESjhMVjlYa2ZSbkNkT3YxWDNVdlEtRHZqX1g5elpCa3IxUlpKeEJuVFE5d1lWYXFqZDlwMHRSTDIzY3V5dEktTThfX3Uwa21aeFVWZm03cmpWWlZTSUdicjBTNUhYdEktYTRsanBQOWlyYTdjZlc2eFdhckliSjZEcTgxY1RWbUFnUnB4TnlBenUyQm5jZE9pdFJVd0d6UUJGVkRmZE5WZ1NCajN1eVAtUW9GeUM&amp;file=Call.of.the.Night.S02.1080p.BluRay.Dual-Audio.Opus.2.0.x265-YURASUKA+(Yofukashi+no+Uta+2nd+Season)" length="17847937372" type="application/x-bittorrent" />
+      <torznab:attr name="category" value="5070" />
+      <torznab:attr name="category" value="146065" />
+      <torznab:attr name="seeders" value="312" />
+      <torznab:attr name="peers" value="318" />
+      <torznab:attr name="infohash" value="F9211481831162F04B15E17F648FD8C547610EFC" />
+      <torznab:attr name="magneturl" value="magnet:?xt=urn:btih:F9211481831162F04B15E17F648FD8C547610EFC&amp;dn=Call.of.the.Night.S02.1080p.BluRay.Dual-Audio.Opus.2.0.x265-YURASUKA+(Yofukashi+no+Uta+2nd+Season)&amp;tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.space%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Fvito-tracker.duckdns.org%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.theoks.net%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.srv00.com%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.qu.ax%3A6969%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.corpscorp.online%3A80%2Fannounce" />
+      <torznab:attr name="downloadvolumefactor" value="0" />
+      <torznab:attr name="uploadvolumefactor" value="1" />
+    </item>
+  </channel>
+</rss>

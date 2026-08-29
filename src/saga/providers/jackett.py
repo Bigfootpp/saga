@@ -13,7 +13,7 @@ def build_url(url: str, params: Mapping[str, str | int]):
     return url
 
 class JackettProvider(BaseProvider):
-    REQUEST_TIMEOUT = 15
+    REQUEST_TIMEOUT = 60
 
     def __init__(self, base_url: str, api_key: str, client: httpx.AsyncClient | None):
         self.base_url = f"{base_url}/api/v2.0" if not base_url.endswith("/api/v2.0") else base_url
