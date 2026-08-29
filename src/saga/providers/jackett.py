@@ -51,9 +51,9 @@ class JackettProvider(BaseProvider):
             result.extend(await self._search(s_url))
             result.extend(await self._search(url))
         except httpx.TimeoutException:
-            raise ProviderTimeoutError()
-        except httpx.HTTPStatusError:
-            raise ProviderStatusError()
+            raise ProviderTimeoutError("Jackett take too long to respond")
+        except httpx.HTTPStatusError as e:
+            raise ProviderStatusError(f"Jackett: error {e.response.status_code}")
 
         result = list({t.info_hash.lower(): t for t in result}.values())
 
