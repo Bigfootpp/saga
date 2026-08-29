@@ -60,7 +60,7 @@ class JackettProvider(BaseProvider):
 
         param = {
             "apikey": self.api_key,
-            "t": "movies",
+            "t": "movie",
             "q": query.title,
         }
         url = build_url(url=base_url, params=param)
