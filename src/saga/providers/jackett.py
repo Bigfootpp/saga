@@ -5,6 +5,7 @@ import httpx
 from saga.models.query import MediaQuery, MovieQuery, SeriesQuery
 from saga.models.torrent import RawTorrent
 from saga.providers.base import BaseProvider
+from saga.providers.exceptions import ProviderStatusError, ProviderTimeoutError
 from saga.utils.torznab import parse
 
 
@@ -45,9 +46,14 @@ class JackettProvider(BaseProvider):
         param.pop("season")
         url = build_url(url=base_url, params=param)
 
-        result.extend(await self._search(se_url))
-        result.extend(await self._search(s_url))
-        result.extend(await self._search(url))
+        try:
+            result.extend(await self._search(se_url))
+            result.extend(await self._search(s_url))
+            result.extend(await self._search(url))
+        except httpx.TimeoutException:
+            raise ProviderTimeoutError()
+        except httpx.HTTPStatusError:
+            raise ProviderStatusError()
 
         result = list({t.info_hash.lower(): t for t in result}.values())
 
@@ -65,7 +71,12 @@ class JackettProvider(BaseProvider):
         }
         url = build_url(url=base_url, params=param)
 
-        result.extend(await self._search(url))
+        try:
+            result.extend(await self._search(url))
+        except httpx.TimeoutException:
+            raise ProviderTimeoutError()
+        except httpx.HTTPStatusError:
+            raise ProviderStatusError()
 
         result = list({t.info_hash.lower(): t for t in result}.values())
 
