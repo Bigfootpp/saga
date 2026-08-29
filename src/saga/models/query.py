@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class MovieQuery(BaseModel):
     title: str
-    year: int | None
+    year: int | None = None
 
 class SeriesQuery(BaseModel):
     title: str
