@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from saga.models.query import MetadataQuery
+from saga.models.metadata import MetadataQuery
 
 
 class BaseMetadataProvider(ABC):
