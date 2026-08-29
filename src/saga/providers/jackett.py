@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from urllib.parse import urlencode, urljoin
 
 import httpx
 
@@ -10,14 +11,13 @@ from saga.utils.torznab import parse
 
 
 def build_url(url: str, params: Mapping[str, str | int]):
-    url += "?" + "&".join([f"{k}={v}" for k, v in params.items()])
-    return url
+    return f"{url}?{urlencode(params)}"
 
 class JackettProvider(BaseProvider):
     REQUEST_TIMEOUT = 60
 
     def __init__(self, base_url: str, api_key: str, client: httpx.AsyncClient | None = None):
-        self.base_url = f"{base_url}/api/v2.0" if not base_url.endswith("/api/v2.0") else base_url
+        self.base_url = urljoin(base_url, "api/v2.0") if not base_url.endswith("api/v2.0") else base_url
         self.api_key = api_key
         self.client = client or httpx.AsyncClient()
 
