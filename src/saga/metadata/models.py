@@ -30,4 +30,5 @@ class TMDBDetailResponse(BaseModel):
     title: str | None = None
     original_name: str | None = None
     original_title: str | None = None
+    original_language: str
     translations: TMDBTranslationsBlock = Field(default_factory=TMDBTranslationsBlock)

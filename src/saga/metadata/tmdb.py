@@ -83,13 +83,13 @@ class TMDBMetadataProvider(BaseMetadataProvider):
 
             original_title = detail.original_name or detail.original_title
             if original_title:
-                titles["original"] = original_title
+                titles[detail.original_language] = original_title
 
             for item in detail.translations.translations:
                 lang = item.iso_639_1.strip()
                 translated_title = item.data.name or item.data.title
 
-                if lang and translated_title:
+                if lang and translated_title and translated_title.strip():
                     titles[lang] = translated_title
 
             return titles
