@@ -5,7 +5,7 @@ import respx
 from saga.models.query import MovieQuery, SeriesQuery
 from saga.providers.exceptions import ProviderTimeoutError
 from saga.providers.jackett import JackettProvider
-from tests.samples.mock_sample import THE_SUMMIT_OF_THE_GODS
+from tests.samples.jackett_mock_sample import THE_SUMMIT_OF_THE_GODS
 
 
 @pytest.fixture
