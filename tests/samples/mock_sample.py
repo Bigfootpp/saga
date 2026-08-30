@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 def get_mock(name: str) -> str:
-    with open(Path(__file__).parent / "mock" / name, "r") as f:
+    with open(Path(__file__).parent / "jackett_mock" / name, "r") as f:
         return f.read()
 
 BREAKING_BAD_MOCK = get_mock("breaking_bad.rss")
