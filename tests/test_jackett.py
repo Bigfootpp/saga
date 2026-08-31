@@ -6,16 +6,38 @@ from httpx import Response
 from saga.models.query import MovieQuery, SeriesQuery
 from saga.providers.exceptions import ProviderStatusError, ProviderTimeoutError
 from saga.providers.jackett import JackettProvider
-from tests.samples.jackett_mock_sample import THE_SUMMIT_OF_THE_GODS
-from tests.samples.xml_sample import XML_NO_VALID_ITEM, XML_TWO_VALID_ITEM
+
+# Inline samples — self-contained, no external files (like test_torrent_resolver.py)
+THE_SUMMIT_OF_THE_GODS = """<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:torznab="http://torznab.com/schemas/2015/feed"><channel>
+<item><title>The Summit of the Gods</title><link>magnet:?xt=urn:btih:A9B5A8965470B5A29BFDA623330F9244FE3A2589</link>
+<torznab:attr name="infohash" value="A9B5A8965470B5A29BFDA623330F9244FE3A2589" />
+<torznab:attr name="magneturl" value="magnet:?xt=urn:btih:A9B5A8965470B5A29BFDA623330F9244FE3A2589" /></item>
+<item><title>The Summit of the Gods</title><link>http://localhost:9117/dl/yts/?path=abc</link>
+<torznab:attr name="infohash" value="07DC98E008C28B23859AAA915E6A3886428DD44F" />
+<torznab:attr name="magneturl" value="magnet:?xt=urn:btih:07DC98E008C28B23859AAA915E6A3886428DD44F" /></item>
+</channel></rss>"""
+
+XML_TWO_VALID_ITEM = """<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:torznab="http://torznab.com/schemas/2015/feed"><channel>
+<item><title>[PHTM] Cowboy Bebop - S01</title><link>magnet:?xt=urn:btih:ad07c84915b3e82834c1523fbc12ca03ea5548bc</link>
+<torznab:attr name="infohash" value="ad07c84915b3e82834c1523fbc12ca03ea5548bc" />
+<torznab:attr name="magneturl" value="magnet:?xt=urn:btih:ad07c84915b3e82834c1523fbc12ca03ea5548bc" /></item>
+<item><title>[ReinForce] Class de 2 Banme</title><link>magnet:?xt=urn:btih:23df37b2380c80958fd9227a3616c3a74460a7c8</link>
+<torznab:attr name="infohash" value="23df37b2380c80958fd9227a3616c3a74460a7c8" />
+<torznab:attr name="magneturl" value="magnet:?xt=urn:btih:23df37b2380c80958fd9227a3616c3a74460a7c8" /></item>
+</channel></rss>"""
+
+XML_NO_VALID_ITEM = """<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:torznab="http://torznab.com/schemas/2015/feed"><channel>
+<item><title>NoHash</title><link>http://example.com/file.torrent</link>
+<torznab:attr name="magneturl" value="magnet:?xt=urn:btih:abc" /></item>
+</channel></rss>"""
 
 
 @pytest.fixture
 async def provider():
-    p = JackettProvider(
-        base_url="http://jackett:9117",
-        api_key="123",
-    )
+    p = JackettProvider(base_url="http://jackett:9117", api_key="123")
     try:
         yield p
     finally:
@@ -25,13 +47,11 @@ async def provider():
 @respx.mock
 async def test_jackett_movie(provider: JackettProvider):
     route = respx.get("http://jackett:9117/api/v2.0/indexers/all/results/torznab/api").respond(
-        status_code=200,
-        text=THE_SUMMIT_OF_THE_GODS,
+        status_code=200, text=THE_SUMMIT_OF_THE_GODS
     )
-
     query = MovieQuery(title="The Summit of the Gods")
-
     result = await provider.search(query)
+
     assert len(result) == 2
     assert result[0].title == "The Summit of the Gods"
     assert result[0].info_hash == "a9b5a8965470b5a29bfda623330f9244fe3a2589"
@@ -52,7 +72,6 @@ async def test_jackett_series_three_calls(provider: JackettProvider):
             Response(200, text=THE_SUMMIT_OF_THE_GODS),
         ]
     )
-
     query = SeriesQuery(title="Cowboy Bebop", season=1, episode=1)
     result = await provider.search(query)
 
@@ -101,8 +120,7 @@ async def test_jackett_series_dedup_case_insensitive(provider: JackettProvider):
 @respx.mock
 async def test_jackett_empty_result(provider: JackettProvider):
     respx.get("http://jackett:9117/api/v2.0/indexers/all/results/torznab/api").respond(
-        status_code=200,
-        text=XML_NO_VALID_ITEM,
+        status_code=200, text=XML_NO_VALID_ITEM
     )
     query = MovieQuery(title="No Result Movie")
     result = await provider.search(query)
@@ -112,8 +130,7 @@ async def test_jackett_empty_result(provider: JackettProvider):
 @respx.mock
 async def test_jackett_http_error_movie(provider: JackettProvider):
     respx.get("http://jackett:9117/api/v2.0/indexers/all/results/torznab/api").respond(
-        status_code=500,
-        text="Internal Server Error",
+        status_code=500, text="Internal Server Error"
     )
     query = MovieQuery(title="Error Movie")
     with pytest.raises(ProviderStatusError):
@@ -123,8 +140,7 @@ async def test_jackett_http_error_movie(provider: JackettProvider):
 @respx.mock
 async def test_jackett_http_error_series(provider: JackettProvider):
     respx.get("http://jackett:9117/api/v2.0/indexers/all/results/torznab/api").respond(
-        status_code=403,
-        text="Forbidden",
+        status_code=403, text="Forbidden"
     )
     query = SeriesQuery(title="Error Series", season=1, episode=1)
     with pytest.raises(ProviderStatusError):
@@ -133,11 +149,9 @@ async def test_jackett_http_error_series(provider: JackettProvider):
 
 @respx.mock
 async def test_search_timeout(provider: JackettProvider):
-    respx.get("http://jackett:9117/api/v2.0/indexers/all/results/torznab/api").side_effect = (
-        httpx.ReadTimeout("Jackett is taking too long to respond")
+    respx.get("http://jackett:9117/api/v2.0/indexers/all/results/torznab/api").side_effect = httpx.ReadTimeout(
+        "Jackett is taking too long to respond"
     )
-
     query = SeriesQuery(title="Call of the Night", season=1, episode=1)
-
     with pytest.raises(ProviderTimeoutError):
         await provider.search(query)

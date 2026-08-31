@@ -3,15 +3,32 @@ import xml.etree.ElementTree as ET
 import pytest
 
 from saga.utils.torznab import parse
-from tests.samples.xml_sample import XML_NO_VALID_ITEM, XML_TWO_VALID_ITEM
+
+# Inline samples — self-contained like test_torrent_resolver.py
+XML_TWO_VALID_ITEM = """<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:torznab="http://torznab.com/schemas/2015/feed"><channel>
+<item><title>A</title><link>http://example.com/a.torrent</link>
+<torznab:attr name="infohash" value="ad07c84915b3e82834c1523fbc12ca03ea5548bc" />
+<torznab:attr name="magneturl" value="magnet:?xt=urn:btih:ad07c84915b3e82834c1523fbc12ca03ea5548bc" /></item>
+<item><title>B</title><link>http://example.com/b.torrent</link>
+<torznab:attr name="infohash" value="23df37b2380c80958fd9227a3616c3a74460a7c8" />
+<torznab:attr name="magneturl" value="magnet:?xt=urn:btih:23df37b2380c80958fd9227a3616c3a74460a7c8" /></item>
+</channel></rss>"""
+
+XML_NO_VALID_ITEM = """<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:torznab="http://torznab.com/schemas/2015/feed"><channel>
+<item><title>NoHash</title><link>http://example.com/file.torrent</link>
+<torznab:attr name="magneturl" value="magnet:?xt=urn:btih:abc" /></item>
+<item><title>NoMagnet</title><link>http://example.com/file.torrent</link>
+<torznab:attr name="infohash" value="abc123" /></item>
+</channel></rss>"""
 
 
 def test_valid_items_xml():
     torrents = parse(XML_TWO_VALID_ITEM)
     assert len(torrents) == 2
-    # first item has link == magnet, so torrent_link should be None
     assert torrents[0].info_hash == "ad07c84915b3e82834c1523fbc12ca03ea5548bc"
-    assert torrents[0].torrent_link is None
+    assert torrents[0].torrent_link == "http://example.com/a.torrent"
     assert torrents[0].magnet.startswith("magnet:?xt=urn:btih:")
 
 
@@ -71,8 +88,6 @@ def test_infohash_lowercased():
 
 
 def test_magnet_link_vs_http_link():
-    # link starting with magnet: => torrent_link None
-    # otherwise torrent_link == link
     xml_magnet = """<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:torznab="http://torznab.com/schemas/2015/feed"><channel>
 <item><title>A</title><link>magnet:?xt=urn:btih:abc</link>
