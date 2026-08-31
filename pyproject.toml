@@ -28,6 +28,7 @@ asyncio_mode = "auto"
 ignore = [
     "S110",
     "BLE001",
+    "B017",
 ]
 
 [dependency-groups]
