@@ -1,5 +1,4 @@
-from collections.abc import Mapping
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urljoin
 
 import httpx
 
@@ -10,16 +9,18 @@ from saga.providers.exceptions import ProviderStatusError, ProviderTimeoutError
 from saga.utils.torznab import parse
 
 
-def build_url(url: str, params: Mapping[str, str | int]):
-    return f"{url}?{urlencode(params)}"
-
 class JackettProvider(BaseProvider):
-    REQUEST_TIMEOUT = 60
-
-    def __init__(self, base_url: str, api_key: str, client: httpx.AsyncClient | None = None):
+    def __init__(
+            self,
+            base_url: str,
+            api_key: str,
+            client: httpx.AsyncClient | None = None,
+            timeout: float = 15.0
+    ):
         self.base_url = urljoin(base_url, "api/v2.0") if not base_url.endswith("api/v2.0") else base_url
         self.api_key = api_key
         self.client = client or httpx.AsyncClient()
+        self.timeout = timeout
 
     async def search(self, query: MediaQuery) -> list[RawTorrent]:
         match query:
@@ -40,16 +41,13 @@ class JackettProvider(BaseProvider):
             "season": query.season,
             "ep": query.episode
         }
-        se_url = build_url(url=base_url, params=param)
-        param.pop("ep")
-        s_url = build_url(url=base_url, params=param)
-        param.pop("season")
-        url = build_url(url=base_url, params=param)
 
         try:
-            result.extend(await self._search(se_url))
-            result.extend(await self._search(s_url))
-            result.extend(await self._search(url))
+            result.extend(await self._search(base_url, param))
+            param.pop("ep")
+            result.extend(await self._search(base_url, param))
+            param.pop("season")
+            result.extend(await self._search(base_url, param))
         except httpx.TimeoutException:
             raise ProviderTimeoutError("Jackett take too long to respond")
         except httpx.HTTPStatusError as e:
@@ -69,10 +67,9 @@ class JackettProvider(BaseProvider):
             "t": "movie",
             "q": query.title,
         }
-        url = build_url(url=base_url, params=param)
 
         try:
-            result.extend(await self._search(url))
+            result.extend(await self._search(base_url, param))
         except httpx.TimeoutException:
             raise ProviderTimeoutError()
         except httpx.HTTPStatusError:
@@ -83,7 +80,7 @@ class JackettProvider(BaseProvider):
         return result
 
 
-    async def _search(self, url: str) -> list[RawTorrent]:
-        response = await self.client.get(url=url, timeout=self.REQUEST_TIMEOUT)
+    async def _search(self, url: str, params: dict[str, str]) -> list[RawTorrent]:
+        response = await self.client.get(url=url, timeout=self.timeout, params=params)
         response.raise_for_status()
         return parse(response.text)

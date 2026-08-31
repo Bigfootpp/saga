@@ -1,0 +1,1 @@
+# Tests are/can be fully generated with AI, but MUST always be reviewed by a human.

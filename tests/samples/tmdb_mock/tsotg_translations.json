@@ -1,0 +1,48 @@
+{
+    "id": 712454,
+    "original_language": "fr",
+    "original_title": "Le Sommet des dieux",
+    "translations": {
+        "translations": [
+            {
+                "iso_3166_1": "US",
+                "iso_639_1": "en",
+                "name": "English",
+                "english_name": "English",
+                "data": {
+                    "homepage": "https://www.netflix.com/title/81439550",
+                    "overview": "A photojournalist's obsessive quest for the truth about the first expedition to Mt. Everest leads him to search for an esteemed climber who went missing.",
+                    "runtime": 95,
+                    "tagline": "",
+                    "title": "The Summit of the Gods"
+                }
+            },
+            {
+                "iso_3166_1": "FR",
+                "iso_639_1": "fr",
+                "name": "Français",
+                "english_name": "French",
+                "data": {
+                    "homepage": "https://folivari.com/projet/le-sommet-des-dieux/",
+                    "overview": "À Katmandou, le reporter japonais Fukamachi, croit reconnaître Habu Jôji, cet alpiniste que l'on pensait disparu depuis des années. Il semble tenir entre ses mains un appareil photo qui pourrait changer l’histoire de l’alpinisme. Et si George Mallory et Andrew Irvine étaient les premiers hommes à avoir atteint le sommet de l’Everest, le 8 juin 1924 ? Seul le petit Kodak Vest Pocket avec lequel ils devaient se photographier sur le toit du monde pourrait livrer la vérité. 70 ans plus tard, pour tenter de résoudre ce mystère, Fukamachi se lance sur les traces de Habu. Il découvre un monde de passionnés assoiffés de conquêtes impossibles et décide de l’accompagner jusqu’au voyage ultime vers le sommet des dieux.",
+                    "runtime": 95,
+                    "tagline": "Une aventure hors du commun, au-delà des limites.",
+                    "title": ""
+                }
+            },
+            {
+                "iso_3166_1": "ES",
+                "iso_639_1": "es",
+                "name": "Español",
+                "english_name": "Spanish",
+                "data": {
+                    "homepage": "",
+                    "overview": "¿George Mallory murió subiendo o bajando por la cima del Everest, el 8 de junio de 1924? Setenta años después, cuando Fukamachi, un joven reportero, compra una vieja cámara Kodak en un mercado de Katmandú, cree que puede encontrar la respuesta. Este descubrimiento lo lleva al mundo de los montañeros ansiosos que persiguen conquistas imposibles, donde el amor y los fantasmas se entrelazan.",
+                    "runtime": 95,
+                    "tagline": "",
+                    "title": "La cumbre de los dioses"
+                }
+            }
+        ]
+    }
+}
