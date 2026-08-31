@@ -10,7 +10,6 @@ from saga.utils.torznab import parse
 
 
 class JackettProvider(BaseProvider):
-
     def __init__(
             self,
             base_url: str,
