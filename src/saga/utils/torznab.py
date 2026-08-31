@@ -12,8 +12,12 @@ def parse(content: str) -> list[RawTorrent]:
 
     for item in xml_root.findall(".//item"):
         title = item.findtext("title")
-        info_hash_item = item.find('.//torznab:attr[@name="infohash"]', namespaces=namespaces)
-        magnet_item = item.find('.//torznab:attr[@name="magneturl"]', namespaces=namespaces)
+        info_hash_item = item.find(
+            './/torznab:attr[@name="infohash"]', namespaces=namespaces
+        )
+        magnet_item = item.find(
+            './/torznab:attr[@name="magneturl"]', namespaces=namespaces
+        )
         link = item.findtext("link")
 
         if (
@@ -24,17 +28,19 @@ def parse(content: str) -> list[RawTorrent]:
         ):
             continue
 
-        info_hash= info_hash_item.attrib.get("value")
+        info_hash = info_hash_item.attrib.get("value")
         magnet = magnet_item.attrib.get("value")
 
         if info_hash is None or magnet is None:
             continue
 
-        results.append(RawTorrent(
-            title = title,
-            info_hash=info_hash.lower(),
-            magnet=magnet,
-            torrent_link=link if not link.startswith("magnet:") else None
-        ))
+        results.append(
+            RawTorrent(
+                title=title,
+                info_hash=info_hash.lower(),
+                magnet=magnet,
+                torrent_link=link if not link.startswith("magnet:") else None,
+            )
+        )
 
     return results

@@ -11,13 +11,17 @@ from saga.utils.torznab import parse
 
 class JackettProvider(BaseProvider):
     def __init__(
-            self,
-            base_url: str,
-            api_key: str,
-            client: httpx.AsyncClient | None = None,
-            timeout: float = 15.0
+        self,
+        base_url: str,
+        api_key: str,
+        client: httpx.AsyncClient | None = None,
+        timeout: float = 15.0,
     ):
-        self.base_url = urljoin(base_url, "api/v2.0") if not base_url.endswith("api/v2.0") else base_url
+        self.base_url = (
+            urljoin(base_url, "api/v2.0")
+            if not base_url.endswith("api/v2.0")
+            else base_url
+        )
         self.api_key = api_key
         self.client = client or httpx.AsyncClient()
         self.timeout = timeout
@@ -39,7 +43,7 @@ class JackettProvider(BaseProvider):
             "t": "tvsearch",
             "q": query.title,
             "season": query.season,
-            "ep": query.episode
+            "ep": query.episode,
         }
 
         try:
@@ -78,7 +82,6 @@ class JackettProvider(BaseProvider):
         result = list({t.info_hash.lower(): t for t in result}.values())
 
         return result
-
 
     async def _search(self, url: str, params: dict[str, str]) -> list[RawTorrent]:
         response = await self.client.get(url=url, timeout=self.timeout, params=params)

@@ -34,9 +34,13 @@ class TorrentResolver:
         except Exception as e:
             if isinstance(e, TorrentResolveError):
                 raise
-            raise TorrentResolveError(f"Failed to resolve torrent via libtorrent: {e}") from e
+            raise TorrentResolveError(
+                f"Failed to resolve torrent via libtorrent: {e}"
+            ) from e
 
-    async def _resolve_via_torrent_link(self, url: str) -> list[TorrentFileEntry] | None:
+    async def _resolve_via_torrent_link(
+        self, url: str
+    ) -> list[TorrentFileEntry] | None:
         try:
             response = await self.client.get(url, timeout=self.timeout)
             response.raise_for_status()
@@ -61,21 +65,29 @@ class TorrentResolver:
         for idx, f in enumerate(torrent.files):
             path = str(f)
             file_name = pathlib.Path(path).name
-            entries.append(TorrentFileEntry(file_idx=idx, file_name=file_name, path=path))
+            entries.append(
+                TorrentFileEntry(file_idx=idx, file_name=file_name, path=path)
+            )
         return entries
 
     async def _resolve_via_libtorrent(self, magnet: str) -> list[TorrentFileEntry]:
         try:
             files = await asyncio.wait_for(
-                asyncio.to_thread(self._fetch_via_libtorrent_sync, magnet, self.timeout),
+                asyncio.to_thread(
+                    self._fetch_via_libtorrent_sync, magnet, self.timeout
+                ),
                 timeout=self.timeout + 2,
             )
             return files
         except TimeoutError as e:
-            raise TorrentResolveError(f"Timeout fetching metadata via libtorrent for {magnet}") from e
+            raise TorrentResolveError(
+                f"Timeout fetching metadata via libtorrent for {magnet}"
+            ) from e
 
     @staticmethod
-    def _fetch_via_libtorrent_sync(magnet: str, timeout: float) -> list[TorrentFileEntry]:
+    def _fetch_via_libtorrent_sync(
+        magnet: str, timeout: float
+    ) -> list[TorrentFileEntry]:
         import libtorrent as lt
 
         ses = lt.session(
@@ -115,7 +127,9 @@ class TorrentResolver:
             for idx in range(fs.num_files()):
                 path = fs.file_path(idx)
                 file_name = pathlib.Path(path).name
-                entries.append(TorrentFileEntry(file_idx=idx, file_name=file_name, path=path))
+                entries.append(
+                    TorrentFileEntry(file_idx=idx, file_name=file_name, path=path)
+                )
             return entries
         finally:
             try:

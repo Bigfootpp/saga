@@ -14,7 +14,16 @@ from saga.models.metadata import MediaType, MetadataQuery
 
 # Inline mocks — self-contained like test_torrent_resolver.py
 TSOTG_FIND_MOCK = json.dumps(
-    {"movie_results": [{"id": 712454, "title": "The Summit of the Gods", "original_title": "Le Sommet des dieux"}], "tv_results": []}
+    {
+        "movie_results": [
+            {
+                "id": 712454,
+                "title": "The Summit of the Gods",
+                "original_title": "Le Sommet des dieux",
+            }
+        ],
+        "tv_results": [],
+    }
 )
 TSOTG_TRANSLATIONS_MOCK = json.dumps(
     {
@@ -49,7 +58,12 @@ TSOTG_TRANSLATIONS_MOCK = json.dumps(
     }
 )
 AOT_FIND_MOCK = json.dumps(
-    {"movie_results": [], "tv_results": [{"id": 1429, "name": "Attack on Titan", "original_name": "進撃の巨人"}]}
+    {
+        "movie_results": [],
+        "tv_results": [
+            {"id": 1429, "name": "Attack on Titan", "original_name": "進撃の巨人"}
+        ],
+    }
 )
 AOT_TRANSLATIONS_MOCK = json.dumps(
     {
@@ -59,9 +73,27 @@ AOT_TRANSLATIONS_MOCK = json.dumps(
         "status": "Ended",
         "translations": {
             "translations": [
-                {"iso_3166_1": "US", "iso_639_1": "en", "name": "English", "english_name": "English", "data": {"name": "Attack on Titan"}},
-                {"iso_3166_1": "FR", "iso_639_1": "fr", "name": "Français", "english_name": "French", "data": {"name": "L'Attaque des Titans"}},
-                {"iso_3166_1": "JP", "iso_639_1": "ja", "name": "日本語", "english_name": "Japanese", "data": {"name": ""}},
+                {
+                    "iso_3166_1": "US",
+                    "iso_639_1": "en",
+                    "name": "English",
+                    "english_name": "English",
+                    "data": {"name": "Attack on Titan"},
+                },
+                {
+                    "iso_3166_1": "FR",
+                    "iso_639_1": "fr",
+                    "name": "Français",
+                    "english_name": "French",
+                    "data": {"name": "L'Attaque des Titans"},
+                },
+                {
+                    "iso_3166_1": "JP",
+                    "iso_639_1": "ja",
+                    "name": "日本語",
+                    "english_name": "Japanese",
+                    "data": {"name": ""},
+                },
             ]
         },
     }
@@ -81,10 +113,12 @@ async def provider():
 async def test_tmdb_movie_success(provider: TMDBMetadataProvider):
     imdb_id = "tt7014378"
     tsotg_find_json: dict = json.loads(TSOTG_FIND_MOCK)
-    route1 = respx.get(f"{provider.base_url}/find/{imdb_id}").respond(status_code=200, text=TSOTG_FIND_MOCK)
-    route2 = respx.get(f"{provider.base_url}/movie/{tsotg_find_json['movie_results'][0]['id']}").respond(
-        status_code=200, text=TSOTG_TRANSLATIONS_MOCK
+    route1 = respx.get(f"{provider.base_url}/find/{imdb_id}").respond(
+        status_code=200, text=TSOTG_FIND_MOCK
     )
+    route2 = respx.get(
+        f"{provider.base_url}/movie/{tsotg_find_json['movie_results'][0]['id']}"
+    ).respond(status_code=200, text=TSOTG_TRANSLATIONS_MOCK)
     query = MetadataQuery(type=MediaType.MOVIE, id=imdb_id)
     result = await provider.get_metadata(query)
 
@@ -101,10 +135,12 @@ async def test_tmdb_movie_success(provider: TMDBMetadataProvider):
 async def test_tmdb_series_success(provider: TMDBMetadataProvider):
     imdb_id = "tt2560140"
     aot_find_json: dict = json.loads(AOT_FIND_MOCK)
-    route1 = respx.get(f"{provider.base_url}/find/{imdb_id}").respond(status_code=200, text=AOT_FIND_MOCK)
-    route2 = respx.get(f"{provider.base_url}/tv/{aot_find_json['tv_results'][0]['id']}").respond(
-        status_code=200, text=AOT_TRANSLATIONS_MOCK
+    route1 = respx.get(f"{provider.base_url}/find/{imdb_id}").respond(
+        status_code=200, text=AOT_FIND_MOCK
     )
+    route2 = respx.get(
+        f"{provider.base_url}/tv/{aot_find_json['tv_results'][0]['id']}"
+    ).respond(status_code=200, text=AOT_TRANSLATIONS_MOCK)
     query = MetadataQuery(type=MediaType.SERIES, id=imdb_id)
     result = await provider.get_metadata(query)
 
@@ -118,10 +154,12 @@ async def test_tmdb_series_success(provider: TMDBMetadataProvider):
 async def test_tmdb_empty_title_filtered(provider: TMDBMetadataProvider):
     imdb_id = "tt7014378"
     tsotg_find_json: dict = json.loads(TSOTG_FIND_MOCK)
-    respx.get(f"{provider.base_url}/find/{imdb_id}").respond(status_code=200, text=TSOTG_FIND_MOCK)
-    respx.get(f"{provider.base_url}/movie/{tsotg_find_json['movie_results'][0]['id']}").respond(
-        status_code=200, text=TSOTG_TRANSLATIONS_MOCK
+    respx.get(f"{provider.base_url}/find/{imdb_id}").respond(
+        status_code=200, text=TSOTG_FIND_MOCK
     )
+    respx.get(
+        f"{provider.base_url}/movie/{tsotg_find_json['movie_results'][0]['id']}"
+    ).respond(status_code=200, text=TSOTG_TRANSLATIONS_MOCK)
     query = MetadataQuery(type=MediaType.MOVIE, id=imdb_id)
     result = await provider.get_metadata(query)
 
@@ -153,7 +191,9 @@ async def test_tmdb_not_found(provider: TMDBMetadataProvider):
 @respx.mock
 async def test_tmdb_status_error_on_find(provider: TMDBMetadataProvider):
     imdb_id = "tt7014378"
-    respx.get(f"{provider.base_url}/find/{imdb_id}").respond(status_code=401, text="Unauthorized")
+    respx.get(f"{provider.base_url}/find/{imdb_id}").respond(
+        status_code=401, text="Unauthorized"
+    )
     query = MetadataQuery(type=MediaType.MOVIE, id=imdb_id)
     with pytest.raises(MetadataStatusError, match="401"):
         await provider.get_metadata(query)
@@ -163,8 +203,12 @@ async def test_tmdb_status_error_on_find(provider: TMDBMetadataProvider):
 async def test_tmdb_status_error_on_details(provider: TMDBMetadataProvider):
     imdb_id = "tt7014378"
     tsotg_find_json: dict = json.loads(TSOTG_FIND_MOCK)
-    respx.get(f"{provider.base_url}/find/{imdb_id}").respond(status_code=200, text=TSOTG_FIND_MOCK)
-    respx.get(f"{provider.base_url}/movie/{tsotg_find_json['movie_results'][0]['id']}").respond(status_code=404, text="Not Found")
+    respx.get(f"{provider.base_url}/find/{imdb_id}").respond(
+        status_code=200, text=TSOTG_FIND_MOCK
+    )
+    respx.get(
+        f"{provider.base_url}/movie/{tsotg_find_json['movie_results'][0]['id']}"
+    ).respond(status_code=404, text="Not Found")
     query = MetadataQuery(type=MediaType.MOVIE, id=imdb_id)
     with pytest.raises(MetadataStatusError, match="404"):
         await provider.get_metadata(query)
@@ -173,7 +217,9 @@ async def test_tmdb_status_error_on_details(provider: TMDBMetadataProvider):
 @respx.mock
 async def test_tmdb_timeout_on_find(provider: TMDBMetadataProvider):
     imdb_id = "tt2560140"
-    respx.get(f"{provider.base_url}/find/{imdb_id}").side_effect = httpx.ReadTimeout("TMDB is taking too long to respond")
+    respx.get(f"{provider.base_url}/find/{imdb_id}").side_effect = httpx.ReadTimeout(
+        "TMDB is taking too long to respond"
+    )
     query = MetadataQuery(type=MediaType.SERIES, id="tt2560140")
     with pytest.raises(MetadataTimeoutError):
         await provider.get_metadata(query)
@@ -183,10 +229,12 @@ async def test_tmdb_timeout_on_find(provider: TMDBMetadataProvider):
 async def test_tmdb_timeout_on_details(provider: TMDBMetadataProvider):
     imdb_id = "tt7014378"
     tsotg_find_json: dict = json.loads(TSOTG_FIND_MOCK)
-    respx.get(f"{provider.base_url}/find/{imdb_id}").respond(status_code=200, text=TSOTG_FIND_MOCK)
-    respx.get(f"{provider.base_url}/movie/{tsotg_find_json['movie_results'][0]['id']}").side_effect = httpx.ReadTimeout(
-        "TMDB is taking too long to respond"
+    respx.get(f"{provider.base_url}/find/{imdb_id}").respond(
+        status_code=200, text=TSOTG_FIND_MOCK
     )
+    respx.get(
+        f"{provider.base_url}/movie/{tsotg_find_json['movie_results'][0]['id']}"
+    ).side_effect = httpx.ReadTimeout("TMDB is taking too long to respond")
     query = MetadataQuery(type=MediaType.MOVIE, id=imdb_id)
     with pytest.raises(MetadataTimeoutError):
         await provider.get_metadata(query)
@@ -195,7 +243,9 @@ async def test_tmdb_timeout_on_details(provider: TMDBMetadataProvider):
 @respx.mock
 async def test_search_timeout(provider: TMDBMetadataProvider):
     imdb_id = "tt2560140"
-    respx.get(f"{provider.base_url}/find/{imdb_id}").side_effect = httpx.ReadTimeout("Jackett is taking too long to respond")
+    respx.get(f"{provider.base_url}/find/{imdb_id}").side_effect = httpx.ReadTimeout(
+        "Jackett is taking too long to respond"
+    )
     query = MetadataQuery(type=MediaType.SERIES, id="tt2560140")
     with pytest.raises(MetadataTimeoutError):
         await provider.get_metadata(query)

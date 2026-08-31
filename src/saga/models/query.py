@@ -5,9 +5,11 @@ class MovieQuery(BaseModel):
     title: str
     year: int | None = None
 
+
 class SeriesQuery(BaseModel):
     title: str
     season: int
     episode: int
+
 
 MediaQuery = MovieQuery | SeriesQuery

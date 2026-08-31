@@ -46,9 +46,9 @@ async def provider():
 
 @respx.mock
 async def test_jackett_movie(provider: JackettProvider):
-    route = respx.get("http://jackett:9117/api/v2.0/indexers/all/results/torznab/api").respond(
-        status_code=200, text=THE_SUMMIT_OF_THE_GODS
-    )
+    route = respx.get(
+        "http://jackett:9117/api/v2.0/indexers/all/results/torznab/api"
+    ).respond(status_code=200, text=THE_SUMMIT_OF_THE_GODS)
     query = MovieQuery(title="The Summit of the Gods")
     result = await provider.search(query)
 
@@ -65,7 +65,9 @@ async def test_jackett_movie(provider: JackettProvider):
 
 @respx.mock
 async def test_jackett_series_three_calls(provider: JackettProvider):
-    route = respx.get("http://jackett:9117/api/v2.0/indexers/all/results/torznab/api").mock(
+    route = respx.get(
+        "http://jackett:9117/api/v2.0/indexers/all/results/torznab/api"
+    ).mock(
         side_effect=[
             Response(200, text=XML_TWO_VALID_ITEM),
             Response(200, text=XML_NO_VALID_ITEM),
@@ -101,7 +103,9 @@ async def test_jackett_series_dedup_case_insensitive(provider: JackettProvider):
         "ad07c84915b3e82834c1523fbc12ca03ea5548bc",
         "AD07C84915B3E82834C1523FBC12CA03EA5548BC",
     )
-    route = respx.get("http://jackett:9117/api/v2.0/indexers/all/results/torznab/api").mock(
+    route = respx.get(
+        "http://jackett:9117/api/v2.0/indexers/all/results/torznab/api"
+    ).mock(
         side_effect=[
             Response(200, text=XML_TWO_VALID_ITEM),
             Response(200, text=xml_upper),
@@ -149,9 +153,9 @@ async def test_jackett_http_error_series(provider: JackettProvider):
 
 @respx.mock
 async def test_search_timeout(provider: JackettProvider):
-    respx.get("http://jackett:9117/api/v2.0/indexers/all/results/torznab/api").side_effect = httpx.ReadTimeout(
-        "Jackett is taking too long to respond"
-    )
+    respx.get(
+        "http://jackett:9117/api/v2.0/indexers/all/results/torznab/api"
+    ).side_effect = httpx.ReadTimeout("Jackett is taking too long to respond")
     query = SeriesQuery(title="Call of the Night", season=1, episode=1)
     with pytest.raises(ProviderTimeoutError):
         await provider.search(query)

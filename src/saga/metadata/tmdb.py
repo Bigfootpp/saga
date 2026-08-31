@@ -16,8 +16,10 @@ from saga.models.metadata import MediaType, Metadata, MetadataQuery
 class IMDbIDNotFoundError(MetadataError):
     pass
 
+
 class InvalidIMDbIDError(MetadataError, ValueError):
     pass
+
 
 class TMDBMetadataProvider(BaseMetadataProvider):
     def __init__(
@@ -27,7 +29,11 @@ class TMDBMetadataProvider(BaseMetadataProvider):
         timeout: float = 15.0,
     ):
         self.api_key = api_key
-        self.base_url = urljoin(base_url, "/3") if base_url.endswith(("3", "3/")) else base_url.rstrip("/")
+        self.base_url = (
+            urljoin(base_url, "/3")
+            if base_url.endswith(("3", "3/"))
+            else base_url.rstrip("/")
+        )
         self.client = httpx.AsyncClient()
         self.timeout = timeout
 
@@ -101,7 +107,5 @@ class TMDBMetadataProvider(BaseMetadataProvider):
 
     async def get_metadata(self, query: MetadataQuery) -> Metadata:
         tmdb_id = await self.imdbid_to_tmdbid(query.id)
-        titles_dict = await self._get_all_titles(
-            tmdb_id=tmdb_id, media_type=query.type
-        )
+        titles_dict = await self._get_all_titles(tmdb_id=tmdb_id, media_type=query.type)
         return Metadata(titles=titles_dict)

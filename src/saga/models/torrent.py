@@ -7,10 +7,12 @@ class RawTorrent(BaseModel):
     magnet: str
     torrent_link: str | None = None
 
+
 class TorrentFileEntry(BaseModel):
     file_idx: int
     file_name: str
     path: str
+
 
 class ResolvedTorrent(BaseModel):
     title: str

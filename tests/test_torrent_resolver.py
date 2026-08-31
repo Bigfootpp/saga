@@ -9,7 +9,9 @@ from saga.models.torrent import RawTorrent, TorrentFileEntry
 from saga.torrent.exceptions import TorrentResolveError
 from saga.torrent.resolver import TorrentResolver
 
-TORRENT_PATH = pathlib.Path(__file__).parent / "samples" / "torrents" / "call_of_the_night.torrent"
+TORRENT_PATH = (
+    pathlib.Path(__file__).parent / "samples" / "torrents" / "call_of_the_night.torrent"
+)
 TORRENT_BYTES = TORRENT_PATH.read_bytes()
 
 EXPECTED_FILES = [
@@ -76,7 +78,9 @@ async def test_resolve_via_torrent_link_success(resolver: TorrentResolver):
     assert resolved.magnet == raw.magnet
     assert len(resolved.files) == 12
     assert resolved.files[0].file_idx == 0
-    assert resolved.files[0].path.endswith("S02E01 - That Time`s Not for Us. (1080p BD REMUX AVC FLAC) [8403377E].mkv")
+    assert resolved.files[0].path.endswith(
+        "S02E01 - That Time`s Not for Us. (1080p BD REMUX AVC FLAC) [8403377E].mkv"
+    )
 
 
 @respx.mock
@@ -94,7 +98,9 @@ async def test_resolve_via_torrent_link_http_error_fallback(resolver: TorrentRes
         TorrentFileEntry(file_idx=1, file_name="b.mkv", path="Folder/b.mkv"),
     ]
 
-    with patch.object(TorrentResolver, "_fetch_via_libtorrent_sync", return_value=fallback_entries) as mock_lt:
+    with patch.object(
+        TorrentResolver, "_fetch_via_libtorrent_sync", return_value=fallback_entries
+    ) as mock_lt:
         resolved = await resolver.resolve(raw)
         mock_lt.assert_called_once_with(raw.magnet, resolver.timeout)
 
@@ -103,7 +109,9 @@ async def test_resolve_via_torrent_link_http_error_fallback(resolver: TorrentRes
 
 
 @respx.mock
-async def test_resolve_via_torrent_link_invalid_bytes_fallback(resolver: TorrentResolver):
+async def test_resolve_via_torrent_link_invalid_bytes_fallback(
+    resolver: TorrentResolver,
+):
     raw = RawTorrent(
         title="Test",
         info_hash="abc",
@@ -114,7 +122,9 @@ async def test_resolve_via_torrent_link_invalid_bytes_fallback(resolver: Torrent
 
     fallback_entries = [TorrentFileEntry(file_idx=0, file_name="x.mkv", path="x.mkv")]
 
-    with patch.object(TorrentResolver, "_fetch_via_libtorrent_sync", return_value=fallback_entries):
+    with patch.object(
+        TorrentResolver, "_fetch_via_libtorrent_sync", return_value=fallback_entries
+    ):
         resolved = await resolver.resolve(raw)
 
     assert resolved.files[0].file_name == "x.mkv"
@@ -130,7 +140,9 @@ async def test_resolve_without_torrent_link_uses_libtorrent(resolver: TorrentRes
     )
 
     expected = [TorrentFileEntry(file_idx=0, file_name="f.mkv", path="f.mkv")]
-    with patch.object(TorrentResolver, "_fetch_via_libtorrent_sync", return_value=expected) as mock:
+    with patch.object(
+        TorrentResolver, "_fetch_via_libtorrent_sync", return_value=expected
+    ) as mock:
         resolved = await resolver.resolve(raw)
         mock.assert_called_once()
 
@@ -139,7 +151,9 @@ async def test_resolve_without_torrent_link_uses_libtorrent(resolver: TorrentRes
 
 
 @respx.mock
-async def test_resolve_via_torrent_link_empty_content_fallback(resolver: TorrentResolver):
+async def test_resolve_via_torrent_link_empty_content_fallback(
+    resolver: TorrentResolver,
+):
     raw = RawTorrent(
         title="Empty",
         info_hash="abc",
@@ -149,7 +163,9 @@ async def test_resolve_via_torrent_link_empty_content_fallback(resolver: Torrent
     respx.get("http://example.com/empty.torrent").respond(content=b"")
 
     fallback = [TorrentFileEntry(file_idx=0, file_name="y.mkv", path="y.mkv")]
-    with patch.object(TorrentResolver, "_fetch_via_libtorrent_sync", return_value=fallback):
+    with patch.object(
+        TorrentResolver, "_fetch_via_libtorrent_sync", return_value=fallback
+    ):
         resolved = await resolver.resolve(raw)
 
     assert resolved.files == fallback
@@ -163,10 +179,14 @@ async def test_resolve_timeout_via_httpx_fallback(resolver: TorrentResolver):
         magnet="magnet:?xt=urn:btih:abc",
         torrent_link="http://example.com/timeout.torrent",
     )
-    respx.get("http://example.com/timeout.torrent").side_effect = httpx.ReadTimeout("timeout")
+    respx.get("http://example.com/timeout.torrent").side_effect = httpx.ReadTimeout(
+        "timeout"
+    )
 
     fallback = [TorrentFileEntry(file_idx=0, file_name="z.mkv", path="z.mkv")]
-    with patch.object(TorrentResolver, "_fetch_via_libtorrent_sync", return_value=fallback):
+    with patch.object(
+        TorrentResolver, "_fetch_via_libtorrent_sync", return_value=fallback
+    ):
         resolved = await resolver.resolve(raw)
 
     assert resolved.files == fallback
@@ -180,7 +200,14 @@ async def test_resolve_libtorrent_timeout_raises(resolver: TorrentResolver):
         torrent_link=None,
     )
 
-    with patch.object(TorrentResolver, "_fetch_via_libtorrent_sync", side_effect=TimeoutError("timeout")), pytest.raises(TorrentResolveError, match="Timeout"):
+    with (
+        patch.object(
+            TorrentResolver,
+            "_fetch_via_libtorrent_sync",
+            side_effect=TimeoutError("timeout"),
+        ),
+        pytest.raises(TorrentResolveError, match="Timeout"),
+    ):
         await resolver.resolve(raw)
 
 
@@ -195,7 +222,12 @@ async def test_resolve_libtorrent_invalid_magnet_raises(resolver: TorrentResolve
     def raise_invalid(*_args, **_kwargs):
         raise TorrentResolveError("Invalid magnet URI")
 
-    with patch.object(TorrentResolver, "_fetch_via_libtorrent_sync", side_effect=raise_invalid), pytest.raises(TorrentResolveError, match="Invalid magnet"):
+    with (
+        patch.object(
+            TorrentResolver, "_fetch_via_libtorrent_sync", side_effect=raise_invalid
+        ),
+        pytest.raises(TorrentResolveError, match="Invalid magnet"),
+    ):
         await resolver.resolve(raw)
 
 
@@ -207,5 +239,12 @@ async def test_resolve_libtorrent_generic_error_wrapped(resolver: TorrentResolve
         torrent_link=None,
     )
 
-    with patch.object(TorrentResolver, "_fetch_via_libtorrent_sync", side_effect=RuntimeError("boom")), pytest.raises(TorrentResolveError, match="Failed to resolve"):
+    with (
+        patch.object(
+            TorrentResolver,
+            "_fetch_via_libtorrent_sync",
+            side_effect=RuntimeError("boom"),
+        ),
+        pytest.raises(TorrentResolveError, match="Failed to resolve"),
+    ):
         await resolver.resolve(raw)
