@@ -8,7 +8,9 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "httpx>=0.28.1",
+    "libtorrent>=2.1.1",
     "pydantic>=2.13.4",
+    "torf>=4.3.1",
 ]
 
 [build-system]
@@ -21,6 +23,13 @@ reportMissingModuleSource = false
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
+[tool.ruff.lint]
+ignore = [
+    "S110",
+    "BLE001",
+    "B017",
+]
 
 [dependency-groups]
 dev = [
