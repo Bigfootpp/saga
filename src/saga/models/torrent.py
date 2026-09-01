@@ -19,3 +19,10 @@ class ResolvedTorrent(BaseModel):
     info_hash: str
     magnet: str
     files: list[TorrentFileEntry]
+
+
+class EpisodeFile(BaseModel):
+    file_name: str
+    info_hash: str
+    magnet: str
+    file_idx: int
