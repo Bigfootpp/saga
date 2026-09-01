@@ -18,7 +18,7 @@ def _filter_raw_torrents_series(
         if season in parsed_data.seasons and not parsed_data.episodes:
             result.append(torrent)
             continue
-        if season in parsed_data.seasons and not episode in parsed_data.episodes:
+        if season in parsed_data.seasons and episode in parsed_data.episodes:
             result.append(torrent)
             continue
 
@@ -45,3 +45,4 @@ def filter_raw_torrents(
         return _filter_raw_torrents_series(raw_torrents, query)
     if isinstance(query, MovieQuery):
         return _filter_raw_torrents_movie(raw_torrents, query)
+    return []
