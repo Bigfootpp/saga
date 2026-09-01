@@ -10,6 +10,7 @@ dependencies = [
     "httpx>=0.28.1",
     "libtorrent>=2.1.1",
     "pydantic>=2.13.4",
+    "rank-torrent-name>=1.11.1",
     "torf>=4.3.1",
 ]
 
