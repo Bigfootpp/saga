@@ -66,7 +66,7 @@ class TorrentResolver:
             path = str(f)
             file_name = pathlib.Path(path).name
             entries.append(
-                TorrentFileEntry(file_idx=idx, file_name=file_name, path=path)
+                TorrentFileEntry(file_idx=idx, file_name=file_name, path=path, size=f.size)
             )
         return entries
 
@@ -127,8 +127,9 @@ class TorrentResolver:
             for idx in range(fs.num_files()):
                 path = fs.file_path(idx)
                 file_name = pathlib.Path(path).name
+                size = fs.file_size(idx)
                 entries.append(
-                    TorrentFileEntry(file_idx=idx, file_name=file_name, path=path)
+                    TorrentFileEntry(file_idx=idx, file_name=file_name, path=path, size=size)
                 )
             return entries
         finally:
