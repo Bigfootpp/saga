@@ -12,6 +12,7 @@ class TorrentFileEntry(BaseModel):
     file_idx: int
     file_name: str
     path: str
+    size: int
 
 
 class ResolvedTorrent(BaseModel):
@@ -21,7 +22,7 @@ class ResolvedTorrent(BaseModel):
     files: list[TorrentFileEntry]
 
 
-class EpisodeFile(BaseModel):
+class MediaFile(BaseModel):
     file_name: str
     info_hash: str
     magnet: str

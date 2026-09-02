@@ -19,11 +19,13 @@ EXPECTED_FILES = [
         file_idx=0,
         file_name="[Shroud] Call of the Night Season 2 - S02E01 - That Time`s Not for Us. (1080p BD REMUX AVC FLAC) [8403377E].mkv",
         path="[Shroud] Call of the Night Season 2 (1080p BD REMUX AVC FLAC)/[Shroud] Call of the Night Season 2 - S02E01 - That Time`s Not for Us. (1080p BD REMUX AVC FLAC) [8403377E].mkv",
+        size=6031513350,
     ),
     TorrentFileEntry(
         file_idx=11,
         file_name="[Shroud] Call of the Night Season 2 - S02E12 - Call of the Night (1080p BD REMUX AVC FLAC) [CA1C957C].mkv",
         path="[Shroud] Call of the Night Season 2 (1080p BD REMUX AVC FLAC)/[Shroud] Call of the Night Season 2 - S02E12 - Call of the Night (1080p BD REMUX AVC FLAC) [CA1C957C].mkv",
+        size=6252012944,
     ),
 ]
 
@@ -49,6 +51,7 @@ def test_parse_torf_bytes_valid():
     assert entries[-1] == EXPECTED_FILES[1]
     for e in entries:
         assert e.file_name == pathlib.Path(e.path).name
+        assert e.size > 0
 
 
 def test_parse_torf_bytes_invalid_raises():
@@ -81,6 +84,8 @@ async def test_resolve_via_torrent_link_success(resolver: TorrentResolver):
     assert resolved.files[0].path.endswith(
         "S02E01 - That Time`s Not for Us. (1080p BD REMUX AVC FLAC) [8403377E].mkv"
     )
+    assert resolved.files[0].size == 6031513350
+    assert resolved.files[11].size == 6252012944
 
 
 @respx.mock
@@ -94,8 +99,8 @@ async def test_resolve_via_torrent_link_http_error_fallback(resolver: TorrentRes
     respx.get("http://example.com/bad.torrent").respond(status_code=404)
 
     fallback_entries = [
-        TorrentFileEntry(file_idx=0, file_name="a.mkv", path="Folder/a.mkv"),
-        TorrentFileEntry(file_idx=1, file_name="b.mkv", path="Folder/b.mkv"),
+        TorrentFileEntry(file_idx=0, file_name="a.mkv", path="Folder/a.mkv", size=100),
+        TorrentFileEntry(file_idx=1, file_name="b.mkv", path="Folder/b.mkv", size=200),
     ]
 
     with patch.object(
@@ -120,7 +125,7 @@ async def test_resolve_via_torrent_link_invalid_bytes_fallback(
     )
     respx.get("http://example.com/invalid.torrent").respond(content=b"invalid bencode")
 
-    fallback_entries = [TorrentFileEntry(file_idx=0, file_name="x.mkv", path="x.mkv")]
+    fallback_entries = [TorrentFileEntry(file_idx=0, file_name="x.mkv", path="x.mkv", size=123)]
 
     with patch.object(
         TorrentResolver, "_fetch_via_libtorrent_sync", return_value=fallback_entries
@@ -139,7 +144,7 @@ async def test_resolve_without_torrent_link_uses_libtorrent(resolver: TorrentRes
         torrent_link=None,
     )
 
-    expected = [TorrentFileEntry(file_idx=0, file_name="f.mkv", path="f.mkv")]
+    expected = [TorrentFileEntry(file_idx=0, file_name="f.mkv", path="f.mkv", size=456)]
     with patch.object(
         TorrentResolver, "_fetch_via_libtorrent_sync", return_value=expected
     ) as mock:
@@ -162,7 +167,7 @@ async def test_resolve_via_torrent_link_empty_content_fallback(
     )
     respx.get("http://example.com/empty.torrent").respond(content=b"")
 
-    fallback = [TorrentFileEntry(file_idx=0, file_name="y.mkv", path="y.mkv")]
+    fallback = [TorrentFileEntry(file_idx=0, file_name="y.mkv", path="y.mkv", size=789)]
     with patch.object(
         TorrentResolver, "_fetch_via_libtorrent_sync", return_value=fallback
     ):
@@ -183,7 +188,7 @@ async def test_resolve_timeout_via_httpx_fallback(resolver: TorrentResolver):
         "timeout"
     )
 
-    fallback = [TorrentFileEntry(file_idx=0, file_name="z.mkv", path="z.mkv")]
+    fallback = [TorrentFileEntry(file_idx=0, file_name="z.mkv", path="z.mkv", size=999)]
     with patch.object(
         TorrentResolver, "_fetch_via_libtorrent_sync", return_value=fallback
     ):
