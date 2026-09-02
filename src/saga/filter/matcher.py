@@ -1,6 +1,6 @@
 from RTN import parse
 
-from saga.models.query import SeriesQuery
+from saga.models.query import MediaQuery, SeriesQuery
 from saga.models.torrent import MediaFile, ResolvedTorrent, TorrentFileEntry
 
 
@@ -24,7 +24,7 @@ def _filter_files(files: list[TorrentFileEntry], season: int) -> list[TorrentFil
     return result
 
 
-def find_file_idx(torrent: ResolvedTorrent, query: SeriesQuery) -> MediaFile:
+def _find_file_idx_series(torrent: ResolvedTorrent, query: SeriesQuery) -> MediaFile:
     files = _filter_files(torrent.files, query.season)
     for file in files:
         parsed_file_name = parse(file.file_name)
@@ -41,3 +41,20 @@ def find_file_idx(torrent: ResolvedTorrent, query: SeriesQuery) -> MediaFile:
             )
 
     raise NoMatchError("No matched file found")
+
+
+def _find_file_idx_movie(torrent: ResolvedTorrent) -> MediaFile:
+    largest_file = max(torrent.files, key=lambda x: x.size)
+    return MediaFile(
+        file_name=largest_file.file_name,
+        info_hash=torrent.info_hash,
+        magnet=torrent.magnet,
+        file_idx=largest_file.file_idx,
+    )
+
+
+def find_file_idx(torrent: ResolvedTorrent, query: MediaQuery) -> MediaFile:
+    if isinstance(query, SeriesQuery):
+        return _find_file_idx_series(torrent, query)
+    else:
+        return _find_file_idx_movie(torrent)
