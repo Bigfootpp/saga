@@ -15,10 +15,7 @@ class TorrentFileEntry(BaseModel):
     size: int
 
 
-class ResolvedTorrent(BaseModel):
-    title: str
-    info_hash: str
-    magnet: str
+class ResolvedTorrent(RawTorrent):
     files: list[TorrentFileEntry]
 
 
