@@ -1,66 +1,44 @@
 import pytest
 
-from saga.filter.matcher import NoMatchError, _filter_files, find_file_idx
-from saga.models.query import SeriesQuery
+from saga.models.query import MovieQuery, SeriesQuery
 from saga.models.torrent import ResolvedTorrent, TorrentFileEntry
+from saga.services.matching import NoMatchError, _valid_file, find_file_idx
 
 
 def make_entry(idx: int, file_name: str, path: str | None = None) -> TorrentFileEntry:
-    return TorrentFileEntry(file_idx=idx, file_name=file_name, path=path or file_name, size=1000 + idx)
+    return TorrentFileEntry(
+        file_idx=idx, file_name=file_name, path=path or file_name, size=1000 + idx
+    )
 
 
 def make_torrent(files: list[TorrentFileEntry]) -> ResolvedTorrent:
-    return ResolvedTorrent(title="Test", info_hash="abc123", magnet="magnet:?xt=urn:btih:abc123", files=files)
+    return ResolvedTorrent(
+        title="Test",
+        info_hash="abc123",
+        magnet="magnet:?xt=urn:btih:abc123",
+        files=files,
+    )
 
 
-# --- _filter_files ---
+# --- _valid_file ---
 
 
-def test_filter_files_no_season_kept():
-    files = [make_entry(0, "Movie 2021.mkv"), make_entry(1, "E05.mkv")]
-    # Both have no seasons -> kept
-    assert len(_filter_files(files, season=2)) == 2
+def test_valid_file_no_season():
+    assert _valid_file(make_entry(0, "Movie.mkv"), season=2) is True
+    assert _valid_file(make_entry(0, "E05.mkv"), season=2) is True
 
 
-def test_filter_files_matching_single_season_kept():
-    files = [make_entry(0, "[Shroud] Call of the Night S02E05.mkv")]
-    assert len(_filter_files(files, season=2)) == 1
+def test_valid_file_matching_single_season():
+    assert _valid_file(make_entry(0, "S02E05.mkv"), season=2) is True
+    assert _valid_file(make_entry(0, "S02.mkv"), season=2) is True
 
 
-def test_filter_files_non_matching_single_season_filtered():
-    files = [make_entry(0, "Show S01E05.mkv")]
-    assert len(_filter_files(files, season=2)) == 0
+def test_valid_file_non_matching_season():
+    assert _valid_file(make_entry(0, "S01E05.mkv"), season=2) is False
 
 
-def test_filter_files_season_pack_single_season_kept():
-    files = [make_entry(0, "Show S02.mkv")]
-    assert len(_filter_files(files, season=2)) == 1
-
-
-def test_filter_files_season_pack_wrong_season_filtered():
-    files = [make_entry(0, "Show S01.mkv")]
-    assert len(_filter_files(files, season=2)) == 0
-
-
-def test_filter_files_multiple_seasons_filtered():
-    files = [make_entry(0, "Show S01 S02.mkv")]
-    # RTN parses [1, 2] -> len !=1 -> filtered even if contains target season
-    assert len(_filter_files(files, season=2)) == 0
-
-
-def test_filter_files_mixed():
-    files = [
-        make_entry(0, "S02E05.mkv"),  # keep (match)
-        make_entry(1, "S01E05.mkv"),  # filter (wrong season)
-        make_entry(2, "Movie.mkv"),  # keep (no season)
-        make_entry(3, "S02.mkv"),  # keep (season pack)
-    ]
-    result = _filter_files(files, season=2)
-    assert [f.file_idx for f in result] == [0, 2, 3]
-
-
-def test_filter_files_empty():
-    assert _filter_files([], season=1) == []
+def test_valid_file_multiple_seasons():
+    assert _valid_file(make_entry(0, "S01 S02.mkv"), season=2) is False
 
 
 # --- find_file_idx ---
@@ -137,9 +115,18 @@ def test_find_file_idx_real_torrent_sample():
     # Use real file names from call_of_the_night.torrent
     torrent = make_torrent(
         [
-            make_entry(0, "[Shroud] Call of the Night Season 2 - S02E01 - That Time`s Not for Us. (1080p BD REMUX AVC FLAC) [8403377E].mkv"),
-            make_entry(4, "[Shroud] Call of the Night Season 2 - S02E05 - The Few Years I Spent with You... (1080p BD REMUX AVC FLAC) [02946E1D].mkv"),
-            make_entry(5, "[Shroud] Call of the Night Season 2 - S02E06 - I`m Not Asking About the Quality! (1080p BD REMUX AVC FLAC) [554BD3F2].mkv"),
+            make_entry(
+                0,
+                "[Shroud] Call of the Night Season 2 - S02E01 - That Time`s Not for Us. (1080p BD REMUX AVC FLAC) [8403377E].mkv",
+            ),
+            make_entry(
+                4,
+                "[Shroud] Call of the Night Season 2 - S02E05 - The Few Years I Spent with You... (1080p BD REMUX AVC FLAC) [02946E1D].mkv",
+            ),
+            make_entry(
+                5,
+                "[Shroud] Call of the Night Season 2 - S02E06 - I`m Not Asking About the Quality! (1080p BD REMUX AVC FLAC) [554BD3F2].mkv",
+            ),
         ]
     )
     q = SeriesQuery(title="Call of the Night", season=2, episode=5)
@@ -160,3 +147,38 @@ def test_find_file_idx_with_no_season_files():
     q = SeriesQuery(title="Movie", season=1, episode=1)
     with pytest.raises(NoMatchError):
         find_file_idx(torrent, q)
+
+
+def test_find_file_idx_movie_largest():
+    torrent = make_torrent(
+        [
+            TorrentFileEntry(file_idx=0, file_name="a.mkv", path="a.mkv", size=100),
+            TorrentFileEntry(file_idx=1, file_name="b.mkv", path="b.mkv", size=999),
+            TorrentFileEntry(file_idx=2, file_name="c.mkv", path="c.mkv", size=500),
+        ]
+    )
+    q = MovieQuery(title="Movie")
+    media = find_file_idx(torrent, q)
+    assert media.file_idx == 1
+    assert media.file_name == "b.mkv"
+
+
+def test_find_file_idx_movie_single_file():
+    torrent = make_torrent([TorrentFileEntry(file_idx=0, file_name="movie.mkv", path="movie.mkv", size=1234)])
+    q = MovieQuery(title="Movie", year=2021)
+    media = find_file_idx(torrent, q)
+    assert media.file_idx == 0
+
+
+def test_resolved_torrent_inherits_raw():
+    # ResolvedTorrent now inherits from RawTorrent
+    torrent = ResolvedTorrent(
+        title="Test",
+        info_hash="ABC123",
+        magnet="magnet:?xt=urn:btih:ABC123",
+        torrent_link="http://example.com/file.torrent",
+        files=[make_entry(0, "S01E01.mkv")],
+    )
+    assert torrent.title == "Test"
+    assert torrent.torrent_link == "http://example.com/file.torrent"
+    assert torrent.files[0].file_idx == 0
