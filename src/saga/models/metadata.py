@@ -11,6 +11,7 @@ class MediaType(StrEnum):
 
 class Titles(TypedDict, extra_items=str):
     original: str
+    en: str
 
 
 class Metadata(BaseModel):

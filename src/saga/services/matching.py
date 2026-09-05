@@ -1,5 +1,8 @@
+from urllib.parse import parse_qs, urlparse
+
 from saga.models.query import MediaQuery, MovieQuery, SeriesQuery
-from saga.models.torrent import MediaFile, RawTorrent, ResolvedTorrent, TorrentFileEntry
+from saga.models.stream import Stream
+from saga.models.torrent import RawTorrent, ResolvedTorrent, TorrentFileEntry
 from saga.utils.guessit import parse
 
 
@@ -17,7 +20,8 @@ def _valid_file(file: TorrentFileEntry, season: int) -> bool:
     )
 
 
-def _find_file_idx_series(torrent: ResolvedTorrent, query: SeriesQuery) -> MediaFile:
+def _find_file_idx_series(torrent: ResolvedTorrent, query: SeriesQuery) -> Stream:
+    parsed_torrent_name = parse(torrent.title)
     for file in torrent.files:
         if not _valid_file(file, query.season):
             continue
@@ -27,22 +31,27 @@ def _find_file_idx_series(torrent: ResolvedTorrent, query: SeriesQuery) -> Media
             and len(parsed_file_name.episodes) == 1
             and query.episode in parsed_file_name.episodes
         ):
-            return MediaFile(
-                file_name=file.file_name,
+            return Stream(
+                raw_name=file.file_name,
+                title=parsed_file_name.title or "",
                 info_hash=torrent.info_hash,
-                magnet=torrent.magnet,
+                dubs_language=parsed_torrent_name.audio_languages,
+                sources=parse_trackers(torrent.magnet),
                 file_idx=file.file_idx,
             )
 
     raise NoMatchError("No matched file found")
 
 
-def _find_file_idx_movie(torrent: ResolvedTorrent) -> MediaFile:
+def _find_file_idx_movie(torrent: ResolvedTorrent) -> Stream:
     largest_file = max(torrent.files, key=lambda x: x.size)
-    return MediaFile(
-        file_name=largest_file.file_name,
+    parsed_name = parse(torrent.title)
+    return Stream(
+        raw_name=largest_file.file_name,
+        title=parsed_name.title or "",
         info_hash=torrent.info_hash,
-        magnet=torrent.magnet,
+        dubs_language=parsed_name.audio_languages,
+        sources=parse_trackers(torrent.magnet),
         file_idx=largest_file.file_idx,
     )
 
@@ -63,7 +72,13 @@ def _valid_raw_torrent_movie(raw_torrent: RawTorrent, query: MovieQuery) -> bool
     return not parsed_data.seasons and not parsed_data.episodes
 
 
-def find_file_idx(torrent: ResolvedTorrent, query: MediaQuery) -> MediaFile:
+def parse_trackers(magnet_uri: str) -> list[str]:
+    parsed = urlparse(magnet_uri)
+    parsed_query = parse_qs(parsed.query)
+    return parsed_query.get("tr", [])
+
+
+def find_file_idx(torrent: ResolvedTorrent, query: MediaQuery) -> Stream:
     if isinstance(query, SeriesQuery):
         return _find_file_idx_series(torrent, query)
     else:

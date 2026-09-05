@@ -152,7 +152,7 @@ class TorrentResolver:
         )
 
     async def bulk_resolve(
-        self, raw_torrents: list[RawTorrent], concurrency: int = 5
+        self, raw_torrents: list[RawTorrent], concurrency: int = 10
     ) -> list[ResolvedTorrent]:
         semaphore = asyncio.Semaphore(concurrency)
 
