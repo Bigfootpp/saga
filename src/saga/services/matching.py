@@ -1,7 +1,6 @@
-from RTN import parse
-
 from saga.models.query import MediaQuery, MovieQuery, SeriesQuery
 from saga.models.torrent import MediaFile, RawTorrent, ResolvedTorrent, TorrentFileEntry
+from saga.utils.guessit import parse
 
 
 class NoMatchError(Exception):
