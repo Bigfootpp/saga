@@ -31,7 +31,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
         self.api_key = api_key
         self.base_url = (
             urljoin(base_url, "/3")
-            if base_url.endswith(("3", "3/"))
+            if not base_url.endswith(("3", "3/"))
             else base_url.rstrip("/")
         )
         self.client = httpx.AsyncClient()
@@ -62,7 +62,9 @@ class TMDBMetadataProvider(BaseMetadataProvider):
         except httpx.TimeoutException as e:
             raise MetadataTimeoutError("TMDB took too long to respond") from e
         except httpx.HTTPStatusError as e:
-            raise MetadataStatusError(f"TMDB error: {e.response.status_code}") from e
+            raise MetadataStatusError(
+                f"TMDB error: {e.response.status_code} with {e.request.url}"
+            ) from e
 
     async def _get_all_titles(self, tmdb_id: int, media_type: MediaType) -> Titles:
         tmdb_type: Literal["tv", "movie"] = "tv" if media_type == "series" else "movie"
