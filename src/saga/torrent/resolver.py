@@ -66,7 +66,9 @@ class TorrentResolver:
             path = str(f)
             file_name = pathlib.Path(path).name
             entries.append(
-                TorrentFileEntry(file_idx=idx, file_name=file_name, path=path, size=f.size)
+                TorrentFileEntry(
+                    file_idx=idx, file_name=file_name, path=path, size=f.size
+                )
             )
         return entries
 
@@ -129,7 +131,9 @@ class TorrentResolver:
                 file_name = pathlib.Path(path).name
                 size = fs.file_size(idx)
                 entries.append(
-                    TorrentFileEntry(file_idx=idx, file_name=file_name, path=path, size=size)
+                    TorrentFileEntry(
+                        file_idx=idx, file_name=file_name, path=path, size=size
+                    )
                 )
             return entries
         finally:
@@ -146,3 +150,18 @@ class TorrentResolver:
             magnet=raw.magnet,
             files=files,
         )
+
+    async def bulk_resolve(
+        self, raw_torrents: list[RawTorrent], concurrency: int = 5
+    ) -> list[ResolvedTorrent]:
+        semaphore = asyncio.Semaphore(concurrency)
+
+        async def _resolve_one(raw: RawTorrent) -> ResolvedTorrent | None:
+            async with semaphore:
+                try:
+                    return await self.resolve(raw)
+                except TorrentResolveError:
+                    return None
+
+        results = await asyncio.gather(*[_resolve_one(r) for r in raw_torrents])
+        return [r for r in results if r is not None]

@@ -1,7 +1,7 @@
 from enum import StrEnum
-from typing import TypedDict
 
 from pydantic import BaseModel
+from typing_extensions import TypedDict
 
 
 class MediaType(StrEnum):
