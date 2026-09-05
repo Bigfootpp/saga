@@ -6,14 +6,14 @@ import guessit
 from pydantic import BaseModel, Field
 
 
-class GuessitParsed(BaseModel):
+class GuessitResult(BaseModel):
     title: str | None = None
     type: str | None = None
     seasons: list[int] = Field(default_factory=list)
     episodes: list[int] = Field(default_factory=list)
-    season: int | None = None
-    episode: int | None = None
     year: int | None = None
+    audio_languages: list[str] = Field(default_factory=list)
+    subtitle_languages: list[str] = Field(default_factory=list)
     raw: dict[str, Any] = Field(default_factory=dict, repr=False)
 
     @property
@@ -58,24 +58,50 @@ def _to_int_or_none(value: Any) -> int | None:
         return None
 
 
-def parse_guessit(value: str) -> GuessitParsed:
+def _lang_to_code(lang: Any) -> str | None:
+    if lang is None:
+        return None
+    if isinstance(lang, str):
+        return None if lang == "und" else lang
+    try:
+        s = str(lang)
+        return None if s == "und" else s
+    except Exception:
+        return None
+
+
+def _to_lang_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        out: list[str] = []
+        for v in value:
+            code = _lang_to_code(v)
+            if code is not None:
+                out.append(code)
+        return out
+    code = _lang_to_code(value)
+    return [code] if code is not None else []
+
+
+def parse_guessit(value: str) -> GuessitResult:
     try:
         raw: dict[str, Any] = guessit.guessit(value)
     except Exception:
         raw = {}
     seasons = _to_int_list(raw.get("season"))
     episodes = _to_int_list(raw.get("episode"))
-    return GuessitParsed(
+    return GuessitResult(
         title=raw.get("title") if isinstance(raw.get("title"), str) else None,
         type=raw.get("type") if isinstance(raw.get("type"), str) else None,
         seasons=seasons,
         episodes=episodes,
-        season=_to_int_or_none(raw.get("season")),
-        episode=_to_int_or_none(raw.get("episode")),
         year=_to_int_or_none(raw.get("year")),
+        audio_languages=_to_lang_list(raw.get("language")),
+        subtitle_languages=_to_lang_list(raw.get("subtitle_language")),
         raw=dict(raw),
     )
 
 
-def parse(value: str) -> GuessitParsed:
+def parse(value: str) -> GuessitResult:
     return parse_guessit(value)
