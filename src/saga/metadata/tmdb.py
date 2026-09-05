@@ -10,7 +10,7 @@ from saga.metadata.exceptions import (
     MetadataTimeoutError,
 )
 from saga.metadata.models import TMDBDetailResponse, TMDBFindResponse
-from saga.models.metadata import MediaType, Metadata, MetadataQuery
+from saga.models.metadata import MediaType, Metadata, MetadataQuery, Titles
 
 
 class IMDbIDNotFoundError(MetadataError):
@@ -64,9 +64,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
         except httpx.HTTPStatusError as e:
             raise MetadataStatusError(f"TMDB error: {e.response.status_code}") from e
 
-    async def _get_all_titles(
-        self, tmdb_id: int, media_type: MediaType
-    ) -> dict[str, str]:
+    async def _get_all_titles(self, tmdb_id: int, media_type: MediaType) -> Titles:
         tmdb_type: Literal["tv", "movie"] = "tv" if media_type == "series" else "movie"
 
         url = f"{self.base_url}/{tmdb_type}/{tmdb_id}"
@@ -81,7 +79,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
 
             detail = TMDBDetailResponse.model_validate(response.json())
 
-            titles: dict[str, str] = {}
+            titles: Titles = {"original": ""}
 
             main_title = detail.name or detail.title
             if main_title:
@@ -90,6 +88,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
             original_title = detail.original_name or detail.original_title
             if original_title:
                 titles[detail.original_language] = original_title
+                titles["original"] = original_title
 
             for item in detail.translations.translations:
                 lang = item.iso_639_1.strip()

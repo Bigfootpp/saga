@@ -1,4 +1,5 @@
 from enum import StrEnum
+from typing import TypedDict
 
 from pydantic import BaseModel
 
@@ -8,8 +9,12 @@ class MediaType(StrEnum):
     SERIES = "series"
 
 
+class Titles(TypedDict, extra_items=str):
+    original: str
+
+
 class Metadata(BaseModel):
-    titles: dict[str, str]
+    titles: Titles
 
 
 class MetadataQuery(BaseModel):
