@@ -31,7 +31,7 @@ class StreamService:
         episode: int,
         dubs: list[str],
         max_dub_result: int = 10,
-        max_other_result: int = 5,
+        max_other_result: int = 10,
     ) -> StreamResult:
         media_type = MediaType.SERIES
         metadata_query = MetadataQuery(type=media_type, id=media_id)
@@ -39,7 +39,7 @@ class StreamService:
 
         query = SeriesQuery(title=metadata.titles["en"], episode=episode, season=season)
         raw_results = await self.provider.search(query)
-        print(f"Found {len(raw_results)} raw results")
+        # print(f"Found {len(raw_results)} raw results")
 
         others_streams: list[Stream] = []
         dubs_streams: list[Stream] = []
@@ -70,11 +70,11 @@ class StreamService:
             else:
                 other_results.append(torrent)
 
-        print(f"Found {len(dub_result)} dub results")
-        print(f"Found {len(other_results)} other results")
+        # print(f"Found {len(dub_result)} dub results")
+        # print(f"Found {len(other_results)} other results")
 
         await self.resolver.bulk_resolve(
-            dub_result, is_valid=is_valid, concurrency=8, max_result=max_dub_result
+            dub_result, is_valid=is_valid, concurrency=10, max_result=max_dub_result
         )
         dub = False
         await self.resolver.bulk_resolve(
@@ -84,7 +84,7 @@ class StreamService:
             max_result=max_other_result,
         )
 
-        print(f"Found {len(dubs_streams)} dub streams")
-        print(f"Found {len(others_streams)} other results")
+        # print(f"Found {len(dubs_streams)} dub streams")
+        # print(f"Found {len(others_streams)} other results")
 
         return StreamResult(dubs_stream=dubs_streams, others=others_streams)
