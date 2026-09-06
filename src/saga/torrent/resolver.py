@@ -171,17 +171,20 @@ class TorrentResolver:
         resolved_torrents: list[ResolvedTorrent] = []
         tasks = [asyncio.create_task(_resolve_one(r)) for r in raw_torrents]
 
-        for coro in asyncio.as_completed(tasks):
-            result = await coro
-            if result is not None:
-                if is_valid is None or is_valid and is_valid(result):
-                    resolved_torrents.append(result)
+        try:
+            for coro in asyncio.as_completed(tasks):
+                result = await coro
+                if result is not None:
+                    if is_valid is None or is_valid(result):
+                        resolved_torrents.append(result)
 
-                if max_result is not None and len(resolved_torrents) >= max_result:
-                    break
+                    if max_result is not None and len(resolved_torrents) >= max_result:
+                        break
+        finally:
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
 
-        for task in tasks:
-            if not task.done():
-                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
 
         return resolved_torrents
