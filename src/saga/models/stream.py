@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field
 
 class Stream(BaseModel):
     raw_name: str
-    title: str
     dubs_language: list[str]
     info_hash: str
     file_idx: int

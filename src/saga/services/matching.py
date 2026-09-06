@@ -63,7 +63,6 @@ def _find_file_idx_series(torrent: ResolvedTorrent, query: SeriesQuery) -> Strea
         ):
             return Stream(
                 raw_name=file.file_name,
-                title=parsed_file_name.title or "",
                 info_hash=torrent.info_hash,
                 dubs_language=parsed_torrent_name.audio_languages,
                 sources=parse_trackers(torrent.magnet),
@@ -80,7 +79,6 @@ def _find_file_idx_movie(torrent: ResolvedTorrent) -> Stream:
     parsed_name = parse(torrent.title)
     return Stream(
         raw_name=largest_file.file_name,
-        title=parsed_name.title or "",
         info_hash=torrent.info_hash,
         dubs_language=parsed_name.audio_languages,
         sources=parse_trackers(torrent.magnet),
