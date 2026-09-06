@@ -1,3 +1,4 @@
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from saga.models.query import MediaQuery, MovieQuery, SeriesQuery
@@ -5,12 +6,41 @@ from saga.models.stream import Stream
 from saga.models.torrent import RawTorrent, ResolvedTorrent, TorrentFileEntry
 from saga.utils.guessit import parse
 
+VIDEO_EXTENSIONS: list[str] = [
+    ".mkv",
+    ".mp4",
+    ".m4v",
+    ".webm",
+    ".avi",
+    ".ts",
+    ".m2ts",
+    ".mts",
+    ".mov",
+    ".wmv",
+    ".vob",
+    ".flv",
+    ".divx",
+    ".mpg",
+    ".mpeg",
+    ".rm",
+    ".rmvb",
+    ".asf",
+    ".ogv",
+]
+
 
 class NoMatchError(Exception):
     pass
 
 
+def _valid_extension(file: TorrentFileEntry) -> bool:
+    ext = Path(file.file_name).suffix.lower()
+    return ext in VIDEO_EXTENSIONS
+
+
 def _valid_file(file: TorrentFileEntry, season: int) -> bool:
+    if not _valid_extension(file):
+        return False
     parsed_file_name_data = parse(file.file_name)
     if not parsed_file_name_data.seasons:
         return True
@@ -45,6 +75,8 @@ def _find_file_idx_series(torrent: ResolvedTorrent, query: SeriesQuery) -> Strea
 
 def _find_file_idx_movie(torrent: ResolvedTorrent) -> Stream:
     largest_file = max(torrent.files, key=lambda x: x.size)
+    if not _valid_extension(largest_file):
+        raise NoMatchError("No matched file found")
     parsed_name = parse(torrent.title)
     return Stream(
         raw_name=largest_file.file_name,
@@ -91,3 +123,8 @@ def valid_raw_torrent(raw_torrent: RawTorrent, query: MediaQuery) -> bool:
     if isinstance(query, MovieQuery):
         return _valid_raw_torrent_movie(raw_torrent, query)
     return False
+
+
+def get_dub_language(raw_torrent: RawTorrent) -> list[str]:
+    parsed_name = parse(raw_torrent.title)
+    return parsed_name.audio_languages
