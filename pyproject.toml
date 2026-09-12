@@ -11,6 +11,7 @@ dependencies = [
     "httpx>=0.28.1",
     "libtorrent>=2.1.1",
     "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
     "torf>=4.3.1",
 ]
 
