@@ -25,6 +25,8 @@ reportMissingModuleSource = false
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+markers = ["integration: real tests"]
+addopts = "-m 'not integration'"
 
 [tool.ruff.lint]
 ignore = [

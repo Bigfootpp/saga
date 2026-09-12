@@ -1,4 +1,4 @@
-import asyncio
+import pytest
 
 from saga.config import settings
 from saga.metadata.tmdb import TMDBMetadataProvider
@@ -7,7 +7,8 @@ from saga.services.stream_service import StreamService
 from saga.torrent.resolver import TorrentResolver
 
 
-async def main():
+@pytest.mark.integration
+async def test_integration():
     provider = JackettProvider(
         base_url=settings.jackett_base_url,
         api_key=settings.jackett_api_key,
@@ -27,6 +28,3 @@ async def main():
     print(f"other count: {len(result.others)}")
     for stream in result.others:
         print(stream.raw_name)
-
-
-asyncio.run(main())
