@@ -3,6 +3,7 @@ import pathlib
 import tempfile
 import time
 from collections.abc import Callable
+from typing import Any
 
 import httpx
 from torf import Torrent
@@ -19,6 +20,20 @@ class TorrentResolver:
     ):
         self.client = client or httpx.AsyncClient()
         self.timeout = timeout
+        self._lt_session: Any | None = None
+
+    def _get_lt_session(self) -> Any:
+        if self._lt_session is None:
+            import libtorrent as lt
+
+            self._lt_session = lt.session(
+                {
+                    "listen_interfaces": "0.0.0.0:0",
+                    "enable_dht": True,
+                    "alert_mask": 0,
+                }
+            )
+        return self._lt_session
 
     async def resolve(self, raw_torrent: RawTorrent) -> ResolvedTorrent:
         if raw_torrent.torrent_link:
@@ -26,7 +41,7 @@ class TorrentResolver:
                 files = await self._resolve_via_torrent_link(raw_torrent.torrent_link)
                 if files is not None:
                     return self._to_resolved(raw_torrent, files)
-            except TorrentResolveError:
+            except Exception:
                 pass
 
         try:
@@ -53,11 +68,9 @@ class TorrentResolver:
             return None
 
         try:
-            files = await asyncio.to_thread(self._parse_torf_bytes, content)
+            return await asyncio.to_thread(self._parse_torf_bytes, content)
         except Exception:
             return None
-
-        return files
 
     @staticmethod
     def _parse_torf_bytes(content: bytes) -> list[TorrentFileEntry]:
@@ -74,32 +87,9 @@ class TorrentResolver:
         return entries
 
     async def _resolve_via_libtorrent(self, magnet: str) -> list[TorrentFileEntry]:
-        try:
-            files = await asyncio.wait_for(
-                asyncio.to_thread(
-                    self._fetch_via_libtorrent_sync, magnet, self.timeout
-                ),
-                timeout=self.timeout + 2,
-            )
-            return files
-        except TimeoutError as e:
-            raise TorrentResolveError(
-                f"Timeout fetching metadata via libtorrent for {magnet}"
-            ) from e
-
-    @staticmethod
-    def _fetch_via_libtorrent_sync(
-        magnet: str, timeout: float
-    ) -> list[TorrentFileEntry]:
         import libtorrent as lt
 
-        ses = lt.session(
-            {
-                "listen_interfaces": "0.0.0.0:0",
-                "enable_dht": True,
-                "alert_mask": int(lt.alert.category_t.error_notification),
-            }
-        )
+        ses = self._get_lt_session()
 
         try:
             params = lt.parse_magnet_uri(magnet)
@@ -108,23 +98,27 @@ class TorrentResolver:
 
         params.save_path = tempfile.gettempdir()
 
+        # if hasattr(lt, "torrent_flags"):
+        #     if hasattr(lt.torrent_flags, "upload_mode"):
+        #         params.flags |= lt.torrent_flags.upload_mode
+        #     if hasattr(lt.torrent_flags, "stop_when_ready"):
+        #         params.flags |= lt.torrent_flags.stop_when_ready
+
         handle = ses.add_torrent(params)
-
         start = time.monotonic()
-        while not handle.has_metadata():
-            if time.monotonic() - start > timeout:
-                ses.remove_torrent(handle)
-                raise TimeoutError(f"Metadata fetch timed out after {timeout}s")
-
-            status = handle.status()
-            if status.state not in (0, 1, 2):
-                pass
-            time.sleep(0.1)
 
         try:
+            while not handle.has_metadata():
+                if time.monotonic() - start > self.timeout:
+                    raise TorrentResolveError(
+                        f"Timeout fetching metadata via libtorrent for {magnet}"
+                    )
+                await asyncio.sleep(0.1)
+
             ti = handle.torrent_file()
             if ti is None:
                 raise TorrentResolveError("No torrent info after metadata fetch")
+
             fs = ti.files()
             entries: list[TorrentFileEntry] = []
             for idx in range(fs.num_files()):
@@ -137,9 +131,11 @@ class TorrentResolver:
                     )
                 )
             return entries
+
         finally:
             try:
-                ses.remove_torrent(handle)
+                if handle.is_valid():
+                    ses.remove_torrent(handle)
             except Exception:
                 pass
 

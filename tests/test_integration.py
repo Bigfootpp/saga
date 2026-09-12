@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from saga.config import settings
@@ -28,3 +30,7 @@ async def test_integration():
     print(f"other count: {len(result.others)}")
     for stream in result.others:
         print(stream.raw_name)
+
+
+if __name__ == "__main__":
+    asyncio.run(test_integration())
