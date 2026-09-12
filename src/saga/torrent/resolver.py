@@ -2,6 +2,7 @@ import asyncio
 import pathlib
 import tempfile
 import time
+from collections.abc import Callable
 
 import httpx
 from torf import Torrent
@@ -66,7 +67,9 @@ class TorrentResolver:
             path = str(f)
             file_name = pathlib.Path(path).name
             entries.append(
-                TorrentFileEntry(file_idx=idx, file_name=file_name, path=path, size=f.size)
+                TorrentFileEntry(
+                    file_idx=idx, file_name=file_name, path=path, size=f.size
+                )
             )
         return entries
 
@@ -129,7 +132,9 @@ class TorrentResolver:
                 file_name = pathlib.Path(path).name
                 size = fs.file_size(idx)
                 entries.append(
-                    TorrentFileEntry(file_idx=idx, file_name=file_name, path=path, size=size)
+                    TorrentFileEntry(
+                        file_idx=idx, file_name=file_name, path=path, size=size
+                    )
                 )
             return entries
         finally:
@@ -146,3 +151,40 @@ class TorrentResolver:
             magnet=raw.magnet,
             files=files,
         )
+
+    async def bulk_resolve(
+        self,
+        raw_torrents: list[RawTorrent],
+        max_result: int | None = None,
+        concurrency: int = 10,
+        is_valid: Callable[[ResolvedTorrent], bool] | None = None,
+    ) -> list[ResolvedTorrent]:
+        semaphore = asyncio.Semaphore(concurrency)
+
+        async def _resolve_one(raw: RawTorrent) -> ResolvedTorrent | None:
+            async with semaphore:
+                try:
+                    return await self.resolve(raw)
+                except TorrentResolveError:
+                    return None
+
+        resolved_torrents: list[ResolvedTorrent] = []
+        tasks = [asyncio.create_task(_resolve_one(r)) for r in raw_torrents]
+
+        try:
+            for coro in asyncio.as_completed(tasks):
+                result = await coro
+                if result is not None:
+                    if is_valid is None or is_valid(result):
+                        resolved_torrents.append(result)
+
+                    if max_result is not None and len(resolved_torrents) >= max_result:
+                        break
+        finally:
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+        return resolved_torrents

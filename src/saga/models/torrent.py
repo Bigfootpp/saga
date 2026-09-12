@@ -17,10 +17,3 @@ class TorrentFileEntry(BaseModel):
 
 class ResolvedTorrent(RawTorrent):
     files: list[TorrentFileEntry]
-
-
-class MediaFile(BaseModel):
-    file_name: str
-    info_hash: str
-    magnet: str
-    file_idx: int
