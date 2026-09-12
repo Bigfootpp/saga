@@ -81,7 +81,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
 
             detail = TMDBDetailResponse.model_validate(response.json())
 
-            titles: Titles = {"original": ""}
+            titles: Titles = {"original": "", "en": ""}
 
             main_title = detail.name or detail.title
             if main_title:
