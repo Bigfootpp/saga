@@ -10,7 +10,7 @@ router = APIRouter()
 async def get_manifest() -> ManifestResponse:
     return ManifestResponse(
         id="community.bigfootpp.saga",
-        icon="https://i.imgur.com/tVjqEJP.png",
+        icon="",  # "https://i.imgur.com/tVjqEJP.png",
         name="Saga",
         version="0.1.0",
         description="Elevate your Stremio experience with seamless access to Jackett torrent links, effortlessly "
