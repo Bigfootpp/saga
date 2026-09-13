@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserPreferences(BaseModel):
-    preferred_dubs: list[str]
-    dubs_max_result: int = 5
-    other_max_results: int = 10
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    preferred_dubs: list[str] = Field(..., alias="preferredDubs")
+    dub_max_results: int = Field(5, alias="dubMaxResult")
+    other_max_results: int = Field(10, alias="otherMaxResult")
