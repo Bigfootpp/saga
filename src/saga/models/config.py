@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class UserPreferences(BaseModel):
+class Config(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
     preferred_dubs: list[str] = Field(..., alias="preferredDubs")
