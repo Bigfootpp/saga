@@ -16,6 +16,6 @@ async def get_manifest() -> ManifestResponse:
         description="Elevate your Stremio experience with seamless access to Jackett torrent links, effortlessly "
         "fetching torrents for your selected movies within the Stremio interface.",
         resources=["stream"],
-        types=["movie", "series"],
+        types=["series"],  # movies not implement yet
         catalogs=[],
     )
