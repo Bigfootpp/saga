@@ -20,3 +20,7 @@ class StremioStream(BaseModel):
     info_hash: str = Field(..., alias="infoHash")
     file_idx: int = Field(..., alias="fileIdx")
     sources: list[str]
+
+
+class StremioStreamResult(BaseModel):
+    streams: list[StremioStream]
