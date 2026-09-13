@@ -25,6 +25,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
     def __init__(
         self,
         api_key: str,
+        client: httpx.AsyncClient | None = None,
         base_url: str = "https://api.themoviedb.org",
         timeout: float = 15.0,
     ):
@@ -34,7 +35,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
             if not base_url.endswith(("3", "3/"))
             else base_url.rstrip("/")
         )
-        self.client = httpx.AsyncClient()
+        self.client = client or httpx.AsyncClient()
         self.timeout = timeout
 
     async def imdbid_to_tmdbid(self, imdb_id: str) -> int:
