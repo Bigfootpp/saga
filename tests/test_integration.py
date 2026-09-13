@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 
-from saga.config import settings
+from saga.env_model import env
 from saga.metadata.tmdb import TMDBMetadataProvider
 from saga.providers.jackett import JackettProvider
 from saga.services.stream_service import StreamService
@@ -12,10 +12,10 @@ from saga.torrent.resolver import TorrentResolver
 @pytest.mark.integration
 async def test_integration():
     provider = JackettProvider(
-        base_url=settings.jackett_base_url,
-        api_key=settings.jackett_api_key,
+        base_url=env.jackett_base_url,
+        api_key=env.jackett_api_key,
     )
-    metadata_provider = TMDBMetadataProvider(api_key=settings.tmdb_api_key)
+    metadata_provider = TMDBMetadataProvider(api_key=env.tmdb_api_key)
     resolver = TorrentResolver()
 
     stream_service = StreamService(
