@@ -5,5 +5,5 @@ router = APIRouter()
 
 
 @router.get("/static/{file_path:path}")
-async def get_manifest(file_path: str) -> FileResponse:
-    return FileResponse(f"scr/saga/static/{file_path}")
+async def get_static(file_path: str) -> FileResponse:
+    return FileResponse(f"src/saga/static/{file_path}")

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Saga</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1c2c 0%, #4a192c 100%), url('https://i.ibb.co/WGTw4bV/stremio-bg.png') no-repeat center center fixed;
+            background-blend-mode: overlay;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 2rem 0;
+            color: #e2e8f0;
+        }
+
+        .glass-container {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .input-field {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+            outline: none;
+        }
+
+        .section-title {
+            position: relative;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: #6366f1;
+        }
+
+        .custom-checkbox input:checked + div {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        .custom-checkbox input:checked + div svg {
+            display: block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #4f46e5, #6366f1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        .multipleSelection {
+            width: 100%;
+        }
+
+        .selectBox {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .overSelect {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+        }
+
+        #languageCheckBoxes {
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 0.5rem;
+            border-radius: 0.5rem;
+            background: rgba(15, 23, 42, 0.95);
+            position: absolute;
+            z-index: 10;
+            width: 100%;
+        }
+
+        #languageCheckBoxes label {
+            display: block;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #languageCheckBoxes label:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="glass-container w-11/12 md:w-3/4 lg:w-1/2 xl:w-1/3 rounded-2xl p-8 md:p-12 my-8">
+    <div class="flex flex-col items-center mb-8">
+        <img src="https://user-images.githubusercontent.com/27040483/28728094-99f3e3f6-73c7-11e7-8f8d-28912dc6ac0d.png"
+             alt="logo" class="w-24 h-24 mb-4 drop-shadow-lg">
+        <h1 class="text-3xl font-bold text-white text-center mb-2">Saga</h1>
+        <p class="text-indigo-200 text-sm font-medium">
+            v0.1.0
+        </p>
+        <p class="text-gray-400 text-xs mt-2 text-center max-w-md">
+            Configure your preferred audio languages and how many results to return for dubs vs. other streams.
+        </p>
+    </div>
+
+    <form class="space-y-8" onsubmit="return false;">
+
+        <!-- Preferred Dubs -->
+        <div>
+            <h2 class="text-xl font-semibold text-white section-title">Preferred Dubs</h2>
+            <p class="text-xs text-gray-400 mb-4">Select the dub languages you want to prioritize. Matching torrents will be returned first (up to Dub Max Results).</p>
+
+            <div class="space-y-4">
+                <div id="languages-fields" class="relative">
+                    <div class="input-field w-full rounded-lg py-3 px-4 text-sm flex justify-between items-center cursor-pointer" onclick="showCheckboxes()">
+                        <span id="languages-summary">Select Languages...</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div id="languageCheckBoxes" class="hidden absolute w-full mt-1 rounded-md shadow-lg z-50">
+                        <div class="p-2 space-y-1">
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="en" value="en" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇬🇧 English (en)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="fr" value="fr" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇫🇷 French (fr)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="es" value="es" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇪🇸 Spanish (es)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="de" value="de" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇩🇪 German (de)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="it" value="it" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇮🇹 Italian (it)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="pt" value="pt" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇵🇹 Portuguese (pt)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="pt-BR" value="pt-BR" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇧🇷 Brazilian Portuguese (pt-BR)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="ja" value="ja" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇯🇵 Japanese (ja)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="ru" value="ru" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇷🇺 Russian (ru)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="hi" value="hi" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇮🇳 Hindi (hi)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="nl" value="nl" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇳🇱 Dutch (nl)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="hu" value="hu" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇭🇺 Hungarian (hu)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="pl" value="pl" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🇵🇱 Polish (pl)
+                            </label>
+                            <label class="flex items-center gap-2 hover:bg-white/10 p-2 rounded cursor-pointer">
+                                <input type="checkbox" id="multi" value="multi" class="rounded bg-gray-700 border-gray-600 text-indigo-500"> 🌍 Multi (multi)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Limits -->
+        <div>
+            <h2 class="text-xl font-semibold text-white section-title">Result Limits</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="dub-max-result" class="block text-sm font-medium text-gray-300 mb-2">Dub Max Results</label>
+                    <input type="number" name="dubMaxResult" id="dub-max-result"
+                           class="input-field w-full rounded-lg py-3 px-4 text-sm"
+                           placeholder="5" min="0" max="50" value="5">
+                    <p class="mt-2 text-xs text-gray-500">Max number of preferred dub streams to return (default 5)</p>
+                </div>
+                <div>
+                    <label for="other-max-result" class="block text-sm font-medium text-gray-300 mb-2">Other Max Results</label>
+                    <input type="number" name="otherMaxResult" id="other-max-result"
+                           class="input-field w-full rounded-lg py-3 px-4 text-sm"
+                           placeholder="10" min="0" max="50" value="10">
+                    <p class="mt-2 text-xs text-gray-500">Max number of other streams to return (default 10)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-4 pt-8">
+            <button id="install" onclick="getLink('link')"
+               class="btn-primary w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg hover:shadow-indigo-500/30 text-center cursor-pointer">
+                Install Addon
+            </button>
+            <button id="copy" onclick="getLink('copy')"
+               class="w-full py-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-lg shadow-lg hover:shadow-slate-500/30 text-center cursor-pointer transition-all">
+                Copy Link
+            </button>
+        </div>
+
+    </form>
+</div>
+
+</body>
+<script src="/static/config.js"></script>
+</html>
