@@ -64,7 +64,6 @@ class StreamService:
         other_results = []
 
         for torrent in filtered_results:
-            dub = get_dub_language(torrent)
             if not set(get_dub_language(torrent)).isdisjoint(dubs):
                 dub_result.append(torrent)
             else:
