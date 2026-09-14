@@ -24,7 +24,7 @@ def convert_to_stremio_stream_result(
                 description=formatter.format(stream.raw_name),
                 fileIdx=stream.file_idx,
                 infoHash=stream.info_hash,
-                sources=stream.sources,
+                sources=[f"tracker:{source}" for source in stream.sources],
             )
         )
 
