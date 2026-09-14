@@ -49,7 +49,7 @@ async def stream(
         case "series":
             full_id = parse_series_id(stream_id)
             if full_id:
-                series_id, episode, season = full_id
+                series_id, season, episode = full_id
                 result = await stream_service.get_series_streams(
                     series_id,
                     season,
