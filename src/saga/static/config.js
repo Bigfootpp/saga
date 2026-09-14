@@ -1,4 +1,4 @@
-const languages = ['en', 'fr', 'es', 'de', 'it', 'pt', 'pt-BR', 'ja', 'ru', 'hi', 'nl', 'hu', 'pl', 'multi'];
+const languages = ['en', 'fr', 'es', 'de', 'it', 'pt', 'pt-BR', 'ja', 'ru', 'hi', 'nl', 'hu', 'pl', 'mul'];
 
 document.addEventListener('DOMContentLoaded', function () {
     initLanguageListeners();
@@ -45,9 +45,9 @@ function loadData() {
             const dubMaxResult = decoded.dubMaxResult ?? decoded.dub_max_results ?? decoded.dubMaxResult ?? 5;
             const otherMaxResult = decoded.otherMaxResult ?? decoded.other_max_results ?? decoded.otherMaxResult ?? 10;
 
-            // Populate languages
-            // If preferredDubs is empty and getAll was implied, keep unchecked
+            // Populate languages (normalize legacy "multi" -> "mul")
             preferredDubs.forEach(function (lang) {
+                if (lang === 'multi') lang = 'mul';
                 const el = document.getElementById(lang);
                 if (el) el.checked = true;
             });
