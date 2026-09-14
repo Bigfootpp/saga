@@ -5,23 +5,39 @@ document.addEventListener('DOMContentLoaded', function () {
     loadData();
 });
 
+function getLanguageCheckboxes() {
+    return Array.from(document.querySelectorAll('#languageCheckBoxes input[type="checkbox"]'));
+}
+
+function normalizeLang(value) {
+    return value === 'multi' ? 'mul' : value;
+}
+
 function initLanguageListeners() {
+    getLanguageCheckboxes().forEach(function (el) {
+        el.addEventListener('change', updateLanguagesSummary);
+    });
     languages.forEach(function (lang) {
         const el = document.getElementById(lang);
-        if (el) {
+        if (el && !el.dataset.bound) {
+            el.dataset.bound = '1';
             el.addEventListener('change', updateLanguagesSummary);
         }
     });
+    const legacyEl = document.getElementById('multi');
+    if (legacyEl && !legacyEl.dataset.bound) {
+        legacyEl.dataset.bound = '1';
+        legacyEl.addEventListener('change', updateLanguagesSummary);
+    }
 }
 
 function updateLanguagesSummary() {
     const summaryEl = document.getElementById('languages-summary');
     if (!summaryEl) return;
 
-    const selected = languages.filter(function (lang) {
-        const el = document.getElementById(lang);
-        return el && el.checked;
-    });
+    const selected = getLanguageCheckboxes()
+        .filter(function (el) { return el.checked; })
+        .map(function (el) { return normalizeLang(el.value || el.id); });
 
     if (selected.length === 0) {
         summaryEl.textContent = 'Select Languages...';
@@ -40,19 +56,21 @@ function loadData() {
             let decoded = atob(data[1]);
             decoded = JSON.parse(decoded);
 
-            // preferredDubs can be under alias preferredDubs or snake_case preferred_dubs
             const preferredDubs = decoded.preferredDubs || decoded.preferred_dubs || [];
             const dubMaxResult = decoded.dubMaxResult ?? decoded.dub_max_results ?? decoded.dubMaxResult ?? 5;
             const otherMaxResult = decoded.otherMaxResult ?? decoded.other_max_results ?? decoded.otherMaxResult ?? 10;
 
-            // Populate languages (normalize legacy "multi" -> "mul")
             preferredDubs.forEach(function (lang) {
-                if (lang === 'multi') lang = 'mul';
-                const el = document.getElementById(lang);
+                lang = normalizeLang(lang);
+                const el = document.getElementById(lang)
+                    || document.querySelector('#languageCheckBoxes input[value="' + lang + '"]');
                 if (el) el.checked = true;
             });
+            if (preferredDubs.map(normalizeLang).includes('mul')) {
+                const legacyEl = document.getElementById('multi');
+                if (legacyEl) legacyEl.checked = true;
+            }
 
-            // Handle legacy getAllLanguages flag (no longer selectable in UI)
             if (decoded.getAllLanguages) {
                 languages.forEach(function (lang) {
                     const el = document.getElementById(lang);
@@ -92,9 +110,8 @@ function getLink(method) {
     const addonHost = new URL(window.location.href).protocol.replace(':', '') + "://" + new URL(window.location.href).host;
 
     const selectedLanguages = [];
-    languages.forEach(function (language) {
-        const el = document.getElementById(language);
-        if (el && el.checked) selectedLanguages.push(language);
+    getLanguageCheckboxes().forEach(function (el) {
+        if (el.checked) selectedLanguages.push(normalizeLang(el.value || el.id));
     });
 
     const preferredDubs = selectedLanguages;
@@ -114,8 +131,6 @@ function getLink(method) {
         return false;
     }
 
-    // preferredDubs is required by UserPreferences but we allow empty (means no preference)
-    // Warn if empty and user didn't explicitly want empty
     if (preferredDubs.length === 0) {
         const confirmEmpty = confirm('No preferred dub language selected. Continue with empty list?');
         if (!confirmEmpty) return false;
