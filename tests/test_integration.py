@@ -1,5 +1,8 @@
 import asyncio
+from datetime import datetime
+from pathlib import Path
 
+import anyio
 import pytest
 
 from saga.env_model import env
@@ -22,14 +25,23 @@ async def test_integration():
         provider=provider, metadata_provider=metadata_provider, resolver=resolver
     )
     result = await stream_service.get_series_streams(
-        "tt15975122", 1, 1, dubs=["fr", "en", "mul"]
+        "tt2560140", 1, 1, dubs=["fr", "en"]
     )
     print(f"dubs count: {len(result.dubs_stream)}")
     for stream in result.dubs_stream:
-        print(stream.raw_name)
+        print(f"{stream.torrent_name} -> {stream.raw_name}")
     print(f"other count: {len(result.others)}")
     for stream in result.others:
-        print(stream.raw_name)
+        print(f"{stream.torrent_name} -> {stream.raw_name}")
+
+    now = datetime.now(tz=datetime.now().astimezone().tzinfo)
+
+    path = Path.cwd() / "results" / f"result_{now.strftime('%Y-%m-%d_%H-%M-%S')}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.touch(exist_ok=True)
+
+    async with await anyio.open_file(path, mode="w") as f:
+        await f.write(result.model_dump_json(indent=2))
 
 
 if __name__ == "__main__":

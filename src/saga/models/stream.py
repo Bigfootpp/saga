@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class Stream(BaseModel):
+    torrent_name: str
     raw_name: str
     dubs_language: list[str]
     info_hash: str

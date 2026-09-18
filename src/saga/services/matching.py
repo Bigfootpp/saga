@@ -1,7 +1,7 @@
 from pathlib import Path
+from typing import overload
 from urllib.parse import parse_qs, urlparse
 
-from saga.models.query import MediaQuery, MovieQuery, SeriesQuery
 from saga.models.stream import Stream
 from saga.models.torrent import RawTorrent, ResolvedTorrent, TorrentFileEntry
 from saga.utils.guessit import parse
@@ -50,18 +50,21 @@ def _valid_file(file: TorrentFileEntry, season: int) -> bool:
     )
 
 
-def _find_file_idx_series(torrent: ResolvedTorrent, query: SeriesQuery) -> Stream:
+def _find_file_idx_series(
+    torrent: ResolvedTorrent, season: int, episode: int
+) -> Stream:
     parsed_torrent_name = parse(torrent.title)
     for file in torrent.files:
-        if not _valid_file(file, query.season):
+        if not _valid_file(file, season):
             continue
         parsed_file_name = parse(file.file_name)
         if (
             parsed_file_name.episodes
             and len(parsed_file_name.episodes) == 1
-            and query.episode in parsed_file_name.episodes
+            and episode in parsed_file_name.episodes
         ):
             return Stream(
+                torrent_name=torrent.title,
                 raw_name=file.file_name,
                 info_hash=torrent.info_hash,
                 dubs_language=parsed_torrent_name.audio_languages,
@@ -78,6 +81,7 @@ def _find_file_idx_movie(torrent: ResolvedTorrent) -> Stream:
         raise NoMatchError("No matched file found")
     parsed_name = parse(torrent.title)
     return Stream(
+        torrent_name=torrent.title,
         raw_name=largest_file.file_name,
         info_hash=torrent.info_hash,
         dubs_language=parsed_name.audio_languages,
@@ -86,10 +90,10 @@ def _find_file_idx_movie(torrent: ResolvedTorrent) -> Stream:
     )
 
 
-def _valid_raw_torrent_series(raw_torrent: RawTorrent, query: SeriesQuery) -> bool:
+def _valid_raw_torrent_series(
+    raw_torrent: RawTorrent, season: int, episode: int
+) -> bool:
     parsed_data = parse(raw_torrent.title)
-    episode = query.episode
-    season = query.season
     return (
         (not parsed_data.seasons and not parsed_data.episodes)
         or (season in parsed_data.seasons and not parsed_data.episodes)
@@ -97,7 +101,7 @@ def _valid_raw_torrent_series(raw_torrent: RawTorrent, query: SeriesQuery) -> bo
     )
 
 
-def _valid_raw_torrent_movie(raw_torrent: RawTorrent, query: MovieQuery) -> bool:
+def _valid_raw_torrent_movie(raw_torrent: RawTorrent) -> bool:
     parsed_data = parse(raw_torrent.title)
     return not parsed_data.seasons and not parsed_data.episodes
 
@@ -108,19 +112,34 @@ def parse_trackers(magnet_uri: str) -> list[str]:
     return parsed_query.get("tr", [])
 
 
-def find_file_idx(torrent: ResolvedTorrent, query: MediaQuery) -> Stream:
-    if isinstance(query, SeriesQuery):
-        return _find_file_idx_series(torrent, query)
+@overload
+def find_file_idx(torrent: ResolvedTorrent) -> Stream: ...
+@overload
+def find_file_idx(torrent: ResolvedTorrent, season: int, episode: int) -> Stream: ...
+
+
+def find_file_idx(
+    torrent: ResolvedTorrent, season: int | None = None, episode: int | None = None
+) -> Stream:
+    if season and episode:
+        return _find_file_idx_series(torrent, episode=episode, season=season)
     else:
         return _find_file_idx_movie(torrent)
 
 
-def valid_raw_torrent(raw_torrent: RawTorrent, query: MediaQuery) -> bool:
-    if isinstance(query, SeriesQuery):
-        return _valid_raw_torrent_series(raw_torrent, query)
-    if isinstance(query, MovieQuery):
-        return _valid_raw_torrent_movie(raw_torrent, query)
-    return False
+@overload
+def valid_raw_torrent(raw_torrent: RawTorrent) -> bool: ...
+@overload
+def valid_raw_torrent(raw_torrent: RawTorrent, season: int, episode: int) -> bool: ...
+
+
+def valid_raw_torrent(
+    raw_torrent: RawTorrent, season: int | None = None, episode: int | None = None
+) -> bool:
+    if season and episode:
+        return _valid_raw_torrent_series(raw_torrent, season=season, episode=episode)
+    else:
+        return _valid_raw_torrent_movie(raw_torrent)
 
 
 def get_dub_language(raw_torrent: RawTorrent) -> list[str]:

@@ -48,7 +48,7 @@ class StreamService:
 
         def is_valid(torrent: ResolvedTorrent) -> bool:
             try:
-                stream = find_file_idx(torrent, query)
+                stream = find_file_idx(torrent, episode=episode, season=season)
                 if dub:
                     dubs_streams.append(stream)
                 else:
@@ -58,7 +58,9 @@ class StreamService:
                 return False
 
         filtered_results = [
-            torrent for torrent in raw_results if valid_raw_torrent(torrent, query)
+            torrent
+            for torrent in raw_results
+            if valid_raw_torrent(torrent, episode=episode, season=season)
         ]
         dub_result = []
         other_results = []
