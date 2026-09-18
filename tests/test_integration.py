@@ -11,6 +11,11 @@ from saga.providers.jackett import JackettProvider
 from saga.services.stream_service import StreamService
 from saga.torrent.resolver import TorrentResolver
 
+media_id = "tt2560140"
+season = 1
+episode = 1
+dubs = ["fr", "en"]
+
 
 @pytest.mark.integration
 async def test_integration():
@@ -25,7 +30,7 @@ async def test_integration():
         provider=provider, metadata_provider=metadata_provider, resolver=resolver
     )
     result = await stream_service.get_series_streams(
-        "tt2560140", 1, 1, dubs=["fr", "en"]
+        media_id, season, episode, dubs=dubs
     )
     print(f"dubs count: {len(result.dubs_stream)}")
     for stream in result.dubs_stream:
@@ -36,7 +41,11 @@ async def test_integration():
 
     now = datetime.now(tz=datetime.now().astimezone().tzinfo)
 
-    path = Path.cwd() / "results" / f"result_{now.strftime('%Y-%m-%d_%H-%M-%S')}.json"
+    path = (
+        Path.cwd()
+        / "results"
+        / f"{media_id}_{'-'.join(dubs)}_{now.strftime('%Y-%m-%d_%H-%M-%S')}.json"
+    )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.touch(exist_ok=True)
 
