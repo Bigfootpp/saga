@@ -90,6 +90,7 @@ def parse_guessit(value: str) -> GuessitResult:
     except Exception:
         raw = {}
     seasons = _to_int_list(raw.get("season"))
+    seasons = [season for season in seasons if season < 61]
     episodes = _to_int_list(raw.get("episode"))
     return GuessitResult(
         title=raw.get("title") if isinstance(raw.get("title"), str) else None,

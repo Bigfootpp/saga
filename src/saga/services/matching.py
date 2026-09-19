@@ -49,6 +49,7 @@ def _find_file_idx_series(
     torrent: ResolvedTorrent, season: int, episode: int
 ) -> int | None:
     # parsed_torrent_name = parse(torrent.title)
+    candidates: list[TorrentFileEntry] = []
     for file in torrent.files:
         if not _valid_file(file, season):
             continue
@@ -58,7 +59,7 @@ def _find_file_idx_series(
             and len(parsed_file_name.episodes) == 1
             and episode in parsed_file_name.episodes
         ):
-            return file.file_idx
+            candidates.append(file)
             # return Stream(
             #     torrent_name=torrent.title,
             #     raw_name=file.file_name,
@@ -67,8 +68,9 @@ def _find_file_idx_series(
             #     sources=parse_trackers(torrent.magnet),
             #     file_idx=file.file_idx,
             # )
-
-    return None
+    if len(candidates) == 0:
+        return None
+    return max(candidates, key=lambda x: x.size).file_idx
 
 
 def _find_file_idx_movie(torrent: ResolvedTorrent) -> int:
@@ -192,3 +194,11 @@ def contain_dubs(
     requested_languages = set(dubs_list)
 
     return not requested_languages.isdisjoint(resolved_languages)
+
+
+def matches_titles(raw_torrent: RawTorrent, titles: list[str]) -> bool:
+    titles_set = {title.strip().lower() for title in titles}
+    parsed_name = parse(raw_torrent.title)
+    if parsed_name.title is None:
+        return False
+    return parsed_name.title.strip().lower() in titles_set

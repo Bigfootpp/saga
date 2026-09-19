@@ -11,6 +11,7 @@ from saga.services.matching import (
     contain_dubs,
     extract_audio_languages,
     find_file_idx,
+    matches_titles,
     parse_trackers,
 )
 from saga.torrent.resolver import TorrentResolver
@@ -112,13 +113,14 @@ class StreamService:
             self.provider.search(
                 SeriesQuery(title=metadata.titles[dub], episode=episode, season=season)
             )
-            for dub in dubs
+            for dub in set(dubs) | {"original", "en"}
             if metadata.titles.get(dub)
         ]
 
         print("Scraping torrents")
         raw_results = await asyncio.gather(*tasks)
         raw_results = [torrent for torrents in raw_results for torrent in torrents]
+        raw_results = list({t.info_hash.lower(): t for t in raw_results}.values())
 
         def is_valid(torrent: ResolvedTorrent) -> bool:
             file_idx = find_file_idx(torrent, episode=episode, season=season)
@@ -129,6 +131,7 @@ class StreamService:
             torrent
             for torrent in raw_results
             if check_torrent_coverage(torrent, episode=episode, season=season)
+            and matches_titles(torrent, titles=list(metadata.titles.values()))
         ]
         dub_result: list[RawTorrent] = []
         other_results: list[RawTorrent] = []
