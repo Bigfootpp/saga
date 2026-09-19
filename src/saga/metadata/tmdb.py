@@ -67,7 +67,9 @@ class TMDBMetadataProvider(BaseMetadataProvider):
                 f"TMDB error: {e.response.status_code} with {e.request.url}"
             ) from e
 
-    async def _get_all_titles(self, tmdb_id: int, media_type: MediaType) -> Titles:
+    async def _get_all_titles_and_original_language(
+        self, tmdb_id: int, media_type: MediaType
+    ) -> tuple[Titles, str]:
         tmdb_type: Literal["tv", "movie"] = "tv" if media_type == "series" else "movie"
 
         url = f"{self.base_url}/{tmdb_type}/{tmdb_id}"
@@ -100,7 +102,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
                 if lang and translated_title and translated_title.strip():
                     titles[lang] = translated_title
 
-            return titles
+            return titles, detail.original_language
 
         except httpx.TimeoutException as e:
             raise MetadataTimeoutError("TMDB took too long to respond") from e
@@ -109,5 +111,10 @@ class TMDBMetadataProvider(BaseMetadataProvider):
 
     async def get_metadata(self, query: MetadataQuery) -> Metadata:
         tmdb_id = await self.imdbid_to_tmdbid(query.id)
-        titles_dict = await self._get_all_titles(tmdb_id=tmdb_id, media_type=query.type)
-        return Metadata(titles=titles_dict)
+        (
+            titles_dict,
+            original_language,
+        ) = await self._get_all_titles_and_original_language(
+            tmdb_id=tmdb_id, media_type=query.type
+        )
+        return Metadata(titles=titles_dict, original_language=original_language)
