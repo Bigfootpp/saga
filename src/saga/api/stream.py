@@ -12,7 +12,7 @@ from saga.services.formatter import (
     DubsLanguagesElement,
     Formatter,
     NewLineElement,
-    TitleElement,
+    RawNameElement,
 )
 from saga.services.stream_service import StreamService
 from saga.torrent.resolver import TorrentResolver
@@ -33,7 +33,7 @@ stream_service = StreamService(
     provider=provider, metadata_provider=metadata_provider, resolver=resolver
 )
 
-formatter = Formatter(TitleElement(), NewLineElement(), DubsLanguagesElement())
+formatter = Formatter(RawNameElement(), NewLineElement(), DubsLanguagesElement())
 
 
 @router.get("/{configb64}/stream/{stream_type}/{stream_id}")

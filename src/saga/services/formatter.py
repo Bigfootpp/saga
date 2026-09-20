@@ -8,6 +8,11 @@ class Element(ABC):
     def format(self, parsed_name: GuessitResult) -> str | None: ...
 
 
+class RawNameElement(Element):
+    def format(self, parsed_name: GuessitResult) -> str | None:
+        return parsed_name.raw_text
+
+
 class TitleElement(Element):
     def format(self, parsed_name: GuessitResult) -> str | None:
         return parsed_name.title or ""

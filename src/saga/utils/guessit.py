@@ -15,6 +15,7 @@ class GuessitResult(BaseModel):
     audio_languages: list[str] = Field(default_factory=list)
     subtitle_languages: list[str] = Field(default_factory=list)
     raw: dict[str, Any] = Field(default_factory=dict, repr=False)
+    raw_text: str
 
     @property
     def has_season(self) -> bool:
@@ -101,6 +102,7 @@ def parse_guessit(value: str) -> GuessitResult:
         audio_languages=_to_lang_list(raw.get("language")),
         subtitle_languages=_to_lang_list(raw.get("subtitle_language")),
         raw=dict(raw),
+        raw_text=value,
     )
 
 
