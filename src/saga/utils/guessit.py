@@ -1,9 +1,62 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 import guessit
 from pydantic import BaseModel, Field
+
+EDITION_MODIFIERS = [
+    "director's cut",
+    "directors cut",
+    "special edition",
+    "the animation",
+    "open matte",
+    "web series",
+    "tv series",
+    "the series",
+    "remastered",
+    "intégrale",
+    "integrale",
+    "theatrical",
+    "re-encoded",
+    "remaster",
+    "restored",
+    "criterion",
+    "extended",
+    "integral",
+    "complete",
+    "henshuu",
+    "henshū",
+    "unrated",
+    "custom",
+    "henshu",
+    "repack",
+    "proper",
+    "hybrid",
+    "uncut",
+    "batch",
+    "recap",
+    "remux",
+    "imax",
+]
+
+_sorted_modifiers = sorted(EDITION_MODIFIERS, key=len, reverse=True)
+_pattern = re.compile(
+    r"\b(" + "|".join(re.escape(m) for m in _sorted_modifiers) + r")\b",
+    flags=re.IGNORECASE,
+)
+
+
+def clean_title(title: str) -> str:
+    cleaned = _pattern.sub("", title)
+
+    cleaned = re.sub(r"[\s:\-_]+$", "", cleaned)
+    cleaned = re.sub(r"^[\s:\-_]+", "", cleaned)
+
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+
+    return cleaned
 
 
 class GuessitResult(BaseModel):
@@ -93,8 +146,9 @@ def parse_guessit(value: str) -> GuessitResult:
     seasons = _to_int_list(raw.get("season"))
     seasons = [season for season in seasons if season < 61]
     episodes = _to_int_list(raw.get("episode"))
+    title = raw.get("title")
     return GuessitResult(
-        title=raw.get("title") if isinstance(raw.get("title"), str) else None,
+        title=clean_title(title) if isinstance(title, str) else None,
         type=raw.get("type") if isinstance(raw.get("type"), str) else None,
         seasons=seasons,
         episodes=episodes,
