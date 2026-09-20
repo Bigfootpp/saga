@@ -64,6 +64,7 @@ class GuessitResult(BaseModel):
     type: str | None = None
     seasons: list[int] = Field(default_factory=list)
     episodes: list[int] = Field(default_factory=list)
+    video_quality: str | None = None
     year: int | None = None
     audio_languages: list[str] = Field(default_factory=list)
     subtitle_languages: list[str] = Field(default_factory=list)
@@ -152,6 +153,9 @@ def parse_guessit(value: str) -> GuessitResult:
         type=raw.get("type") if isinstance(raw.get("type"), str) else None,
         seasons=seasons,
         episodes=episodes,
+        video_quality=raw.get("screen_size")
+        if isinstance(raw.get("screen_size"), str)
+        else None,
         year=_to_int_or_none(raw.get("year")),
         audio_languages=_to_lang_list(raw.get("language")),
         subtitle_languages=_to_lang_list(raw.get("subtitle_language")),
