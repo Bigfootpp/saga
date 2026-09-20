@@ -21,7 +21,7 @@ def convert_to_stremio_stream_result(
         results.append(
             StremioStream(
                 name=name,
-                description=formatter.format(stream.raw_name),
+                description=formatter.format(stream.torrent_name),
                 fileIdx=stream.file_idx,
                 infoHash=stream.info_hash,
                 sources=[f"tracker:{source}" for source in stream.sources],
