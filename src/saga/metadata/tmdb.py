@@ -79,7 +79,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
         url = f"{self.base_url}/{tmdb_type}/{tmdb_id}"
         params = {
             "api_key": self.api_key,
-            "append_to_response": "translations, keywords",
+            "append_to_response": "translations,keywords",
         }
 
         try:
