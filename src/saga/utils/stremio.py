@@ -5,12 +5,18 @@ from saga.services.formatter import Formatter
 
 
 def parse_series_id(full_id: str) -> tuple[str, int, int] | None:
-    if full_id.startswith("tt") and full_id.find(":") and full_id.rfind(":"):
-        splitted_id = full_id.split(":")
-        series_id = splitted_id[0]
-        season = int(splitted_id[1])
-        episode = int(splitted_id[2])
-        return series_id, season, episode
+    parts = full_id.split(":")
+    if len(parts) == 3 and parts[0].startswith("tt"):
+        series_id, season, episode = parts
+    elif len(parts) == 4 and parts[0] == "kitsu":
+        series_id = f"{parts[0]}:{parts[1]}"
+        season, episode = parts[2], parts[3]
+    else:
+        return None
+    try:
+        return series_id, int(season), int(episode)
+    except ValueError:
+        return None
 
 
 def convert_to_stremio_stream_result(

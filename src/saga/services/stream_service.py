@@ -1,6 +1,7 @@
 import asyncio
 
 from saga.metadata.base import BaseMetadataProvider
+from saga.metadata.kitsu import KitsuMetadataProvider
 from saga.models.metadata import MediaType, Metadata, MetadataIdQuery
 from saga.models.query import SeriesQuery
 from saga.models.stream import Stream, StreamResult
@@ -127,10 +128,12 @@ class StreamService:
         self,
         provider: BaseProvider,
         metadata_provider: BaseMetadataProvider,
+        kitsu_metadata_provider: KitsuMetadataProvider,
         resolver: TorrentResolver,
     ):
         self.provider = ProviderWrapper(provider)
         self.metadata_querier = MetadataWrapper(metadata_provider)
+        self.kitsu_metadata_querier = MetadataWrapper(kitsu_metadata_provider)
         self.resolver = resolver
 
     async def get_series_streams(
@@ -151,8 +154,6 @@ class StreamService:
             for dub in set(dubs) | {"original", "en"}
             if metadata.titles.get(dub)
         ]
-        print(metadata)
-        print(titles)
 
         print("Scraping torrents")
         raw_results = await self.provider.search_series(titles, season, episode)

@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from pydantic import ValidationError
 
 from saga.env_model import env
+from saga.metadata.kitsu import KitsuMetadataProvider
 from saga.metadata.tmdb import TMDBMetadataProvider
 from saga.models.stream import StremioStreamResult
 from saga.providers.jackett import JackettProvider
@@ -27,11 +28,16 @@ provider = JackettProvider(
     base_url=env.jackett_base_url, api_key=env.jackett_api_key, client=http_client
 )
 metadata_provider = TMDBMetadataProvider(api_key=env.tmdb_api_key, client=http_client)
+kitsu_metadata_provider = KitsuMetadataProvider(client=http_client)
 resolver = TorrentResolver(client=http_client)
 
 stream_service = StreamService(
-    provider=provider, metadata_provider=metadata_provider, resolver=resolver
+    provider=provider,
+    metadata_provider=metadata_provider,
+    kitsu_metadata_provider=kitsu_metadata_provider,
+    resolver=resolver,
 )
+
 
 formatter = Formatter(RawNameElement(), NewLineElement(), DubsLanguagesElement())
 
