@@ -1,3 +1,5 @@
+from collections.abc import Mapping
+
 import httpx
 
 from saga.metadata.base import BaseMetadataProvider
@@ -6,8 +8,19 @@ from saga.metadata.exceptions import (
     MetadataStatusError,
     MetadataTimeoutError,
 )
-from saga.metadata.models import KitsuAnimeResponse
-from saga.models.metadata import Metadata, MetadataIdQuery, MetadataQuery, Titles
+from saga.metadata.models import (
+    KitsuAnimeAttributes,
+    KitsuAnimeListResponse,
+    KitsuAnimeResponse,
+    KitsuIncludedItem,
+)
+from saga.models.metadata import (
+    Metadata,
+    MetadataIdQuery,
+    MetadataQuery,
+    MetadataTitleQuery,
+    Titles,
+)
 
 
 class KitsuMetadataProvider(BaseMetadataProvider):
@@ -23,22 +36,40 @@ class KitsuMetadataProvider(BaseMetadataProvider):
         self.headers = {"Accept": "application/vnd.api+json"}
 
     async def get_metadata(self, query: MetadataQuery) -> Metadata:
-        if not isinstance(query, MetadataIdQuery):
-            raise MetadataError("Metadata fetching only available by id")
+        if isinstance(query, MetadataIdQuery):
+            kitsu_id = query.id
+            if not kitsu_id.isdigit():
+                raise MetadataError(f"Invalid Kitsu ID: '{kitsu_id}'")
 
-        kitsu_id = query.id
-        if not kitsu_id.isdigit():
-            raise MetadataError(f"Invalid Kitsu ID: '{kitsu_id}'")
+            url = f"{self.base_url}/anime/{kitsu_id}"
+            params = {"include": "categories"}
+            parsed = await self._fetch_single(url, params)
+            return self._to_metadata(parsed.data.attributes, parsed.included)
 
-        url = f"{self.base_url}/anime/{kitsu_id}"
-        params = {"include": "categories"}
+        if isinstance(query, MetadataTitleQuery):
+            title = query.title.strip()
+            if not title:
+                raise MetadataError("Title must not be empty")
+            url = f"{self.base_url}/anime"
+            params = {
+                "filter[text]": title,
+                "page[limit]": 1,
+                "include": "categories",
+            }
+            parsed = await self._fetch_first(url, params, title)
+            return self._to_metadata(parsed[0], parsed[1])
 
+        raise MetadataError("Unsupported query type for Kitsu provider")
+
+    async def _fetch_single(
+        self, url: str, params: Mapping[str, str | int]
+    ) -> KitsuAnimeResponse:
         try:
             response = await self.client.get(
                 url, params=params, headers=self.headers, timeout=self.timeout
             )
             response.raise_for_status()
-            parsed = KitsuAnimeResponse.model_validate(response.json())
+            return KitsuAnimeResponse.model_validate(response.json())
         except httpx.TimeoutException as e:
             raise MetadataTimeoutError("Kitsu took too long to respond") from e
         except httpx.HTTPStatusError as e:
@@ -46,7 +77,30 @@ class KitsuMetadataProvider(BaseMetadataProvider):
                 f"Kitsu error: {e.response.status_code} with {e.request.url}"
             ) from e
 
-        attr = parsed.data.attributes
+    async def _fetch_first(
+        self, url: str, params: Mapping[str, str | int], title: str
+    ) -> tuple[KitsuAnimeAttributes, list[KitsuIncludedItem]]:
+        try:
+            response = await self.client.get(
+                url, params=params, headers=self.headers, timeout=self.timeout
+            )
+            response.raise_for_status()
+            parsed = KitsuAnimeListResponse.model_validate(response.json())
+        except httpx.TimeoutException as e:
+            raise MetadataTimeoutError("Kitsu took too long to respond") from e
+        except httpx.HTTPStatusError as e:
+            raise MetadataStatusError(
+                f"Kitsu error: {e.response.status_code} with {e.request.url}"
+            ) from e
+
+        if not parsed.data:
+            raise MetadataError(f"No Kitsu result for title: '{title}'")
+        return parsed.data[0].attributes, parsed.included
+
+    @staticmethod
+    def _to_metadata(
+        attr: KitsuAnimeAttributes, included: list[KitsuIncludedItem]
+    ) -> Metadata:
         titles: Titles = {"original": "", "en": ""}
 
         en_title = attr.titles.en
@@ -64,7 +118,7 @@ class KitsuMetadataProvider(BaseMetadataProvider):
 
         keywords = [
             item.attributes.title
-            for item in parsed.included
+            for item in included
             if item.type == "categories"
             and item.attributes.title
             and item.attributes.title.strip()

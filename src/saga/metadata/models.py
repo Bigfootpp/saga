@@ -75,3 +75,8 @@ class KitsuIncludedItem(BaseModel):
 class KitsuAnimeResponse(BaseModel):
     data: KitsuAnimeData
     included: list[KitsuIncludedItem] = Field(default_factory=list)
+
+
+class KitsuAnimeListResponse(BaseModel):
+    data: list[KitsuAnimeData] = Field(default_factory=list)
+    included: list[KitsuIncludedItem] = Field(default_factory=list)
