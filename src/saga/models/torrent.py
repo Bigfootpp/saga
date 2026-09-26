@@ -6,6 +6,9 @@ class RawTorrent(BaseModel):
     info_hash: str
     magnet: str
     torrent_link: str | None = None
+    seeders: int
+    peers: int
+    distributed_copies: float | None = None
 
 
 class TorrentFileEntry(BaseModel):

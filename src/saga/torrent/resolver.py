@@ -6,6 +6,7 @@ from collections.abc import Callable
 from typing import Any
 
 import httpx
+import libtorrent as lt
 from torf import Torrent
 
 from saga.models.torrent import RawTorrent, ResolvedTorrent, TorrentFileEntry
@@ -16,16 +17,14 @@ class TorrentResolver:
     def __init__(
         self,
         client: httpx.AsyncClient | None = None,
-        timeout: float = 15.0,
+        timeout: float = 7.0,
     ):
         self.client = client or httpx.AsyncClient()
         self.timeout = timeout
         self._lt_session: Any | None = None
 
-    def _get_lt_session(self) -> Any:
+    def _get_lt_session(self) -> lt.session:
         if self._lt_session is None:
-            import libtorrent as lt
-
             self._lt_session = lt.session(
                 {
                     "listen_interfaces": "0.0.0.0:0",
@@ -34,19 +33,30 @@ class TorrentResolver:
                 }
             )
         return self._lt_session
+        # import libtorrent as lt
+        #
+        # return lt.session(
+        #     {
+        #         "listen_interfaces": "0.0.0.0:0",
+        #         "enable_dht": True,
+        #         "alert_mask": 0,
+        #     }
+        # )
 
     async def resolve(self, raw_torrent: RawTorrent) -> ResolvedTorrent:
-        if raw_torrent.torrent_link:
-            try:
-                files = await self._resolve_via_torrent_link(raw_torrent.torrent_link)
-                if files is not None:
-                    return self._to_resolved(raw_torrent, files)
-            except Exception:
-                pass
+        # if raw_torrent.torrent_link:
+        #     try:
+        #         resolved_torrent = await self._resolve_via_torrent_link(raw_torrent)
+        #         if resolved_torrent:
+        #             return resolved_torrent
+        #         # if files is not None:
+        #         #     return self._to_resolved(raw_torrent, files)
+        #     except Exception:
+        #         pass
 
         try:
-            files = await self._resolve_via_libtorrent(raw_torrent.magnet)
-            return self._to_resolved(raw_torrent, files)
+            return await self._resolve_via_libtorrent(raw_torrent)
+            # return self._to_resolved(raw_torrent, files)
         except Exception as e:
             if isinstance(e, TorrentResolveError):
                 raise
@@ -55,10 +65,14 @@ class TorrentResolver:
             ) from e
 
     async def _resolve_via_torrent_link(
-        self, url: str
-    ) -> list[TorrentFileEntry] | None:
+        self, raw_torrent: RawTorrent
+    ) -> ResolvedTorrent | None:
+        if not raw_torrent.torrent_link:
+            return None
         try:
-            response = await self.client.get(url, timeout=self.timeout)
+            response = await self.client.get(
+                raw_torrent.torrent_link, timeout=self.timeout
+            )
             response.raise_for_status()
         except (httpx.TimeoutException, httpx.HTTPStatusError, httpx.RequestError):
             return None
@@ -68,7 +82,8 @@ class TorrentResolver:
             return None
 
         try:
-            return await asyncio.to_thread(self._parse_torf_bytes, content)
+            files = await asyncio.to_thread(self._parse_torf_bytes, content)
+            return self._to_resolved(raw_torrent, files)
         except Exception:
             return None
 
@@ -86,9 +101,8 @@ class TorrentResolver:
             )
         return entries
 
-    async def _resolve_via_libtorrent(self, magnet: str) -> list[TorrentFileEntry]:
-        import libtorrent as lt
-
+    async def _resolve_via_libtorrent(self, raw_torrent: RawTorrent) -> ResolvedTorrent:
+        magnet = raw_torrent.magnet
         ses = self._get_lt_session()
 
         try:
@@ -115,6 +129,10 @@ class TorrentResolver:
                     )
                 await asyncio.sleep(0.1)
 
+            status = handle.status()
+            distributed_copies = status.distributed_copies
+            seeders = status.num_seeds
+            peers = status.num_peers
             ti = handle.torrent_file()
             if ti is None:
                 raise TorrentResolveError("No torrent info after metadata fetch")
@@ -130,7 +148,13 @@ class TorrentResolver:
                         file_idx=idx, file_name=file_name, path=path, size=size
                     )
                 )
-            return entries
+            return self._to_resolved(
+                raw_torrent,
+                entries,
+                seeders=seeders,
+                peers=peers,
+                distributed_copies=distributed_copies,
+            )
 
         finally:
             try:
@@ -140,12 +164,21 @@ class TorrentResolver:
                 pass
 
     @staticmethod
-    def _to_resolved(raw: RawTorrent, files: list[TorrentFileEntry]) -> ResolvedTorrent:
+    def _to_resolved(
+        raw: RawTorrent,
+        files: list[TorrentFileEntry],
+        peers: int | None = None,
+        seeders: int | None = None,
+        distributed_copies: float | None = None,
+    ) -> ResolvedTorrent:
         return ResolvedTorrent(
             title=raw.title,
             info_hash=raw.info_hash.lower(),
             magnet=raw.magnet,
             files=files,
+            peers=peers or raw.peers,
+            seeders=seeders or raw.seeders,
+            distributed_copies=distributed_copies,
         )
 
     async def bulk_resolve(

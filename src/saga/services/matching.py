@@ -196,9 +196,15 @@ def contain_dubs(
     return not requested_languages.isdisjoint(resolved_languages)
 
 
-def matches_titles(raw_torrent: RawTorrent, titles: list[str]) -> bool:
+def matches_titles(torrent_name: str, titles: list[str]) -> bool:
     titles_set = {title.strip().lower() for title in titles}
-    parsed_name = parse(raw_torrent.title)
+    parsed_name = parse(torrent_name)
     if parsed_name.title is None:
         return False
-    return parsed_name.title.strip().lower() in titles_set
+    normalized_title = parsed_name.title.strip().lower()
+    for title in titles_set:
+        if normalized_title in title:
+            return True
+    return False
+
+    # return parsed_name.title.strip().lower() in titles_set

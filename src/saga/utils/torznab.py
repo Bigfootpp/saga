@@ -18,6 +18,10 @@ def parse(content: str) -> list[RawTorrent]:
         magnet_item = item.find(
             './/torznab:attr[@name="magneturl"]', namespaces=namespaces
         )
+        seeders_item = item.find(
+            './/torznab:attr[@name="seeders"]', namespaces=namespaces
+        )
+        peers_item = item.find('.//torznab:attr[@name="peers"]', namespaces=namespaces)
         link = item.findtext("link")
 
         if (
@@ -25,13 +29,17 @@ def parse(content: str) -> list[RawTorrent]:
             or magnet_item is None
             or title is None
             or link is None
+            or seeders_item is None
+            or peers_item is None
         ):
             continue
 
         info_hash = info_hash_item.attrib.get("value")
+        seeders = seeders_item.attrib.get("value")
+        peers = peers_item.attrib.get("value")
         magnet = magnet_item.attrib.get("value")
 
-        if info_hash is None or magnet is None:
+        if info_hash is None or magnet is None or peers is None or seeders is None:
             continue
 
         results.append(
@@ -40,6 +48,8 @@ def parse(content: str) -> list[RawTorrent]:
                 info_hash=info_hash.lower(),
                 magnet=magnet,
                 torrent_link=link if not link.startswith("magnet:") else None,
+                seeders=int(seeders),
+                peers=int(peers),
             )
         )
 
