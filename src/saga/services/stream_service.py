@@ -2,7 +2,12 @@ import asyncio
 
 from saga.metadata.base import BaseMetadataProvider
 from saga.metadata.kitsu import KitsuMetadataProvider
-from saga.models.metadata import MediaType, Metadata, MetadataIdQuery
+from saga.models.metadata import (
+    MediaType,
+    Metadata,
+    MetadataIdQuery,
+    MetadataTitleQuery,
+)
 from saga.models.query import SeriesQuery
 from saga.models.stream import Stream, StreamResult
 from saga.models.torrent import RawTorrent, ResolvedTorrent
@@ -70,9 +75,14 @@ class MetadataWrapper:
     def __init__(self, metadata_provider: BaseMetadataProvider) -> None:
         self.metadata_provider = metadata_provider
 
-    async def get_series_metadata(self, media_id: str) -> Metadata:
+    async def get_series_metadata_id(self, media_id: str) -> Metadata:
         media_type = MediaType.SERIES
         metadata_query = MetadataIdQuery(type=media_type, id=media_id)
+        return await self.metadata_provider.get_metadata(metadata_query)
+
+    async def get_series_metadata_title(self, title: str) -> Metadata:
+        media_type = MediaType.SERIES
+        metadata_query = MetadataTitleQuery(type=media_type, title=title)
         return await self.metadata_provider.get_metadata(metadata_query)
 
 
@@ -147,13 +157,25 @@ class StreamService:
     ) -> StreamResult:
         if "mul" in dubs:
             raise ValueError("'mul' cannot be use for dubs language")
-        metadata = await self.metadata_querier.get_series_metadata(media_id)
+        metadata = await self.metadata_querier.get_series_metadata_id(media_id)
 
-        titles: list[str] = [
+        titles_set: set[str] = {
             metadata.titles[dub]
             for dub in set(dubs) | {"original", "en"}
             if metadata.titles.get(dub)
-        ]
+        }
+
+        if "anime" in metadata.keywords:
+            kitsu_metadata = (
+                await self.kitsu_metadata_querier.get_series_metadata_title(
+                    metadata.titles["en"]
+                )
+            )
+            titles_set |= set(kitsu_metadata.titles.values())
+
+        titles = list(titles_set)
+        print(metadata)
+        print(titles)
 
         print("Scraping torrents")
         raw_results = await self.provider.search_series(titles, season, episode)
