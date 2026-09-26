@@ -203,7 +203,7 @@ def matches_titles(torrent_name: str, titles: list[str]) -> bool:
         return False
     normalized_title = parsed_name.title.strip().lower()
     for title in titles_set:
-        if normalized_title in title:
+        if title in normalized_title:
             return True
     return False
 
