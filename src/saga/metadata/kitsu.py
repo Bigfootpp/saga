@@ -49,10 +49,13 @@ class KitsuMetadataProvider(BaseMetadataProvider):
         attr = parsed.data.attributes
         titles: Titles = {"original": "", "en": ""}
 
-        en_title = attr.titles.en or attr.titles.en_jp or attr.canonicalTitle
+        en_title = attr.titles.en
+        en_jp_title = attr.titles.en_jp
         ja_title = attr.titles.ja_jp
         if en_title and en_title.strip():
             titles["en"] = en_title
+        if en_jp_title and en_jp_title.strip():
+            titles["en_jp"] = en_jp_title
         if ja_title and ja_title.strip():
             titles["ja"] = ja_title
             titles["original"] = ja_title
