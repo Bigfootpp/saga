@@ -1,7 +1,7 @@
 import asyncio
 
 from saga.metadata.base import BaseMetadataProvider
-from saga.models.metadata import MediaType, Metadata, MetadataQuery
+from saga.models.metadata import MediaType, Metadata, MetadataIdQuery
 from saga.models.query import SeriesQuery
 from saga.models.stream import Stream, StreamResult
 from saga.models.torrent import RawTorrent, ResolvedTorrent
@@ -51,16 +51,6 @@ class RawTorrentContainer:
                     self._dub_torrents.append(torrent)
                 else:
                     self._other_torrents.append(torrent)
-            elif not matches_titles(torrent.title, titles=self._titles):
-                print(f"Wrong title {torrent.title}")
-            elif (
-                self._episode is not None
-                and self._season is not None
-                and not check_torrent_coverage(
-                    torrent, episode=self._episode, season=self._season
-                )
-            ):
-                print("Wrong coverage")
 
     @property
     def dubs(self) -> list[RawTorrent]:
@@ -81,7 +71,7 @@ class MetadataWrapper:
 
     async def get_series_metadata(self, media_id: str) -> Metadata:
         media_type = MediaType.SERIES
-        metadata_query = MetadataQuery(type=media_type, id=media_id)
+        metadata_query = MetadataIdQuery(type=media_type, id=media_id)
         return await self.metadata_provider.get_metadata(metadata_query)
 
 

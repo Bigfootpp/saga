@@ -10,7 +10,13 @@ from saga.metadata.exceptions import (
     MetadataTimeoutError,
 )
 from saga.metadata.models import TMDBDetailResponse, TMDBFindResponse
-from saga.models.metadata import MediaType, Metadata, MetadataQuery, Titles
+from saga.models.metadata import (
+    MediaType,
+    Metadata,
+    MetadataIdQuery,
+    MetadataQuery,
+    Titles,
+)
 
 
 class IMDbIDNotFoundError(MetadataError):
@@ -113,6 +119,11 @@ class TMDBMetadataProvider(BaseMetadataProvider):
             raise MetadataStatusError(f"TMDB error: {e.response.status_code}") from e
 
     async def get_metadata(self, query: MetadataQuery) -> Metadata:
-        tmdb_id = await self.imdbid_to_tmdbid(query.id)
-        metadata = await self._get_metadata_tmdb(tmdb_id=tmdb_id, media_type=query.type)
-        return metadata
+        if isinstance(query, MetadataIdQuery):
+            tmdb_id = await self.imdbid_to_tmdbid(query.id)
+            metadata = await self._get_metadata_tmdb(
+                tmdb_id=tmdb_id, media_type=query.type
+            )
+            return metadata
+        else:
+            raise MetadataError("Metadata fetching only available by id")

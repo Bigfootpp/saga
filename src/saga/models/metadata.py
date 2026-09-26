@@ -22,4 +22,8 @@ class Metadata(BaseModel):
 
 class MetadataQuery(BaseModel):
     type: MediaType
+
+
+class MetadataIdQuery(MetadataQuery):
+    type: MediaType
     id: str
