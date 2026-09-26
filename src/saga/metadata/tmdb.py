@@ -67,15 +67,13 @@ class TMDBMetadataProvider(BaseMetadataProvider):
                 f"TMDB error: {e.response.status_code} with {e.request.url}"
             ) from e
 
-    async def _get_all_titles_and_original_language(
-        self, tmdb_id: int, media_type: MediaType
-    ) -> tuple[Titles, str]:
+    async def _get_metadata_tmdb(self, tmdb_id: int, media_type: MediaType) -> Metadata:
         tmdb_type: Literal["tv", "movie"] = "tv" if media_type == "series" else "movie"
 
         url = f"{self.base_url}/{tmdb_type}/{tmdb_id}"
         params = {
             "api_key": self.api_key,
-            "append_to_response": "translations",
+            "append_to_response": "translations, keywords",
         }
 
         try:
@@ -85,6 +83,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
             detail = TMDBDetailResponse.model_validate(response.json())
 
             titles: Titles = {"original": "", "en": ""}
+            keywords = [keyword.name for keyword in detail.keywords.results]
 
             main_title = detail.name or detail.title
             if main_title:
@@ -102,7 +101,11 @@ class TMDBMetadataProvider(BaseMetadataProvider):
                 if lang and translated_title and translated_title.strip():
                     titles[lang] = translated_title
 
-            return titles, detail.original_language
+            return Metadata(
+                titles=titles,
+                original_language=detail.original_language,
+                keywords=keywords,
+            )
 
         except httpx.TimeoutException as e:
             raise MetadataTimeoutError("TMDB took too long to respond") from e
@@ -111,10 +114,5 @@ class TMDBMetadataProvider(BaseMetadataProvider):
 
     async def get_metadata(self, query: MetadataQuery) -> Metadata:
         tmdb_id = await self.imdbid_to_tmdbid(query.id)
-        (
-            titles_dict,
-            original_language,
-        ) = await self._get_all_titles_and_original_language(
-            tmdb_id=tmdb_id, media_type=query.type
-        )
-        return Metadata(titles=titles_dict, original_language=original_language)
+        metadata = await self._get_metadata_tmdb(tmdb_id=tmdb_id, media_type=query.type)
+        return metadata

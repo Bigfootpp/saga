@@ -17,6 +17,7 @@ class Titles(TypedDict, extra_items=str):
 class Metadata(BaseModel):
     original_language: str
     titles: Titles
+    keywords: list[str]
 
 
 class MetadataQuery(BaseModel):

@@ -24,6 +24,15 @@ class TMDBTranslationsBlock(BaseModel):
     translations: list[TMDBTranslationItem] = Field(default_factory=list)
 
 
+class TMDBKeywordsItem(BaseModel):
+    name: str
+    id: int
+
+
+class TMDBKeywordsBlock(BaseModel):
+    results: list[TMDBKeywordsItem] = Field(default_factory=list)
+
+
 class TMDBDetailResponse(BaseModel):
     id: int
     name: str | None = None
@@ -32,3 +41,4 @@ class TMDBDetailResponse(BaseModel):
     original_title: str | None = None
     original_language: str
     translations: TMDBTranslationsBlock = Field(default_factory=TMDBTranslationsBlock)
+    keywords: TMDBKeywordsBlock = Field(default_factory=TMDBKeywordsBlock)
