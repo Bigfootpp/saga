@@ -181,7 +181,9 @@ class StreamService:
                     metadata.titles["en"]
                 )
             )
-            titles_set |= set(kitsu_metadata.titles.values())
+            titles_set |= {
+                title for title in kitsu_metadata.titles.values() if title.strip()
+            }
 
         titles = list(titles_set)
         print(titles)
