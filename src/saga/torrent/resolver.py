@@ -129,6 +129,9 @@ class TorrentResolver:
             if ti is None:
                 raise TorrentResolveError("No torrent info after metadata fetch")
 
+            handle.pause()
+            handle.prioritize_files([0] * ti.num_files())
+
             fs = ti.files()
             entries: list[TorrentFileEntry] = []
             for idx in range(fs.num_files()):

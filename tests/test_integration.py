@@ -20,7 +20,7 @@ dubs = ["fr", "en"]
 @pytest.mark.integration
 async def test_integration():
     provider = JackettProvider(
-        base_url=env.jackett_base_url,
+        base_url="http://localhost:9117",  # env.jackett_base_url,
         api_key=env.jackett_api_key,
     )
     metadata_provider = TMDBMetadataProvider(api_key=env.tmdb_api_key)
