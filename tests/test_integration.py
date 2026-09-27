@@ -6,6 +6,7 @@ import anyio
 import pytest
 
 from saga.env_model import env
+from saga.metadata.kitsu import KitsuMetadataProvider
 from saga.metadata.tmdb import TMDBMetadataProvider
 from saga.providers.jackett import JackettProvider
 from saga.services.stream_service import StreamService
@@ -24,10 +25,14 @@ async def test_integration():
         api_key=env.jackett_api_key,
     )
     metadata_provider = TMDBMetadataProvider(api_key=env.tmdb_api_key)
+    kitsu_metadata_provider = KitsuMetadataProvider()
     resolver = TorrentResolver()
 
     stream_service = StreamService(
-        provider=provider, metadata_provider=metadata_provider, resolver=resolver
+        provider=provider,
+        metadata_provider=metadata_provider,
+        kitsu_metadata_provider=kitsu_metadata_provider,
+        resolver=resolver,
     )
     result = await stream_service.get_series_streams(
         media_id, season, episode, dubs=dubs
