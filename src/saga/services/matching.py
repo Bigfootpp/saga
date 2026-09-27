@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import overload
 from urllib.parse import parse_qs, urlparse
 
-from saga.models.torrent import RawTorrent, ResolvedTorrent, TorrentFileEntry
+from saga.models.torrent import ResolvedTorrent, TorrentFileEntry
 from saga.utils.guessit import parse
 
 VIDEO_EXTENSIONS: list[str] = [
@@ -89,8 +89,8 @@ def _find_file_idx_movie(torrent: ResolvedTorrent) -> int:
     # )
 
 
-def check_torrent_coverage(raw_torrent: RawTorrent, season: int, episode: int) -> bool:
-    parsed_data = parse(raw_torrent.title)
+def check_torrent_coverage(torrent_name: str, season: int, episode: int) -> bool:
+    parsed_data = parse(torrent_name)
     return (
         (not parsed_data.seasons and not parsed_data.episodes)
         or (season in parsed_data.seasons and not parsed_data.episodes)
@@ -98,8 +98,8 @@ def check_torrent_coverage(raw_torrent: RawTorrent, season: int, episode: int) -
     )
 
 
-def _valid_raw_torrent_movie(raw_torrent: RawTorrent) -> bool:
-    parsed_data = parse(raw_torrent.title)
+def _valid_raw_torrent_movie(torrent_name: str) -> bool:
+    parsed_data = parse(torrent_name)
     return not parsed_data.seasons and not parsed_data.episodes
 
 
@@ -127,29 +127,29 @@ def find_file_idx(
 
 
 @overload
-def valid_raw_torrent(raw_torrent: RawTorrent) -> bool: ...
+def valid_raw_torrent(torrent_name: str) -> bool: ...
 @overload
-def valid_raw_torrent(raw_torrent: RawTorrent, season: int, episode: int) -> bool: ...
+def valid_raw_torrent(torrent_name: str, season: int, episode: int) -> bool: ...
 
 
 def valid_raw_torrent(
-    raw_torrent: RawTorrent, season: int | None = None, episode: int | None = None
+    torrent_name: str, season: int | None = None, episode: int | None = None
 ) -> bool:
     if season and episode:
-        return check_torrent_coverage(raw_torrent, season=season, episode=episode)
+        return check_torrent_coverage(torrent_name, season=season, episode=episode)
     else:
-        return _valid_raw_torrent_movie(raw_torrent)
+        return _valid_raw_torrent_movie(torrent_name)
 
 
-def get_dub_language(raw_torrent: RawTorrent) -> list[str]:
-    parsed_name = parse(raw_torrent.title)
+def get_dub_language(torrent_name: str) -> list[str]:
+    parsed_name = parse(torrent_name)
     return parsed_name.audio_languages
 
 
 def extract_audio_languages(
-    raw_torrent: RawTorrent, original_language: str | None = None
+    torrent_name: str, original_language: str | None = None
 ) -> list[str]:
-    parsed_name = parse(raw_torrent.title)
+    parsed_name = parse(torrent_name)
 
     audio_langs = set(parsed_name.audio_languages)
     sub_langs = set(parsed_name.subtitle_languages)
@@ -185,12 +185,12 @@ def extract_audio_languages(
 
 
 def contain_dubs(
-    raw_torrent: RawTorrent, dubs_list: list[str], original_language: str | None = None
+    torrent_name: str, dubs_list: list[str], original_language: str | None = None
 ) -> bool:
     if not dubs_list:
         return True
 
-    resolved_languages = set(extract_audio_languages(raw_torrent, original_language))
+    resolved_languages = set(extract_audio_languages(torrent_name, original_language))
     requested_languages = set(dubs_list)
 
     return not requested_languages.isdisjoint(resolved_languages)

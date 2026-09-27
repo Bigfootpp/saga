@@ -48,12 +48,12 @@ class RawTorrentContainer:
                     self._episode is not None
                     and self._season is not None
                     and check_torrent_coverage(
-                        torrent, episode=self._episode, season=self._season
+                        torrent.title, episode=self._episode, season=self._season
                     )
                 )
                 and matches_titles(torrent.title, titles=self._titles)
             ):
-                if contain_dubs(torrent, self._dubs, self.original_language):
+                if contain_dubs(torrent.title, self._dubs, self.original_language):
                     self._dub_torrents.append(torrent)
                 else:
                     self._other_torrents.append(torrent)
@@ -63,7 +63,7 @@ class RawTorrentContainer:
                 self._episode is not None
                 and self._season is not None
                 and not check_torrent_coverage(
-                    torrent, episode=self._episode, season=self._season
+                    torrent.title, episode=self._episode, season=self._season
                 )
             ):
                 print(f"Wrong coverage: {torrent.title}")
@@ -128,7 +128,7 @@ class StreamContainer:
                 torrent_name=torrent.title,
                 raw_name=torrent.files[file_idx].file_name,
                 dubs_language=extract_audio_languages(
-                    torrent, original_language=self._original_language
+                    torrent.title, original_language=self._original_language
                 ),
                 info_hash=torrent.info_hash,
                 file_idx=file_idx,
