@@ -165,8 +165,6 @@ class StreamService:
         max_dub_result: int = 10,
         max_other_result: int = 10,
     ) -> StreamResult:
-        if "mul" in dubs:
-            raise ValueError("'mul' cannot be use for dubs language")
         metadata = await self.metadata_querier.get_series_metadata_id(media_id)
 
         titles_set: set[str] = {
