@@ -3,7 +3,6 @@ import pathlib
 import tempfile
 import time
 from collections.abc import Callable
-from typing import Any
 
 import httpx
 import libtorrent as lt
@@ -21,27 +20,22 @@ class TorrentResolver:
     ):
         self.client = client or httpx.AsyncClient()
         self.timeout = timeout
-        self._lt_session: Any | None = None
-
-    def _get_lt_session(self) -> lt.session:
-        if self._lt_session is None:
-            self._lt_session = lt.session(
-                {
-                    "listen_interfaces": "0.0.0.0:0",
-                    "enable_dht": True,
-                    "alert_mask": 0,
-                }
-            )
-        return self._lt_session
-        # import libtorrent as lt
-        #
-        # return lt.session(
-        #     {
-        #         "listen_interfaces": "0.0.0.0:0",
-        #         "enable_dht": True,
-        #         "alert_mask": 0,
-        #     }
-        # )
+        self._lt_session: lt.session = lt.session(
+            {
+                "listen_interfaces": "0.0.0.0:0",
+                "enable_dht": True,
+                "enable_upnp": True,
+                "enable_natpmp": True,
+                "alert_mask": 0,
+                "active_downloads": 100,
+                "active_limit": 100,
+                "active_checking": 100,
+            }
+        )
+        self._lt_session.add_dht_router("dht.transmissionbt.com", 6881)
+        self._lt_session.add_dht_router("router.bittorrent.com", 6881)
+        self._lt_session.add_dht_router("dht.libtorrent.org", 25401)
+        self._lt_session.add_dht_router("router.utorrent.com", 6881)
 
     async def resolve(self, raw_torrent: RawTorrent) -> ResolvedTorrent:
         # if raw_torrent.torrent_link:
@@ -103,7 +97,7 @@ class TorrentResolver:
 
     async def _resolve_via_libtorrent(self, raw_torrent: RawTorrent) -> ResolvedTorrent:
         magnet = raw_torrent.magnet
-        ses = self._get_lt_session()
+        ses = self._lt_session
 
         try:
             params = lt.parse_magnet_uri(magnet)
@@ -112,13 +106,11 @@ class TorrentResolver:
 
         params.save_path = tempfile.gettempdir()
 
-        # if hasattr(lt, "torrent_flags"):
-        #     if hasattr(lt.torrent_flags, "upload_mode"):
-        #         params.flags |= lt.torrent_flags.upload_mode
-        #     if hasattr(lt.torrent_flags, "stop_when_ready"):
-        #         params.flags |= lt.torrent_flags.stop_when_ready
+        # params.flags |= lt.torrent_flags.upload_mode
+        # params.flags |= lt.torrent_flags.stop_when_ready
 
         handle = ses.add_torrent(params)
+        handle.resume()
         start = time.monotonic()
 
         try:
@@ -195,6 +187,7 @@ class TorrentResolver:
                 try:
                     return await self.resolve(raw)
                 except TorrentResolveError:
+                    print(f"Timeout fetching {raw.title}, {raw.info_hash}")
                     return None
 
         resolved_torrents: list[ResolvedTorrent] = []
