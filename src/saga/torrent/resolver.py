@@ -190,7 +190,6 @@ class TorrentResolver:
                 try:
                     return await self.resolve(raw)
                 except TorrentResolveError:
-                    print(f"Timeout fetching {raw.title}, {raw.info_hash}")
                     return None
 
         resolved_torrents: list[ResolvedTorrent] = []

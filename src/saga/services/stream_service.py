@@ -57,16 +57,6 @@ class RawTorrentContainer:
                     self._dub_torrents.append(torrent)
                 else:
                     self._other_torrents.append(torrent)
-            elif not matches_titles(torrent.title, titles=self._titles):
-                print(f"No match found: {torrent.title}")
-            elif (
-                self._episode is not None
-                and self._season is not None
-                and not check_torrent_coverage(
-                    torrent.title, episode=self._episode, season=self._season
-                )
-            ):
-                print(f"Wrong coverage: {torrent.title}")
 
     @property
     def dubs(self) -> list[RawTorrent]:
@@ -184,7 +174,6 @@ class StreamService:
             }
 
         titles = list(titles_set)
-        print(titles)
 
         print("Scraping torrents")
         raw_results = await self.provider.search_series(titles, season, episode)
@@ -195,15 +184,9 @@ class StreamService:
                 torrent.distributed_copies is not None
                 and torrent.distributed_copies < 1
             ):
-                print(
-                    f"Not enough copies: {torrent.distributed_copies:.2f} {torrent.title}"
-                )
                 return False
             file_idx = find_file_idx(torrent, episode=episode, season=season)
-            if file_idx is None:
-                print(f"File index not found: {torrent.title}")
-                return False
-            return True
+            return file_idx is not None
 
         # filter raw torrent before resolving to not wasting time on unwanted streams
         container = RawTorrentContainer(
