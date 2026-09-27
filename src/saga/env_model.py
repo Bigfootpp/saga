@@ -2,7 +2,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class EnvSettings(BaseSettings):
     jackett_base_url: str = "http://localhost:9117"
     jackett_api_key: str = Field(default=...)
     tmdb_api_key: str = Field(default=...)
@@ -12,4 +12,4 @@ class Settings(BaseSettings):
     )
 
 
-settings = Settings()
+env = EnvSettings()

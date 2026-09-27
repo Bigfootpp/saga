@@ -1,11 +1,16 @@
 from abc import ABC, abstractmethod
 
-from saga.utils.guessit import GuessitResult
+from saga.utils.guessit import GuessitResult, parse
 
 
 class Element(ABC):
     @abstractmethod
     def format(self, parsed_name: GuessitResult) -> str | None: ...
+
+
+class RawNameElement(Element):
+    def format(self, parsed_name: GuessitResult) -> str | None:
+        return parsed_name.raw_text
 
 
 class TitleElement(Element):
@@ -34,7 +39,9 @@ class Formatter:
     def __init__(self, *args: Element) -> None:
         self.elements = [*args]
 
-    def format(self, parsed_name: GuessitResult) -> str:
+    def format(self, parsed_name: GuessitResult | str) -> str:
+        if isinstance(parsed_name, str):
+            parsed_name = parse(parsed_name)
         result = ""
         for element in self.elements:
             element_str = element.format(parsed_name=parsed_name)

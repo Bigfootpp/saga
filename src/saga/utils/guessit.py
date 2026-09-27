@@ -1,9 +1,62 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 import guessit
 from pydantic import BaseModel, Field
+
+EDITION_MODIFIERS = [
+    "director's cut",
+    "directors cut",
+    "special edition",
+    "the animation",
+    "open matte",
+    "web series",
+    "tv series",
+    "the series",
+    "remastered",
+    "intégrale",
+    "integrale",
+    "theatrical",
+    "re-encoded",
+    "remaster",
+    "restored",
+    "criterion",
+    "extended",
+    "integral",
+    "complete",
+    "henshuu",
+    "henshū",
+    "unrated",
+    "custom",
+    "henshu",
+    "repack",
+    "proper",
+    "hybrid",
+    "uncut",
+    "batch",
+    "recap",
+    "remux",
+    "imax",
+]
+
+_sorted_modifiers = sorted(EDITION_MODIFIERS, key=len, reverse=True)
+_pattern = re.compile(
+    r"\b(" + "|".join(re.escape(m) for m in _sorted_modifiers) + r")\b",
+    flags=re.IGNORECASE,
+)
+
+
+def clean_title(title: str) -> str:
+    cleaned = _pattern.sub("", title)
+
+    cleaned = re.sub(r"[\s:\-_]+$", "", cleaned)
+    cleaned = re.sub(r"^[\s:\-_]+", "", cleaned)
+
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+
+    return cleaned
 
 
 class GuessitResult(BaseModel):
@@ -11,10 +64,12 @@ class GuessitResult(BaseModel):
     type: str | None = None
     seasons: list[int] = Field(default_factory=list)
     episodes: list[int] = Field(default_factory=list)
+    video_quality: str | None = None
     year: int | None = None
     audio_languages: list[str] = Field(default_factory=list)
     subtitle_languages: list[str] = Field(default_factory=list)
     raw: dict[str, Any] = Field(default_factory=dict, repr=False)
+    raw_text: str
 
     @property
     def has_season(self) -> bool:
@@ -90,16 +145,22 @@ def parse_guessit(value: str) -> GuessitResult:
     except Exception:
         raw = {}
     seasons = _to_int_list(raw.get("season"))
+    seasons = [season for season in seasons if season < 61]
     episodes = _to_int_list(raw.get("episode"))
+    title = raw.get("title")
     return GuessitResult(
-        title=raw.get("title") if isinstance(raw.get("title"), str) else None,
+        title=clean_title(title) if isinstance(title, str) else None,
         type=raw.get("type") if isinstance(raw.get("type"), str) else None,
         seasons=seasons,
         episodes=episodes,
+        video_quality=raw.get("screen_size")
+        if isinstance(raw.get("screen_size"), str)
+        else None,
         year=_to_int_or_none(raw.get("year")),
         audio_languages=_to_lang_list(raw.get("language")),
         subtitle_languages=_to_lang_list(raw.get("subtitle_language")),
         raw=dict(raw),
+        raw_text=value,
     )
 
 

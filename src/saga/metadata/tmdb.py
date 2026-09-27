@@ -10,7 +10,13 @@ from saga.metadata.exceptions import (
     MetadataTimeoutError,
 )
 from saga.metadata.models import TMDBDetailResponse, TMDBFindResponse
-from saga.models.metadata import MediaType, Metadata, MetadataQuery, Titles
+from saga.models.metadata import (
+    MediaType,
+    Metadata,
+    MetadataIdQuery,
+    MetadataQuery,
+    Titles,
+)
 
 
 class IMDbIDNotFoundError(MetadataError):
@@ -25,6 +31,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
     def __init__(
         self,
         api_key: str,
+        client: httpx.AsyncClient | None = None,
         base_url: str = "https://api.themoviedb.org",
         timeout: float = 15.0,
     ):
@@ -34,7 +41,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
             if not base_url.endswith(("3", "3/"))
             else base_url.rstrip("/")
         )
-        self.client = httpx.AsyncClient()
+        self.client = client or httpx.AsyncClient()
         self.timeout = timeout
 
     async def imdbid_to_tmdbid(self, imdb_id: str) -> int:
@@ -66,13 +73,13 @@ class TMDBMetadataProvider(BaseMetadataProvider):
                 f"TMDB error: {e.response.status_code} with {e.request.url}"
             ) from e
 
-    async def _get_all_titles(self, tmdb_id: int, media_type: MediaType) -> Titles:
+    async def _get_metadata_tmdb(self, tmdb_id: int, media_type: MediaType) -> Metadata:
         tmdb_type: Literal["tv", "movie"] = "tv" if media_type == "series" else "movie"
 
         url = f"{self.base_url}/{tmdb_type}/{tmdb_id}"
         params = {
             "api_key": self.api_key,
-            "append_to_response": "translations",
+            "append_to_response": "translations,keywords",
         }
 
         try:
@@ -82,6 +89,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
             detail = TMDBDetailResponse.model_validate(response.json())
 
             titles: Titles = {"original": "", "en": ""}
+            keywords = [keyword.name for keyword in detail.keywords.results]
 
             main_title = detail.name or detail.title
             if main_title:
@@ -99,7 +107,11 @@ class TMDBMetadataProvider(BaseMetadataProvider):
                 if lang and translated_title and translated_title.strip():
                     titles[lang] = translated_title
 
-            return titles
+            return Metadata(
+                titles=titles,
+                original_language=detail.original_language,
+                keywords=keywords,
+            )
 
         except httpx.TimeoutException as e:
             raise MetadataTimeoutError("TMDB took too long to respond") from e
@@ -107,6 +119,11 @@ class TMDBMetadataProvider(BaseMetadataProvider):
             raise MetadataStatusError(f"TMDB error: {e.response.status_code}") from e
 
     async def get_metadata(self, query: MetadataQuery) -> Metadata:
-        tmdb_id = await self.imdbid_to_tmdbid(query.id)
-        titles_dict = await self._get_all_titles(tmdb_id=tmdb_id, media_type=query.type)
-        return Metadata(titles=titles_dict)
+        if isinstance(query, MetadataIdQuery):
+            tmdb_id = await self.imdbid_to_tmdbid(query.id)
+            metadata = await self._get_metadata_tmdb(
+                tmdb_id=tmdb_id, media_type=query.type
+            )
+            return metadata
+        else:
+            raise MetadataError("Metadata fetching only available by id")

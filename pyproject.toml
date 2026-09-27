@@ -3,16 +3,18 @@ name = "saga"
 version = "0.1.0"
 readme = "README.md"
 authors = [
-    { name = "Bigfootpp", email = "97189022+Bigfootpp@users.noreply.github.com" }
+    { name = "bigfootpp", email = "97189022+Bigfootpp@users.noreply.github.com" }
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi>=0.141.1",
     "guessit>=4.4.0",
     "httpx>=0.28.1",
     "libtorrent>=2.1.1",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.15.0",
     "torf>=4.3.1",
+    "uvicorn>=0.52.4",
 ]
 
 [build-system]

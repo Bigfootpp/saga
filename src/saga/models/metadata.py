@@ -15,9 +15,18 @@ class Titles(TypedDict, extra_items=str):
 
 
 class Metadata(BaseModel):
+    original_language: str
     titles: Titles
+    keywords: list[str]
 
 
 class MetadataQuery(BaseModel):
     type: MediaType
+
+
+class MetadataIdQuery(MetadataQuery):
     id: str
+
+
+class MetadataTitleQuery(MetadataQuery):
+    title: str
