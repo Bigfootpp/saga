@@ -97,6 +97,23 @@ def _to_int_list(value: Any) -> list[int]:
         return []
 
 
+def _to_str_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        out: list[str] = []
+        for v in value:
+            try:
+                out.append(str(v))
+            except (TypeError, ValueError):
+                continue
+        return out
+    try:
+        return [str(value)]
+    except (TypeError, ValueError):
+        return []
+
+
 def _to_int_or_none(value: Any) -> int | None:
     if value is None:
         return None
@@ -147,6 +164,12 @@ def parse_guessit(value: str) -> GuessitResult:
     seasons = _to_int_list(raw.get("season"))
     seasons = [season for season in seasons if season < 61]
     episodes = _to_int_list(raw.get("episode"))
+    other = _to_str_list(raw.get("other"))
+    add_lang = []
+
+    if "Dual Audio" in other:
+        add_lang.append("dual")
+
     title = raw.get("title")
     return GuessitResult(
         title=clean_title(title) if isinstance(title, str) else None,
@@ -157,7 +180,7 @@ def parse_guessit(value: str) -> GuessitResult:
         if isinstance(raw.get("screen_size"), str)
         else None,
         year=_to_int_or_none(raw.get("year")),
-        audio_languages=_to_lang_list(raw.get("language")),
+        audio_languages=_to_lang_list(raw.get("language")) + add_lang,
         subtitle_languages=_to_lang_list(raw.get("subtitle_language")),
         raw=dict(raw),
         raw_text=value,
