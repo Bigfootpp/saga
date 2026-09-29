@@ -149,18 +149,16 @@ def get_dub_language(torrent_name: str) -> list[str]:
 def extract_audio_languages(
     torrent_name: str, original_language: str | None = None
 ) -> list[str]:
+    ignore_languages = {"mul", "dual"}
     parsed_name = parse(torrent_name)
 
     audio_langs = set(parsed_name.audio_languages)
     sub_langs = set(parsed_name.subtitle_languages)
 
-    detected_audio = {lang for lang in audio_langs if lang not in {"mul"}}
-
-    non_conflicting_dubs = set(detected_audio)
-    if original_language:
-        non_conflicting_dubs.add(original_language)
+    detected_audio = {lang for lang in audio_langs if lang not in ignore_languages}
 
     is_multi = "mul" in audio_langs
+    is_dual = "dual" in audio_langs
 
     if is_multi:
         inferred_languages: set[str] = set(detected_audio)
@@ -170,13 +168,16 @@ def extract_audio_languages(
         )
 
         if len(foreign_dubs) == 0:
-            usable_subs = {sub for sub in sub_langs if sub not in {"mul"}}
+            usable_subs = {sub for sub in sub_langs if sub not in ignore_languages}
             inferred_languages.update(usable_subs)
 
         if not inferred_languages:
             return ["mul"]
 
         return sorted(inferred_languages)
+
+    if is_dual:
+        return sorted(detected_audio) if detected_audio else ["en"]
 
     if detected_audio:
         return sorted(detected_audio)
