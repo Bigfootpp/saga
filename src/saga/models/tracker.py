@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class ScrapeItem(BaseModel):
+class ScrapeItemResult(BaseModel):
     info_hash: str
     seeders: int
     completed: int
