@@ -1,4 +1,5 @@
 from pathlib import Path
+from statistics import median
 from typing import overload
 from urllib.parse import parse_qs, urlparse
 
@@ -45,32 +46,51 @@ def _valid_file(file: TorrentFileEntry, season: int) -> bool:
     )
 
 
+def best_candidate(
+    candidates: list[TorrentFileEntry], size_median: float
+) -> TorrentFileEntry:
+    final_candidates: list[TorrentFileEntry] = [
+        candidate
+        for candidate in candidates
+        if size_median * 0.3 <= candidate.size <= size_median * 2.5
+    ]
+    if final_candidates:
+        return max(final_candidates, key=lambda x: x.size)
+
+    return min(candidates, key=lambda c: abs(c.size - size_median))
+
+
 def _find_file_idx_series(
-    torrent: ResolvedTorrent, season: int, episode: int
+    torrent: ResolvedTorrent, season: int, episode: int, abs_episode: int | None = None
 ) -> int | None:
-    # parsed_torrent_name = parse(torrent.title)
+    all_videos_file: list[TorrentFileEntry] = []
     candidates: list[TorrentFileEntry] = []
+    abs_candidates: list[TorrentFileEntry] = []
     for file in torrent.files:
         if not _valid_file(file, season):
             continue
+        all_videos_file.append(file)
+
         parsed_file_name = parse(file.file_name)
-        if (
-            parsed_file_name.episodes
-            and len(parsed_file_name.episodes) == 1
-            and episode in parsed_file_name.episodes
-        ):
+        if len(parsed_file_name.episodes) == 1 and episode in parsed_file_name.episodes:
             candidates.append(file)
-            # return Stream(
-            #     torrent_name=torrent.title,
-            #     raw_name=file.file_name,
-            #     info_hash=torrent.info_hash,
-            #     dubs_language=parsed_torrent_name.audio_languages,
-            #     sources=parse_trackers(torrent.magnet),
-            #     file_idx=file.file_idx,
-            # )
-    if len(candidates) == 0:
+        elif (
+            len(parsed_file_name.episodes) == 1
+            and abs_episode in parsed_file_name.episodes
+        ):
+            abs_candidates.append(file)
+    if len(candidates) == 0 and len(abs_candidates) == 0:
         return None
-    return max(candidates, key=lambda x: x.size).file_idx
+
+    size_median = median([file.size for file in all_videos_file])
+
+    if abs_candidates:
+        if len(abs_candidates) == 1:
+            return abs_candidates[0].size
+        return best_candidate(abs_candidates, size_median).file_idx
+    if len(candidates) == 1:
+        return candidates[0].file_idx
+    return best_candidate(candidates, size_median).file_idx
 
 
 def _find_file_idx_movie(torrent: ResolvedTorrent) -> int:
@@ -113,15 +133,18 @@ def parse_trackers(magnet_uri: str) -> list[str]:
 def find_file_idx(torrent: ResolvedTorrent) -> int | None: ...
 @overload
 def find_file_idx(
-    torrent: ResolvedTorrent, season: int, episode: int
+    torrent: ResolvedTorrent, season: int, episode: int, abs_episode: int | None
 ) -> int | None: ...
 
 
 def find_file_idx(
-    torrent: ResolvedTorrent, season: int | None = None, episode: int | None = None
+    torrent: ResolvedTorrent,
+    season: int | None = None,
+    episode: int | None = None,
+    abs_episode: int | None = None,
 ) -> int | None:
     if season and episode:
-        return _find_file_idx_series(torrent, episode=episode, season=season)
+        return _find_file_idx_series(torrent, season, episode, abs_episode)
     else:
         return _find_file_idx_movie(torrent)
 
