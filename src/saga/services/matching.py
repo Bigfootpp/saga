@@ -86,7 +86,7 @@ def _find_file_idx_series(
 
     if abs_candidates:
         if len(abs_candidates) == 1:
-            return abs_candidates[0].size
+            return abs_candidates[0].file_idx
         return best_candidate(abs_candidates, size_median).file_idx
     if len(candidates) == 1:
         return candidates[0].file_idx
