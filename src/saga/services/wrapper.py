@@ -1,7 +1,6 @@
 import asyncio
 from urllib.parse import urlparse
 
-from saga.api.stream import UDPTrackerClient
 from saga.metadata.base import BaseMetadataProvider
 from saga.models.metadata import (
     MediaType,
@@ -14,6 +13,7 @@ from saga.models.torrent import RawTorrent
 from saga.models.tracker import ScrapeItemResult
 from saga.providers.base import BaseProvider
 from saga.services.matching import parse_trackers
+from saga.torrent.udp_tracker_client import UDPTrackerClient
 
 
 class MetadataWrapper:
