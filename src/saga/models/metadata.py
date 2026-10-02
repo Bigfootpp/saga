@@ -23,7 +23,7 @@ class Metadata(BaseModel):
     original_language: str
     titles: Titles
     keywords: list[str]
-    episode: list[Episode] | None = None
+    episodes: list[Episode] | None = None
 
 
 class MetadataQuery(BaseModel):

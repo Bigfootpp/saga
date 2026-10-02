@@ -133,7 +133,7 @@ def parse_trackers(magnet_uri: str) -> list[str]:
 def find_file_idx(torrent: ResolvedTorrent) -> int | None: ...
 @overload
 def find_file_idx(
-    torrent: ResolvedTorrent, season: int, episode: int, abs_episode: int | None
+    torrent: ResolvedTorrent, season: int, episode: int, abs_episode: int | None = None
 ) -> int | None: ...
 
 

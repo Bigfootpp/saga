@@ -151,7 +151,7 @@ class TMDBMetadataProvider(BaseMetadataProvider):
                 titles=titles,
                 original_language=detail.original_language,
                 keywords=keywords,
-                episode=episodes,
+                episodes=episodes,
             )
 
         except httpx.TimeoutException as e:

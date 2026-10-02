@@ -38,6 +38,15 @@ class StreamService:
     ) -> StreamResult:
         metadata = await self.metadata_querier.get_series_metadata_id(media_id)
 
+        abs_episode = episode
+        if metadata.episodes:
+            count = 0
+            for metadata_episode in metadata.episodes:
+                if metadata_episode.season > 0:
+                    count += 1
+
+            abs_episode = count
+
         titles_set: set[str] = {
             metadata.titles[dub]
             for dub in set(dubs) | {"original", "en"}
@@ -66,7 +75,7 @@ class StreamService:
             #     and torrent.distributed_copies < 1
             # ):
             #     return False
-            file_idx = find_file_idx(torrent, episode=episode, season=season)
+            file_idx = find_file_idx(torrent, season, episode, abs_episode)
             return file_idx is not None
 
         # filter raw torrent before resolving to not wasting time on unwanted streams
@@ -94,8 +103,12 @@ class StreamService:
         )
 
         # converting to stream object
-        dubs_streams = StreamContainer(season, episode, metadata.original_language)
-        others_streams = StreamContainer(season, episode, metadata.original_language)
+        dubs_streams = StreamContainer(
+            season, episode, metadata.original_language, abs_episode
+        )
+        others_streams = StreamContainer(
+            season, episode, metadata.original_language, abs_episode
+        )
 
         for is_dub, torrents in (
             (True, dubs_resolved_torrents),
