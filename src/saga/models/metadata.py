@@ -14,10 +14,16 @@ class Titles(TypedDict, extra_items=str):
     en: str
 
 
+class Episode(BaseModel):
+    season: int
+    episode: int
+
+
 class Metadata(BaseModel):
     original_language: str
     titles: Titles
     keywords: list[str]
+    episode: list[Episode] | None = None
 
 
 class MetadataQuery(BaseModel):

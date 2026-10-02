@@ -33,6 +33,11 @@ class TMDBKeywordsBlock(BaseModel):
     results: list[TMDBKeywordsItem] = Field(default_factory=list)
 
 
+class TMDBSeasonEntry(BaseModel):
+    season_number: int
+    episode_count: int = 0
+
+
 class TMDBDetailResponse(BaseModel):
     id: int
     name: str | None = None
@@ -42,6 +47,15 @@ class TMDBDetailResponse(BaseModel):
     original_language: str
     translations: TMDBTranslationsBlock = Field(default_factory=TMDBTranslationsBlock)
     keywords: TMDBKeywordsBlock = Field(default_factory=TMDBKeywordsBlock)
+    seasons: list[TMDBSeasonEntry] = Field(default_factory=list)
+
+
+class TMDBSeasonEpisodeEntry(BaseModel):
+    episode_number: int
+
+
+class TMDBSeasonResponse(BaseModel):
+    episodes: list[TMDBSeasonEpisodeEntry] = Field(default_factory=list)
 
 
 class KitsuTitles(BaseModel):
