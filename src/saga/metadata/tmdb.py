@@ -1,3 +1,4 @@
+import asyncio
 from typing import Literal
 from urllib.parse import urljoin
 
@@ -9,8 +10,14 @@ from saga.metadata.exceptions import (
     MetadataStatusError,
     MetadataTimeoutError,
 )
-from saga.metadata.models import TMDBDetailResponse, TMDBFindResponse
+from saga.metadata.models import (
+    TMDBDetailResponse,
+    TMDBFindResponse,
+    TMDBSeasonEntry,
+    TMDBSeasonResponse,
+)
 from saga.models.metadata import (
+    Episode,
     MediaType,
     Metadata,
     MetadataIdQuery,
@@ -73,6 +80,35 @@ class TMDBMetadataProvider(BaseMetadataProvider):
                 f"TMDB error: {e.response.status_code} with {e.request.url}"
             ) from e
 
+    async def _fetch_season_episodes(
+        self, tmdb_id: int, season: TMDBSeasonEntry
+    ) -> list[Episode]:
+        url = f"{self.base_url}/tv/{tmdb_id}/season/{season.season_number}"
+        params = {"api_key": self.api_key}
+
+        try:
+            response = await self.client.get(url, params=params, timeout=self.timeout)
+            response.raise_for_status()
+            parsed = TMDBSeasonResponse.model_validate(response.json())
+            return [
+                Episode(season=season.season_number, episode=item.episode_number)
+                for item in parsed.episodes
+            ]
+        except httpx.TimeoutException as e:
+            raise MetadataTimeoutError("TMDB took too long to respond") from e
+        except httpx.HTTPStatusError as e:
+            raise MetadataStatusError(f"TMDB error: {e.response.status_code}") from e
+
+    async def _get_episodes_tmdb(
+        self, tmdb_id: int, seasons: list[TMDBSeasonEntry]
+    ) -> list[Episode]:
+        if not seasons:
+            return []
+        results = await asyncio.gather(
+            *(self._fetch_season_episodes(tmdb_id, s) for s in seasons)
+        )
+        return [ep for season_eps in results for ep in season_eps]
+
     async def _get_metadata_tmdb(self, tmdb_id: int, media_type: MediaType) -> Metadata:
         tmdb_type: Literal["tv", "movie"] = "tv" if media_type == "series" else "movie"
 
@@ -107,10 +143,15 @@ class TMDBMetadataProvider(BaseMetadataProvider):
                 if lang and translated_title and translated_title.strip():
                     titles[lang] = translated_title
 
+            episodes: list[Episode] | None = None
+            if media_type == MediaType.SERIES:
+                episodes = await self._get_episodes_tmdb(tmdb_id, detail.seasons)
+
             return Metadata(
                 titles=titles,
                 original_language=detail.original_language,
                 keywords=keywords,
+                episodes=episodes,
             )
 
         except httpx.TimeoutException as e:

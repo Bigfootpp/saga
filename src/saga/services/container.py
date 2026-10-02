@@ -59,14 +59,23 @@ class RawTorrentContainer:
 
 
 class StreamContainer:
-    def __init__(self, season: int, episode: int, original_language: str) -> None:
+    def __init__(
+        self,
+        season: int,
+        episode: int,
+        original_language: str,
+        abs_episode: int | None = None,
+    ) -> None:
         self._season = season
         self._episode = episode
+        self._abs_episode = abs_episode
         self._original_language = original_language
         self._streams: list[Stream] = []
 
     def add_torrents(self, torrent: ResolvedTorrent) -> bool:
-        file_idx = find_file_idx(torrent, self._season, self._episode)
+        file_idx = find_file_idx(
+            torrent, self._season, self._episode, self._abs_episode
+        )
         if file_idx is not None:
             stream = Stream(
                 torrent_name=torrent.title,
