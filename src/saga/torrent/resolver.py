@@ -38,15 +38,15 @@ class TorrentResolver:
         self._lt_session.add_dht_router("router.utorrent.com", 6881)
 
     async def resolve(self, raw_torrent: RawTorrent) -> ResolvedTorrent:
-        # if raw_torrent.torrent_link:
-        #     try:
-        #         resolved_torrent = await self._resolve_via_torrent_link(raw_torrent)
-        #         if resolved_torrent:
-        #             return resolved_torrent
-        #         # if files is not None:
-        #         #     return self._to_resolved(raw_torrent, files)
-        #     except Exception:
-        #         pass
+        if raw_torrent.torrent_link:
+            try:
+                resolved_torrent = await self._resolve_via_torrent_link(raw_torrent)
+                if resolved_torrent:
+                    return resolved_torrent
+                # if files is not None:
+                #     return self._to_resolved(raw_torrent, files)
+            except Exception:
+                pass
 
         try:
             return await self._resolve_via_libtorrent(raw_torrent)
