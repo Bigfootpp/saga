@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import re
 from typing import Any
 
@@ -156,6 +157,7 @@ def _to_lang_list(value: Any) -> list[str]:
     return [code] if code is not None else []
 
 
+@functools.lru_cache(maxsize=10000)
 def parse_guessit(value: str) -> GuessitResult:
     try:
         raw: dict[str, Any] = guessit.guessit(value)
