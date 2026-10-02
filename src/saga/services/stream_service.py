@@ -1,4 +1,5 @@
 import asyncio
+from urllib.parse import urlparse
 
 from saga.metadata.base import BaseMetadataProvider
 from saga.metadata.kitsu import KitsuMetadataProvider
@@ -11,6 +12,7 @@ from saga.models.metadata import (
 from saga.models.query import SeriesQuery
 from saga.models.stream import Stream, StreamResult
 from saga.models.torrent import RawTorrent, ResolvedTorrent
+from saga.models.tracker import ScrapeItemResult
 from saga.providers.base import BaseProvider
 from saga.services.matching import (
     check_torrent_coverage,
@@ -21,6 +23,7 @@ from saga.services.matching import (
     parse_trackers,
 )
 from saga.torrent.resolver import TorrentResolver
+from saga.torrent.udp_tracker_client import UDPTrackerClient
 
 
 class RawTorrentContainer:
@@ -43,7 +46,7 @@ class RawTorrentContainer:
     def add_torrents(self, raw_torrents: list[RawTorrent]):
         for torrent in raw_torrents:
             if (
-                (torrent.peers > 1 or torrent.seeders > 0)
+                (torrent.seeders > 0)
                 and (
                     self._episode is not None
                     and self._season is not None
@@ -104,6 +107,67 @@ class ProviderWrapper:
         return raw_results
 
 
+class TrackerClientWrapper:
+    def __init__(self, tracker_client: UDPTrackerClient) -> None:
+        self.client = tracker_client
+
+    async def _scrape_tracker(
+        self, tracker: str, info_hashes: list[str]
+    ) -> dict[str, ScrapeItemResult] | None:
+        parsed_address = urlparse(tracker)
+        hostname = parsed_address.hostname
+        port = parsed_address.port
+
+        if hostname is None or port is None:
+            return None
+
+        try:
+            return await self.client.scrape(hostname, port, info_hashes)
+        except (ConnectionRefusedError, TimeoutError, OSError):
+            return None
+
+    async def resolve_peers_count[T: RawTorrent](self, torrents: list[T]) -> list[T]:
+        trackers = {
+            tracker
+            for torrent in torrents
+            for tracker in parse_trackers(torrent.magnet)
+        }
+        info_hashes = list({torrent.info_hash for torrent in torrents})
+
+        tasks = [self._scrape_tracker(tracker, info_hashes) for tracker in trackers]
+        scrape_responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+        best_scrape_results: dict[str, ScrapeItemResult] = {}
+        for response in scrape_responses:
+            if not isinstance(response, dict):
+                continue
+
+            for info_hash, info in response.items():
+                current_best = best_scrape_results.get(info_hash)
+
+                if current_best is None or (info.leechers + info.seeders) > (
+                    current_best.leechers + current_best.seeders
+                ):
+                    best_scrape_results[info_hash] = info
+
+        result: list[T] = []
+        for torrent in torrents:
+            item = best_scrape_results.get(torrent.info_hash)
+            if item:
+                result.append(
+                    torrent.model_copy(
+                        update={
+                            "peers": item.leechers + item.seeders,
+                            "seeders": item.seeders,
+                        }
+                    )
+                )
+            else:
+                result.append(torrent.model_copy())
+
+        return result
+
+
 class StreamContainer:
     def __init__(self, season: int, episode: int, original_language: str) -> None:
         self._season = season
@@ -137,6 +201,7 @@ class StreamService:
     def __init__(
         self,
         provider: BaseProvider,
+        tracker_client: UDPTrackerClient,
         metadata_provider: BaseMetadataProvider,
         kitsu_metadata_provider: KitsuMetadataProvider,
         resolver: TorrentResolver,
@@ -145,6 +210,7 @@ class StreamService:
         self.metadata_querier = MetadataWrapper(metadata_provider)
         self.kitsu_metadata_querier = MetadataWrapper(kitsu_metadata_provider)
         self.resolver = resolver
+        self.tracker_client = TrackerClientWrapper(tracker_client)
 
     async def get_series_streams(
         self,
@@ -180,11 +246,11 @@ class StreamService:
         print(f"Scraped {len(raw_results)} torrents")
 
         def is_valid(torrent: ResolvedTorrent) -> bool:
-            if (
-                torrent.distributed_copies is not None
-                and torrent.distributed_copies < 1
-            ):
-                return False
+            # if (
+            #     torrent.distributed_copies is not None
+            #     and torrent.distributed_copies < 1
+            # ):
+            #     return False
             file_idx = find_file_idx(torrent, episode=episode, season=season)
             return file_idx is not None
 
@@ -195,14 +261,21 @@ class StreamService:
         container.add_torrents(raw_results)
 
         print(f"Resolving {len(container.torrents)} torrents")
-        dubs_resolved_torrents = await self.resolver.bulk_resolve(
+        dubs_resolved_torrents1 = await self.resolver.bulk_resolve(
             container.dubs, is_valid=is_valid, concurrency=15, max_result=max_dub_result
         )
-        other_resolved_torrents = await self.resolver.bulk_resolve(
+        other_resolved_torrents1 = await self.resolver.bulk_resolve(
             container.others,
             is_valid=is_valid,
             concurrency=15,
             max_result=max_other_result,
+        )
+
+        dubs_resolved_torrents = await self.tracker_client.resolve_peers_count(
+            dubs_resolved_torrents1
+        )
+        other_resolved_torrents = await self.tracker_client.resolve_peers_count(
+            other_resolved_torrents1
         )
 
         # converting to stream object
@@ -214,10 +287,11 @@ class StreamService:
             (False, other_resolved_torrents),
         ):
             for torrent in torrents:
-                if is_dub:
-                    dubs_streams.add_torrents(torrent)
-                else:
-                    others_streams.add_torrents(torrent)
+                if torrent.seeders > 0:
+                    if is_dub:
+                        dubs_streams.add_torrents(torrent)
+                    else:
+                        others_streams.add_torrents(torrent)
 
         return StreamResult(
             dubs_stream=dubs_streams.streams, others=others_streams.streams

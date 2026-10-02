@@ -17,6 +17,7 @@ from saga.services.formatter import (
 )
 from saga.services.stream_service import StreamService
 from saga.torrent.resolver import TorrentResolver
+from saga.torrent.udp_tracker_client import UDPTrackerClient
 from saga.utils.config_parser import parse_config
 from saga.utils.stremio import convert_to_stremio_stream_result, parse_series_id
 
@@ -30,12 +31,14 @@ provider = JackettProvider(
 metadata_provider = TMDBMetadataProvider(api_key=env.tmdb_api_key, client=http_client)
 kitsu_metadata_provider = KitsuMetadataProvider(client=http_client)
 resolver = TorrentResolver(client=http_client)
+udp_tracker_client = UDPTrackerClient()
 
 stream_service = StreamService(
     provider=provider,
     metadata_provider=metadata_provider,
     kitsu_metadata_provider=kitsu_metadata_provider,
     resolver=resolver,
+    tracker_client=udp_tracker_client,
 )
 
 
