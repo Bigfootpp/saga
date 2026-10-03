@@ -69,6 +69,8 @@ class StreamService:
         raw_results = await self.provider.search_series(titles, season, episode)
         print(f"Scraped {len(raw_results)} torrents")
 
+        raw_results = await self.tracker_client.resolve_peers_count(raw_results)
+
         def is_valid(torrent: ResolvedTorrent) -> bool:
             # if (
             #     torrent.distributed_copies is not None
@@ -85,23 +87,16 @@ class StreamService:
         container.add_torrents(raw_results)
 
         print(f"Resolving {len(container.torrents)} torrents")
-        dubs_resolved_torrents1 = await self.resolver.bulk_resolve(
+        dubs_resolved_torrents = await self.resolver.bulk_resolve(
             container.dubs, is_valid=is_valid, concurrency=15, max_result=max_dub_result
         )
-        other_resolved_torrents1 = await self.resolver.bulk_resolve(
+        other_resolved_torrents = await self.resolver.bulk_resolve(
             container.others,
             is_valid=is_valid,
             concurrency=15,
             max_result=max_other_result,
         )
         print("Resolving finished")
-
-        dubs_resolved_torrents = await self.tracker_client.resolve_peers_count(
-            dubs_resolved_torrents1
-        )
-        other_resolved_torrents = await self.tracker_client.resolve_peers_count(
-            other_resolved_torrents1
-        )
 
         # converting to stream object
         dubs_streams = StreamContainer(
