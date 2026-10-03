@@ -75,10 +75,21 @@ class UDPTrackerClient:
     async def scrape(
         self, url: str, port: int, hashes: list[str]
     ) -> dict[str, ScrapeItemResult]:
+        if not hashes:
+            return {}
+        if len(hashes) > MAX_HASHES:
+            merged: dict[str, ScrapeItemResult] = {}
+            for i in range(0, len(hashes), MAX_HASHES):
+                batch = await self._scrape_batch(url, port, hashes[i : i + MAX_HASHES])
+                merged.update(batch)
+            return merged
+        return await self._scrape_batch(url, port, hashes)
+
+    async def _scrape_batch(
+        self, url: str, port: int, hashes: list[str]
+    ) -> dict[str, ScrapeItemResult]:
         sock: socket.socket | None = None
         try:
-            if len(hashes) > MAX_HASHES:
-                raise TrackerError("Too much hashes provided")
             sock, loop = await self._connect_to_tracker(url, port)
             connection_id_dict = self.connection_ids.get((url, port))
             if (

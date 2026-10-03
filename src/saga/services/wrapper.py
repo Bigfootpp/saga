@@ -13,7 +13,7 @@ from saga.models.torrent import RawTorrent
 from saga.models.tracker import ScrapeItemResult
 from saga.providers.base import BaseProvider
 from saga.services.matching import parse_trackers
-from saga.torrent.udp_tracker_client import UDPTrackerClient
+from saga.torrent.udp_tracker_client import TrackerError, UDPTrackerClient
 
 
 class MetadataWrapper:
@@ -65,7 +65,7 @@ class TrackerClientWrapper:
 
         try:
             return await self.client.scrape(hostname, port, info_hashes)
-        except (ConnectionRefusedError, TimeoutError, OSError):
+        except (TrackerError, ConnectionRefusedError, TimeoutError, OSError):
             return None
 
     async def resolve_peers_count[T: RawTorrent](self, torrents: list[T]) -> list[T]:
