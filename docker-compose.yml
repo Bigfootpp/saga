@@ -20,3 +20,5 @@ services:
     container_name: saga
     ports:
       - "3000:3000"
+    volumes:
+      - ./saga-data:/data

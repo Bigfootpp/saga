@@ -32,7 +32,7 @@ provider = JackettProvider(
 metadata_provider = TMDBMetadataProvider(api_key=env.tmdb_api_key, client=http_client)
 kitsu_metadata_provider = KitsuMetadataProvider(client=http_client)
 
-repo = TorrentDatabaseRepo(path=":memory:")
+repo = TorrentDatabaseRepo(path=env.saga_data_dir / "saga.db")
 resolver = CachedTorrentResolver(repo=repo, client=http_client)
 udp_tracker_client = UDPTrackerClient()
 

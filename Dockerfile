@@ -13,6 +13,7 @@ COPY . .
 RUN uv sync --frozen --no-cache --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"
+ENV SAGA_DATA_DIR="/data/"
 
 EXPOSE 3000
 
