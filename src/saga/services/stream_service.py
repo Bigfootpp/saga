@@ -94,6 +94,7 @@ class StreamService:
             concurrency=15,
             max_result=max_other_result,
         )
+        print("Resolving finished")
 
         dubs_resolved_torrents = await self.tracker_client.resolve_peers_count(
             dubs_resolved_torrents1
