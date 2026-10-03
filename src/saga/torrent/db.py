@@ -1,4 +1,5 @@
 import asyncio
+import time
 from pathlib import Path
 
 import aiosqlite
@@ -10,9 +11,15 @@ async def _init_db(db: aiosqlite.Connection) -> None:
     await db.executescript("""
         CREATE TABLE IF NOT EXISTS torrents (
             info_hash TEXT PRIMARY KEY,
-            data TEXT NOT NULL
+            data TEXT NULL,
+            updated_at INTEGER NOT NULL
         );
     """)
+
+
+class NullTorrent:
+    def __init__(self, updated_at: int) -> None:
+        self.updated_at = updated_at
 
 
 class TorrentDatabaseRepo:
@@ -50,19 +57,25 @@ class TorrentDatabaseRepo:
             await self._db.close()
             self._db = None
 
-    async def insert_torrent(self, torrent: ResolvedTorrent):
+    async def update_torrent(
+        self, info_hash: str, torrent: ResolvedTorrent | None = None
+    ):
         db = await self._get_db()
         await db.execute(
-            "INSERT INTO torrents (info_hash, data) VALUES (?, ?)",
-            (torrent.info_hash, torrent.model_dump_json()),
+            "INSERT OR REPLACE INTO torrents (info_hash, data, updated_at) VALUES (?, ?, ?)",
+            (info_hash, torrent.model_dump_json() if torrent else None, time.time()),
         )
         await db.commit()
 
-    async def get_torrent(self, info_hash: str) -> ResolvedTorrent | None:
+    async def get_torrent(self, info_hash: str) -> ResolvedTorrent | NullTorrent | None:
         db = await self._get_db()
         cur = await db.execute(
-            "SELECT data FROM torrents WHERE info_hash = ? LIMIT 1", (info_hash,)
+            "SELECT data, updated_at FROM torrents WHERE info_hash = ? LIMIT 1",
+            (info_hash,),
         )
         row = await cur.fetchone()
-        if row:
-            return ResolvedTorrent.model_validate_json(row["data"])
+        if row is not None:
+            data: str | None = row["data"]
+            if data:
+                return ResolvedTorrent.model_validate_json(data)
+            return NullTorrent(row["updated_at"])

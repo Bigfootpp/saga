@@ -1,8 +1,14 @@
+import time
+
 import httpx
 
 from saga.models.torrent import RawTorrent
 from saga.torrent.db import ResolvedTorrent, TorrentDatabaseRepo
+from saga.torrent.exceptions import TorrentResolveError
 from saga.torrent.resolver import TorrentResolver
+
+# 2h
+CACHE_TTL = 2 * 60 * 60
 
 
 class CachedTorrentResolver(TorrentResolver):
@@ -18,8 +24,18 @@ class CachedTorrentResolver(TorrentResolver):
     async def resolve(self, raw_torrent: RawTorrent) -> ResolvedTorrent:
         cache = await self._repo.get_torrent(raw_torrent.info_hash)
         if cache:
-            return cache
-
-        resolved_torrent = await super().resolve(raw_torrent)
-        await self._repo.insert_torrent(resolved_torrent)
+            if isinstance(cache, ResolvedTorrent):
+                return cache
+            elif time.time() - cache.updated_at < CACHE_TTL:
+                raise TorrentResolveError(
+                    f"Torrent considered dead, next cache invalidation in {CACHE_TTL - (time.time() - cache.updated_at)}"
+                )
+        try:
+            resolved_torrent = await super().resolve(raw_torrent)
+            await self._repo.update_torrent(
+                resolved_torrent.info_hash, resolved_torrent
+            )
+        except TorrentResolveError:
+            await self._repo.update_torrent(raw_torrent.info_hash, None)
+            raise
         return resolved_torrent
