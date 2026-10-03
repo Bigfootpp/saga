@@ -19,4 +19,7 @@ class CachedTorrentResolver(TorrentResolver):
         cache = await self._repo.get_torrent(raw_torrent.info_hash)
         if cache:
             return cache
-        return await super().resolve(raw_torrent)
+
+        resolved_torrent = await super().resolve(raw_torrent)
+        await self._repo.insert_torrent(resolved_torrent)
+        return resolved_torrent
