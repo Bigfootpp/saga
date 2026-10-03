@@ -24,6 +24,7 @@ class UDPTrackerClient:
     def __init__(self, timeout: float = 1.5) -> None:
         self.timeout = timeout
         self.connection_ids: dict[tuple[str, int], ConnectionID] = {}
+        self._connection_locks: dict[tuple[str, int], asyncio.Lock] = {}
 
     async def _connect_to_tracker(
         self, url: str, port: int
@@ -72,16 +73,41 @@ class UDPTrackerClient:
 
         return connection_id
 
+    async def _get_connection_id(self, url: str, port: int) -> int:
+        key = (url, port)
+        lock = self._connection_locks.setdefault(key, asyncio.Lock())
+        async with lock:
+            cached = self.connection_ids.get(key)
+            if (
+                cached is not None
+                and time.monotonic() - cached["last_connection"] <= 40
+            ):
+                return cached["id"]
+            sock, loop = await self._connect_to_tracker(url, port)
+            try:
+                connection_id = await self._connect(url, port, sock, loop)
+            finally:
+                sock.close()
+            self.connection_ids[key] = {
+                "last_connection": time.monotonic(),
+                "id": connection_id,
+            }
+            return connection_id
+
     async def scrape(
         self, url: str, port: int, hashes: list[str]
     ) -> dict[str, ScrapeItemResult]:
         if not hashes:
             return {}
         if len(hashes) > MAX_HASHES:
+            batches = [
+                self._scrape_batch(url, port, hashes[i : i + MAX_HASHES])
+                for i in range(0, len(hashes), MAX_HASHES)
+            ]
+            results = await asyncio.gather(*batches)
             merged: dict[str, ScrapeItemResult] = {}
-            for i in range(0, len(hashes), MAX_HASHES):
-                batch = await self._scrape_batch(url, port, hashes[i : i + MAX_HASHES])
-                merged.update(batch)
+            for batch_result in results:
+                merged.update(batch_result)
             return merged
         return await self._scrape_batch(url, port, hashes)
 
@@ -90,19 +116,8 @@ class UDPTrackerClient:
     ) -> dict[str, ScrapeItemResult]:
         sock: socket.socket | None = None
         try:
+            connection_id = await self._get_connection_id(url, port)
             sock, loop = await self._connect_to_tracker(url, port)
-            connection_id_dict = self.connection_ids.get((url, port))
-            if (
-                connection_id_dict is None
-                or time.monotonic() - connection_id_dict["last_connection"] > 40
-            ):
-                connection_id = await self._connect(url, port, sock, loop)
-                self.connection_ids[(url, port)] = {
-                    "last_connection": time.monotonic(),
-                    "id": connection_id,
-                }
-            else:
-                connection_id = connection_id_dict["id"]
 
             transaction_id = random.getrandbits(32)
 
