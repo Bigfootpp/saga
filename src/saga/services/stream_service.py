@@ -10,6 +10,7 @@ from saga.services.matching import (
 from saga.services.wrapper import MetadataWrapper, ProviderWrapper, TrackerClientWrapper
 from saga.torrent.resolver import TorrentResolver
 from saga.torrent.udp_tracker_client import UDPTrackerClient
+from saga.utils.stopwatch import Stopwatch
 
 
 class StreamService:
@@ -65,9 +66,11 @@ class StreamService:
 
         titles = list(titles_set)
 
-        print("Scraping torrents")
-        raw_results = await self.provider.search_series(titles, season, episode)
-        print(f"Scraped {len(raw_results)} torrents")
+        with Stopwatch() as watch:
+            raw_results = await self.provider.search_series(titles, season, episode)
+            print(f"Scraped {len(raw_results)} in {watch.time}s")
+
+        raw_results = await self.tracker_client.resolve_peers_count(raw_results)
 
         def is_valid(torrent: ResolvedTorrent) -> bool:
             # if (
@@ -84,23 +87,21 @@ class StreamService:
         )
         container.add_torrents(raw_results)
 
-        print(f"Resolving {len(container.torrents)} torrents")
-        dubs_resolved_torrents1 = await self.resolver.bulk_resolve(
-            container.dubs, is_valid=is_valid, concurrency=15, max_result=max_dub_result
-        )
-        other_resolved_torrents1 = await self.resolver.bulk_resolve(
-            container.others,
-            is_valid=is_valid,
-            concurrency=15,
-            max_result=max_other_result,
-        )
-
-        dubs_resolved_torrents = await self.tracker_client.resolve_peers_count(
-            dubs_resolved_torrents1
-        )
-        other_resolved_torrents = await self.tracker_client.resolve_peers_count(
-            other_resolved_torrents1
-        )
+        with Stopwatch() as watch:
+            print(f"Resolving {len(container.torrents)} torrents")
+            dubs_resolved_torrents = await self.resolver.bulk_resolve(
+                container.dubs,
+                is_valid=is_valid,
+                concurrency=15,
+                max_result=max_dub_result,
+            )
+            other_resolved_torrents = await self.resolver.bulk_resolve(
+                container.others,
+                is_valid=is_valid,
+                concurrency=15,
+                max_result=max_other_result,
+            )
+            print(f"Resolving finished in {watch.time}")
 
         # converting to stream object
         dubs_streams = StreamContainer(

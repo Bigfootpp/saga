@@ -8,6 +8,7 @@ __pycache__/
 .pytest_cache/
 
 jackett-config/
+saga-data/
 response-example/
 results/
 
